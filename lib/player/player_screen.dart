@@ -348,7 +348,19 @@ class _PlayerScreenState extends State<PlayerScreen>
       const SingleActivator(LogicalKeyboardKey.bracketRight): () =>
           _stepRate(1),
     },
-    child: Focus(autofocus: true, child: Scaffold(body: _body())),
+    child: Focus(
+      autofocus: true,
+      child: Scaffold(
+        appBar: AppBar(
+          toolbarHeight: 44,
+          title: Text(
+            controller.event?.title ?? widget.request.title,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        body: _body(),
+      ),
+    ),
   );
   void _stepRate(int delta) {
     final i = rates.indexOf(controller.rate);

@@ -24,6 +24,13 @@ void main() {
       );
     });
 
+    test('returns a plain UTC DateTime so toLocal uses the device zone', () {
+      final t = parliamentTime('2026-09-23T14:01:29');
+      expect(t.runtimeType, DateTime(0).runtimeType);
+      expect(t.isUtc, isTrue);
+      expect(t.toLocal(), DateTime.utc(2026, 9, 23, 18, 1, 29).toLocal());
+    });
+
     test('rejects other shapes', () {
       expect(() => parliamentTime('23/09/2026'), throwsFormatException);
     });

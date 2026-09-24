@@ -29,7 +29,7 @@ DateTime parliamentTime(String naive) {
   final millis = fraction == null
       ? 0
       : int.parse(fraction.padRight(3, '0').substring(0, 3));
-  return tz.TZDateTime(
+  final ottawa = tz.TZDateTime(
     _location(),
     part(1),
     part(2),
@@ -38,7 +38,13 @@ DateTime parliamentTime(String naive) {
     part(5),
     part(6),
     millis,
-  ).toUtc();
+  );
+  // A plain DateTime, not a TZDateTime: TZDateTime.toLocal() converts to the
+  // timezone package's own local zone (UTC unless set), not the device's.
+  return DateTime.fromMicrosecondsSinceEpoch(
+    ottawa.microsecondsSinceEpoch,
+    isUtc: true,
+  );
 }
 
 /// The Ottawa calendar date (year, month, day at midnight UTC) containing

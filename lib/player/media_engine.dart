@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 
 abstract class MediaEngine {
@@ -26,10 +27,23 @@ class MediaKitEngine implements MediaEngine {
   };
 
   @override
-  Future<void> open(Uri url, {Duration? start}) => player.open(
-    Media(url.toString(), httpHeaders: _headers, start: start),
-    play: true,
-  );
+  Future<void> open(Uri url, {Duration? start}) async {
+    if (!kIsWeb) {
+      await player.open(
+        Media(url.toString(), httpHeaders: _headers, start: start),
+        play: true,
+      );
+      return;
+    }
+    // Browsers forbid setting User-Agent, and media_kit's hls.js path ignores
+    // Media.start, so seek once the stream reports a duration.
+    await player.open(Media(url.toString()), play: true);
+    if (start != null && start > Duration.zero) {
+      await player.stream.duration.firstWhere((d) => d > Duration.zero);
+      await player.seek(start);
+    }
+  }
+
   @override
   Future<void> play() => player.play();
   @override

@@ -18,9 +18,9 @@ official branding or present itself as a House of Commons product.
 |---|---|
 | Audience | Just the owner. Public GitHub repo, README states unofficial / non-commercial. |
 | Coverage | House of Commons chamber + committees (everything ParlVU carries). Senate (SenVU) out of scope. |
-| Platforms | Windows, macOS, Android. |
+| Platforms | Android (native app) and a web app for Windows/macOS browsers. Changed 2026-09-23: native Windows/macOS apps dropped (no Xcode locally; owner prefers the browser). |
 | Stack | Flutter, one codebase. `media_kit` (libmpv) for playback, `audio_service` for background audio, `workmanager` / exact alarms for alerts. |
-| Backend | None. All scraping happens on-device (native HTTP, so ParlVU's missing CORS headers do not matter). |
+| Backend | Android: none, scraping on-device. Web: a small Python standard-library server on the Pixelbook (ChromeOS Linux, `ssh pixelbook`) serves the built web app and proxies ParlVU's listing and event pages on the same origin (ParlVU sends no CORS headers). Video (CDN) and openparliament.ca are fetched directly by the browser (both send `access-control-allow-origin: *`). |
 | History / resume | Per device only, no sync. |
 | Distribution | CI builds APK + Windows + macOS artifacts per tag into GitHub Releases. Android updates via Obtainium; desktop checks GitHub Releases on launch and prompts. |
 

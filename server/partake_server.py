@@ -258,7 +258,11 @@ def make_server(root: str, host: str, port: int, upstream: str, clock=None) -> T
                 ".otf": "font/otf",
                 ".ttf": "font/ttf",
             }.get(candidate.suffix.lower(), "application/octet-stream")
-            cache_control = "no-cache" if candidate.name in {"index.html", "flutter_service_worker.js", "version.json"} else "public, max-age=3600"
+            # Flutter's web file names are not content-hashed, so everything
+            # revalidates except the CanvasKit engine, which only changes with
+            # a Flutter upgrade.
+            in_canvaskit = candidate.relative_to(root_path).parts[:1] == ("canvaskit",)
+            cache_control = "public, max-age=86400" if in_canvaskit else "no-cache"
             self._last_static_status = 200
             self._send(200, body, mime, cache_control, head)
 

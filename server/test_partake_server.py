@@ -66,6 +66,8 @@ class PartakeServerTests(unittest.TestCase):
         (root / "index.html").write_text("<html>index</html>", encoding="utf-8")
         (root / "main.dart.js").write_text("javascript", encoding="utf-8")
         (root / "app.wasm").write_bytes(b"wasm")
+        (root / "canvaskit").mkdir()
+        (root / "canvaskit/canvaskit.wasm").write_bytes(b"ck")
         (root / "assets").mkdir()
         (root / "assets/x.png").write_bytes(b"png")
         self.root = root
@@ -173,7 +175,9 @@ class PartakeServerTests(unittest.TestCase):
         self.assertEqual(headers["Cache-Control"], "no-cache")
         status, headers, _body = self.request("/main.dart.js")
         self.assertEqual((status, headers["Content-Type"]), (200, "application/javascript"))
-        self.assertEqual(headers["Cache-Control"], "public, max-age=3600")
+        self.assertEqual(headers["Cache-Control"], "no-cache")
+        status, headers, _body = self.request("/canvaskit/canvaskit.wasm")
+        self.assertEqual((status, headers["Cache-Control"]), (200, "public, max-age=86400"))
         status, headers, body = self.request("/app.wasm")
         self.assertEqual((status, headers["Content-Type"], body), (200, "application/wasm", b"wasm"))
 

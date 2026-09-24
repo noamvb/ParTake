@@ -1,60 +1,51 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
+import 'package:parlvu/parlvu.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+import 'alerts/alert_runtime.dart';
+import 'app.dart';
+import 'services/parlvu_event_source.dart';
+import 'services/prefs_library.dart';
+import 'ui/open_request.dart';
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
-  runApp(const SpikeApp());
-}
 
-class SpikeApp extends StatefulWidget {
-  const SpikeApp({super.key});
+  final prefs = await SharedPreferences.getInstance();
+  final source = ParlVuEventSource(
+    // In the browser ParlVU is only reachable through the home server's
+    // same-origin proxy (ParlVU sends no CORS headers); see server/.
+    parlvu: ParlVuClient(baseUri: kIsWeb ? Uri.base.resolve('/parlvu') : null),
+    openParliament: OpenParliamentClient(),
+  );
 
-  @override
-  State<SpikeApp> createState() => _SpikeAppState();
-}
+  final opens = StreamController<OpenRequest>.broadcast();
+  OpenRequest fromAlert(int eventId) => OpenRequest(
+    eventId: eventId,
+    title: 'Live proceedings',
+    eventDate: parliamentDate(DateTime.now()),
+  );
 
-class _SpikeAppState extends State<SpikeApp> {
-  late final player = Player();
-  late final controller = VideoController(player);
+  await AlertRuntime.initialize();
+  AlertRuntime.tappedEventIds.listen((id) => opens.add(fromAlert(id)));
 
-  String? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    player.stream.error.listen((e) => setState(() => _error = e));
-    player.open(
-      Media(
-        'https://parlvuvod01.azureedge.net/pvvodhoc-fl/_definst_/mp4:azrhoc02/archives/PVHD/2026/2026-09-23/45728_HoC%20Sitting%20No.%20142_14-00-59_VH.mp4/playlist.m3u8?audioindex=2',
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    player.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => MaterialApp(
-    home: Scaffold(
-      body: Column(
-        children: [
-          Expanded(child: Video(controller: controller)),
-          StreamBuilder<Duration>(
-            stream: player.stream.position,
-            builder: (context, snap) => Text(
-              'SPIKE position=${snap.data?.inSeconds ?? -1}s '
-              'buffering=${player.state.buffering} '
-              'error=${_error ?? '-'}',
-              style: const TextStyle(fontSize: 32),
-            ),
-          ),
-        ],
-      ),
+  runApp(
+    PartakeApp(
+      source: source,
+      library: PrefsLibrary(prefs),
+      openRequests: opens.stream,
     ),
   );
+
+  // After the first frame so the navigator exists; no-ops off Android.
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    final launched = await AlertRuntime.launchEventId();
+    if (launched != null) opens.add(fromAlert(launched));
+    await AlertRuntime.requestPermission();
+  });
 }
