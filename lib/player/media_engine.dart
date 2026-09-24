@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 
+import '../platform/video_ready.dart';
+
 abstract class MediaEngine {
   Future<void> open(Uri url, {Duration? start});
   Future<void> play();
@@ -37,11 +39,24 @@ class MediaKitEngine implements MediaEngine {
     }
     // Browsers forbid setting User-Agent, and media_kit's hls.js path ignores
     // Media.start, so seek once the stream reports a duration.
+    // On a reopen media_kit reuses its <video> element but detaches it while
+    // loading; the play() it issues then is aborted and the element stays
+    // paused (seen 2026-09-24). Seek and play once it is attached and ready.
+    final ready = armVideoReady();
     await player.open(Media(url.toString()), play: true);
+    await ready();
     if (start != null && start > Duration.zero) {
-      await player.stream.duration.firstWhere((d) => d > Duration.zero);
+      if (player.state.duration == Duration.zero) {
+        await player.stream.duration
+            .firstWhere((d) => d > Duration.zero)
+            .timeout(
+              const Duration(seconds: 15),
+              onTimeout: () => Duration.zero,
+            );
+      }
       await player.seek(start);
     }
+    await player.play();
   }
 
   @override
@@ -67,7 +82,11 @@ class MediaKitEngine implements MediaEngine {
   @override
   Stream<bool> get bufferingStream => player.stream.buffering;
   @override
-  Stream<String> get errorStream => player.stream.error;
+  Stream<String> get errorStream => player.stream.error.where(
+    // Reopening a stream on the web replaces the <video> element; the old
+    // element's pending play() is aborted. Not a playback failure.
+    (e) => !e.contains('play() request was interrupted'),
+  );
   @override
   Future<void> dispose() => player.dispose();
 }

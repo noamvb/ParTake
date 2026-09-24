@@ -385,6 +385,29 @@ void main() {
     expect(e.opened, isEmpty);
     await c.close();
   });
+  test(
+    'language switch keeps playing when the new stream opens paused',
+    () async {
+      final (c, e, _, _) = await opened();
+      expect(c.playing, true);
+      e.playOnOpen = false;
+      final plays = e.plays;
+      await c.setLanguage(AudioLanguage.english);
+      expect(e.plays, plays + 1);
+      expect(e.playing, true);
+      await c.close();
+    },
+  );
+  test('language switch while paused stays paused', () async {
+    final (c, e, _, _) = await opened();
+    await c.togglePlay();
+    expect(e.playing, false);
+    final pauses = e.pauses;
+    await c.setLanguage(AudioLanguage.english);
+    expect(e.pauses, pauses + 1);
+    expect(e.playing, false);
+    await c.close();
+  });
   test('rate validation and language reopen preserve selected rate', () async {
     final (c, e, _, _) = await opened();
     await c.setRate(1.5);

@@ -158,12 +158,20 @@ class PlayerController extends ChangeNotifier {
   Future<void> setLanguage(AudioLanguage value) async {
     if (value == language || detail == null) return;
     final at = position;
+    final wasPlaying = engine.playing;
     final next = detail!.preferredStream(value);
     if (next == null) return;
     stream = next;
     language = next.language;
     await engine.open(next.url, start: next.isLive && !behindLive ? null : at);
     await engine.setRate(rate);
+    // Keep the play state across the reopen: on the web, media_kit swaps its
+    // <video> element and the new one can come up paused.
+    if (wasPlaying && !engine.playing) {
+      await engine.play();
+    } else if (!wasPlaying && engine.playing) {
+      await engine.pause();
+    }
     _recompute();
     notifyListeners();
   }

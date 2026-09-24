@@ -11,6 +11,10 @@ class FakeEngine implements MediaEngine {
   Duration currentPosition = Duration.zero;
   Duration currentDuration = Duration.zero;
   bool isPlaying = true;
+
+  /// Whether [open] starts playback, as media_kit's `play: true` should.
+  /// The web player sometimes comes up paused after replacing its element.
+  bool playOnOpen = true;
   final _positions = StreamController<Duration>.broadcast();
   final _durations = StreamController<Duration>.broadcast();
   final _playing = StreamController<bool>.broadcast();
@@ -31,7 +35,7 @@ class FakeEngine implements MediaEngine {
   Future<void> open(Uri url, {Duration? start}) async {
     opened.add((url: url, start: start));
     if (start != null) currentPosition = start;
-    isPlaying = true;
+    isPlaying = playOnOpen;
   }
 
   @override
