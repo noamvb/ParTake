@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:parlvu/parlvu.dart';
 
 import '../core/library.dart';
+import '../platform/live_captions.dart';
 import '../ui/open_request.dart';
 import 'caption_index.dart';
 import 'media_engine.dart';
@@ -15,9 +16,19 @@ class PlayerController extends ChangeNotifier {
     required this.source,
     required this.library,
     required this.engine,
+    LiveCaptionFeed? liveCaptions,
     DateTime Function()? now,
     this.saveEvery = const Duration(seconds: 15),
   }) : now = now ?? DateTime.now {
+    if (liveCaptions != null) {
+      _subscriptions.add(
+        liveCaptions.text.listen((value) {
+          if (liveCaptionText == value) return;
+          liveCaptionText = value;
+          notifyListeners();
+        }),
+      );
+    }
     _subscriptions.addAll([
       engine.positionStream.listen(_positionChanged),
       engine.durationStream.listen((_) {
@@ -49,22 +60,36 @@ class PlayerController extends ChangeNotifier {
   AudioLanguage language = AudioLanguage.floor;
   bool captionsOn = true;
   List<SpeakerMark> speakers = [];
+  List<LanguageSwitch> floorSwitches = [];
   bool speakersLoading = false;
   Duration position = Duration.zero;
   Duration duration = Duration.zero;
   bool playing = false;
   double rate = 1;
   Caption? currentCaption;
+  String? liveCaptionText;
   SpeakerMark? currentSpeaker;
   DateTime? _lastSave;
 
   Set<AudioLanguage> get availableLanguages =>
       detail?.streams.map((s) => s.language).toSet() ?? {};
   bool get isLive => stream?.isLive ?? false;
+
+  /// Text for the caption overlay.
+  String? get captionText =>
+      isLive ? (captionsOn ? liveCaptionText : null) : currentCaption?.text;
   bool get behindLive => isLive && duration - position > liveBehindThreshold;
   List<Caption> get _captionList {
     final map = detail?.captions ?? const <AudioLanguage, List<Caption>>{};
-    final wanted = language == AudioLanguage.french
+    final wall = stream == null || detail == null
+        ? null
+        : detail!.wallClockAt(position, stream!);
+    final wanted =
+        language == AudioLanguage.floor &&
+            floorSwitches.isNotEmpty &&
+            wall != null
+        ? floorLanguageAt(floorSwitches, wall) ?? AudioLanguage.english
+        : language == AudioLanguage.french
         ? AudioLanguage.french
         : AudioLanguage.english;
     final preferred = map[wanted];
@@ -115,11 +140,15 @@ class PlayerController extends ChangeNotifier {
 
   Future<void> _loadSpeakers(ListingEvent row, EventDetail loaded) async {
     speakersLoading = true;
+    speakers = [];
+    floorSwitches = [];
     notifyListeners();
     try {
       speakers = await source.speakers(row, loaded);
+      floorSwitches = floorLanguageSwitches(speakers, loaded.captions);
     } catch (_) {
       speakers = [];
+      floorSwitches = [];
     }
     speakersLoading = false;
     _recompute();
@@ -201,7 +230,9 @@ class PlayerController extends ChangeNotifier {
   }
 
   List<CaptionHit> search(String query) {
-    final list = _captionList;
+    final list = language == AudioLanguage.floor
+        ? (detail?.captions[AudioLanguage.english] ?? const <Caption>[])
+        : _captionList;
     return CaptionIndex(list).search(query);
   }
 

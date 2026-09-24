@@ -11,6 +11,8 @@ import 'fake_engine.dart';
 
 import 'package:partake/player/player_screen.dart';
 
+import 'fake_live_captions.dart';
+
 void main() {
   final detail = parseEventPage(
     File('packages/parlvu/test/fixtures/event_fewo_13596766.html')
@@ -224,4 +226,70 @@ void main() {
     tester.view.resetPhysicalSize();
     await tester.pumpWidget(const SizedBox());
   });
+  testWidgets(
+    'live captions display and live caption search explains availability',
+    (tester) async {
+      final live = parseEventPage(
+        File('packages/parlvu/test/fixtures/event_live_hoc143_45729.html')
+            .readAsStringSync(),
+        id: 45729,
+      );
+      final date = DateTime.utc(2026, 9, 24);
+      final liveRow = ListingEvent(
+        id: 45729,
+        foreignKey: null,
+        title: 'HoC Sitting No. 143',
+        description: '',
+        location: '',
+        scheduledStart: date,
+        scheduledEnd: null,
+        actualStart: null,
+        actualEnd: null,
+        status: EventStatus.live,
+        statusCode: 1,
+        statusText: '',
+      );
+      final feed = FakeLiveCaptions();
+      final e = FakeEngine();
+      await tester.pumpWidget(
+        MaterialApp(
+          home: PlayerScreen(
+            request: OpenRequest(
+              eventId: 45729,
+              title: liveRow.title,
+              eventDate: date,
+              event: liveRow,
+            ),
+            source: FakeEventSource(
+              details: {45729: live},
+              days: {
+                date: [liveRow],
+              },
+            ),
+            library: FakeLibrary(),
+            engineFactory: () => e,
+            liveCaptionsFactory: () => feed,
+            videoBuilder: (_) => const ColoredBox(color: Colors.black),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+      feed.emit('Honourable Member.');
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Honourable Member.'), findsOneWidget);
+      await tester.tap(find.text('Search'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Caption search is available once the sitting is archived.'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Live captions come with English or French audio.'),
+        findsOneWidget,
+      );
+      await tester.pumpWidget(const SizedBox());
+      feed.dispose();
+    },
+  );
 }

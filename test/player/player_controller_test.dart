@@ -5,10 +5,12 @@ import 'package:parlvu/parlvu.dart';
 import 'package:partake/core/library.dart';
 import 'package:partake/player/caption_index.dart';
 import 'package:partake/player/player_controller.dart';
+import 'package:partake/platform/live_captions.dart';
 import 'package:partake/ui/open_request.dart';
 
 import '../fakes.dart';
 import 'fake_engine.dart';
+import 'fake_live_captions.dart';
 
 void main() {
   final detail = parseEventPage(
@@ -45,10 +47,53 @@ void main() {
     event: event,
     resumeAt: resume,
   );
+  Future<(PlayerController, FakeLiveCaptions)> openedLive({
+    bool captions = true,
+  }) async {
+    final liveDetail = parseEventPage(
+      File('packages/parlvu/test/fixtures/event_live_hoc143_45729.html')
+          .readAsStringSync(),
+      id: 45729,
+    );
+    final liveDate = DateTime.utc(2026, 9, 24);
+    final liveRow = ListingEvent(
+      id: 45729,
+      foreignKey: null,
+      title: 'HoC Sitting No. 143',
+      description: '',
+      location: '',
+      scheduledStart: liveDate,
+      scheduledEnd: null,
+      actualStart: null,
+      actualEnd: null,
+      status: EventStatus.live,
+      statusCode: 1,
+      statusText: '',
+    );
+    final feed = FakeLiveCaptions();
+    final c = PlayerController(
+      source: FakeEventSource(details: {45729: liveDetail}),
+      library: FakeLibrary(),
+      engine: FakeEngine(),
+      liveCaptions: feed,
+    );
+    await c.open(
+      OpenRequest(
+        eventId: 45729,
+        title: liveRow.title,
+        eventDate: liveDate,
+        event: liveRow,
+      ),
+    );
+    c.setCaptions(captions);
+    return (c, feed);
+  }
+
   Future<(PlayerController, FakeEngine, FakeLibrary, FakeEventSource)> opened({
     AudioLanguage lang = AudioLanguage.floor,
     Duration? resume,
     ListingEvent? event,
+    LiveCaptionFeed? liveCaptions,
   }) async {
     final lib = FakeLibrary();
     if (lang != AudioLanguage.floor) {
@@ -56,7 +101,12 @@ void main() {
     }
     final eng = FakeEngine();
     final src = source();
-    final c = PlayerController(source: src, library: lib, engine: eng);
+    final c = PlayerController(
+      source: src,
+      library: lib,
+      engine: eng,
+      liveCaptions: liveCaptions,
+    );
     await c.open(request(event: event, resume: resume));
     await Future<void>.delayed(Duration.zero);
     return (c, eng, lib, src);
@@ -73,6 +123,109 @@ void main() {
     expect(c.captionsOn, true);
     await c.close();
   });
+  test('live caption feed drives overlay text and clears it', () async {
+    final (c, feed) = await openedLive();
+    feed.emit('Honourable Member.');
+    await Future<void>.delayed(Duration.zero);
+    expect(c.captionText, 'Honourable Member.');
+    feed.emit(null);
+    await Future<void>.delayed(Duration.zero);
+    expect(c.captionText, isNull);
+    await c.close();
+    feed.dispose();
+  });
+  test('live caption feed is hidden when captions are off', () async {
+    final (c, feed) = await openedLive(captions: false);
+    feed.emit('Honourable Member.');
+    await Future<void>.delayed(Duration.zero);
+    expect(c.captionText, isNull);
+    await c.close();
+    feed.dispose();
+  });
+  test(
+    'archived caption text comes from page captions instead of feed',
+    () async {
+      final feed = FakeLiveCaptions();
+      final (c, _, _, _) = await opened(liveCaptions: feed);
+      final at = c.detail!.offsetOf(
+        parliamentTime('2026-09-23T16:30:44'),
+        c.stream!,
+      );
+      await c.seek(at);
+      feed.emit('Live feed text');
+      await Future<void>.delayed(Duration.zero);
+      expect(c.captionText, c.currentCaption?.text);
+      await c.close();
+      feed.dispose();
+    },
+  );
+  test(
+    'Floor captions follow paragraph language at the current wall clock',
+    () async {
+      final w1 = detail.recordingStart.add(const Duration(seconds: 100));
+      final w2 = detail.recordingStart.add(const Duration(seconds: 140));
+      Caption cap(DateTime at, String text) => Caption(
+        begin: at,
+        end: at.add(const Duration(seconds: 5)),
+        text: text,
+      );
+      final customDetail = EventDetail(
+        id: detail.id,
+        recordingStart: detail.recordingStart,
+        streams: detail.streams,
+        captions: {
+          AudioLanguage.english: [cap(w1, 'English floor line')],
+          AudioLanguage.french: [cap(w2, 'Ligne française')],
+        },
+      );
+      Speech speech(AudioLanguage lang, String en, String fr) => Speech(
+        bucketTime: w1,
+        speaker: 'A',
+        politicianUrl: null,
+        textEn: en,
+        procedural: false,
+        url: '/a/',
+        paragraphs: [SpeechParagraph(language: lang, textEn: en, textFr: fr)],
+      );
+      final marks = [
+        SpeakerMark(
+          speech: speech(AudioLanguage.english, 'english opening', ''),
+          wallClock: w1.subtract(const Duration(seconds: 10)),
+          source: MarkSource.interpolated,
+        ),
+        SpeakerMark(
+          speech: speech(AudioLanguage.french, '', 'ouverture française'),
+          wallClock: w1.add(const Duration(seconds: 10)),
+          source: MarkSource.interpolated,
+        ),
+      ];
+      final src = FakeEventSource(
+        details: {45750: customDetail},
+        speakerMarks: {45750: marks},
+      );
+      final eng = FakeEngine();
+      final c = PlayerController(
+        source: src,
+        library: FakeLibrary(),
+        engine: eng,
+      );
+      await c.open(request(event: row));
+      await Future<void>.delayed(Duration.zero);
+      expect(c.floorSwitches.last.language, AudioLanguage.french);
+      final stream = c.stream!;
+      eng.emitPosition(customDetail.offsetOf(w1, stream));
+      await Future<void>.delayed(Duration.zero);
+      expect(c.currentCaption!.text, 'English floor line');
+      eng.emitPosition(customDetail.offsetOf(w2, stream));
+      await Future<void>.delayed(Duration.zero);
+      expect(c.currentCaption!.text, 'Ligne française');
+      await c.setLanguage(AudioLanguage.english);
+      eng.emitPosition(customDetail.offsetOf(w2, c.stream!));
+      await Future<void>.delayed(Duration.zero);
+      expect(c.currentCaption, isNull);
+      await c.close();
+    },
+  );
   test('opens preferred English video', () async {
     final (c, e, _, _) = await opened(lang: AudioLanguage.english);
     expect(

@@ -9,6 +9,7 @@ import 'package:parlvu/parlvu.dart';
 import '../core/library.dart';
 import '../platform/background_audio.dart';
 import '../platform/pip.dart';
+import '../platform/live_captions.dart';
 import '../ui/open_request.dart';
 import 'media_engine.dart';
 import 'player_controller.dart';
@@ -25,6 +26,7 @@ class PlayerScreen extends StatefulWidget {
     this.videoBuilder,
     this.audioHandler,
     this.pip,
+    this.liveCaptionsFactory = createLiveCaptionFeed,
   });
   final OpenRequest request;
   final EventSource source;
@@ -33,6 +35,7 @@ class PlayerScreen extends StatefulWidget {
   final PlayerVideoBuilder? videoBuilder;
   final PartakeAudioHandler? audioHandler;
   final PipControl? pip;
+  final LiveCaptionFeed Function()? liveCaptionsFactory;
   @override
   State<PlayerScreen> createState() => _PlayerScreenState();
 }
@@ -41,6 +44,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     with SingleTickerProviderStateMixin {
   late final MediaEngine engine;
   late final PlayerController controller;
+  late final LiveCaptionFeed _liveCaptions;
   final search = TextEditingController();
   late final TabController _tabs;
   StreamSubscription<bool>? _pipSubscription;
@@ -52,10 +56,13 @@ class _PlayerScreenState extends State<PlayerScreen>
     super.initState();
     _tabs = TabController(length: 2, vsync: this);
     engine = widget.engineFactory?.call() ?? MediaKitEngine();
+    _liveCaptions =
+        widget.liveCaptionsFactory?.call() ?? createLiveCaptionFeed();
     controller = PlayerController(
       source: widget.source,
       library: widget.library,
       engine: engine,
+      liveCaptions: _liveCaptions,
     )..addListener(_changed);
     widget.audioHandler?.attach(controller, title: widget.request.title);
     // Android shrinks the whole activity into the PiP window, so the screen
@@ -95,6 +102,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     widget.audioHandler?.detach(controller);
     controller.removeListener(_changed);
     unawaited(controller.close());
+    _liveCaptions.dispose();
     _tabs.dispose();
     search.dispose();
     super.dispose();
@@ -126,7 +134,7 @@ class _PlayerScreenState extends State<PlayerScreen>
         fit: StackFit.expand,
         children: [
           child,
-          if (controller.currentCaption != null)
+          if (controller.captionText != null)
             Align(
               alignment: Alignment.bottomCenter,
               child: Container(
@@ -137,7 +145,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                 ),
                 color: Colors.black.withValues(alpha: .7),
                 child: Text(
-                  controller.currentCaption!.text,
+                  controller.captionText!,
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white, fontSize: 18),
                 ),
@@ -299,6 +307,21 @@ class _PlayerScreenState extends State<PlayerScreen>
         controller.detail!.captions.values.every(
           (captions) => captions.isEmpty,
         )) {
+      if (controller.isLive) {
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Caption search is available once the sitting is archived.',
+              ),
+              if (controller.language == AudioLanguage.floor &&
+                  controller.captionsOn)
+                const Text('Live captions come with English or French audio.'),
+            ],
+          ),
+        );
+      }
       return const Center(child: Text('No captions for this event.'));
     }
     return Column(
