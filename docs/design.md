@@ -94,9 +94,11 @@ inline JS holding:
 - `AgendaTree` and `Speakers`: present in the model but empty in every sample
   checked (2019, 2022, 2026). Do not rely on them.
 - Live status: `meetingStatus > 0` means live; the player has a live-rewind mode.
+  The listing's live status comes from `GetUpcomingEvents` (see the live test
+  findings below).
 
-**Video.** HLS, H.264 + AAC, 10 s MPEG-TS segments, single 854x480 rendition
-observed. No DRM, no tokens or signed URLs. The CDN returns
+**Video.** HLS, H.264 + AAC, 10 s MPEG-TS segments, one rendition per
+stream (854x480 on the VOD samples; live HD streams are 1920x1080). No DRM, no tokens or signed URLs. The CDN returns
 `access-control-allow-origin: *`.
 
 - VOD host: `parlvuvod01.azureedge.net`. Each language is a separate URL
@@ -155,8 +157,45 @@ Simulated on ETHI meeting 49: 25 of 108 speeches matched exactly; all
 hand-checked anchors land exactly. Short speeches ("I have a point of order")
 are never matched, because they recur and cause false matches.
 
+## Findings from the live test (2026-09-24)
+
+Measured on HoC Sitting No. 143 while it was live; raw evidence in
+`docs/live-test-2026-09-24.md`.
+
+- **Listing**: `GetListViewData` returns only started recordings. Live,
+  in-camera and not-started events come from
+  `GET /Harmony/en/api/Data/GetUpcomingEvents?lastModified=` (empty value, or
+  the 17-digit `yyyyMMddHHmmssfff` of `LastModifiedTime` for a delta), shape
+  `{"ContentEntityDatas": [[row, ...], ...], "LastModifiedTime": ...}` - a
+  list of groups (Outstanding / Today / This week / Upcoming) of listing
+  rows. The app merges it by `Id` for today and later days, upcoming rows
+  winning.
+- **Live event page**: `ccItems:null`, `PreRoll` 0 on every stream, `IsLive`
+  true, `ENDTIME` null. Live audio has its own host (`parlvuaudio02`,
+  `HOC230-Dante-7/WB_Chamber/AL/..`).
+- **DVR window**: a sliding window of 4,680 x 10.01 s segments (46,801 s,
+  about 13 h), `EXT-X-TARGETDURATION:12`, no `EXT-X-PLAYLIST-TYPE`. The
+  chunklist carries `#STARTTIME:` (wall clock of the window start), which on
+  the test day was about 11 h before the sitting started: position 0 is not
+  the sitting start. Live wall-clock offset = wall clock - chunklist
+  `#STARTTIME`, not `STARTTIME` + `PreRoll`. Nothing in the app uses live
+  offsets today (no captions list, no speakers, no resume while live).
+- **Live playback**: hls.js opens a live stream 34-44 s behind the edge.
+  Seeking to the exact edge stalls (3.5 s); 12 s short stalls repeatedly;
+  36 s short (three segments) plays cleanly. "Go live" lands 36 s short and
+  shows only when more than 60 s behind.
+- **Live captions**: CEA-608 inside the English and French video segments
+  (`EnableCC:true`), exposed by hls.js as text track `CC1`. The Floor streams
+  carry none (`EnableCC:false`). Captions exist only for segments the player
+  has loaded, so there is no caption search while live.
+- **Spoken language**: openparliament paragraphs carry
+  `data-originallang="en|fr"` (from Hansard's `<FloorLanguage>`); captions
+  carry interpreter markers (`[Speaking in French]`, `Voice of Interpretor`,
+  `[End of Interpretation]`, `(voix de l'interprète)`). Research run
+  `20260924-123105-agy-60116`.
+
 ## Open questions
 
-1. DVR window length on live streams: measure it from a live manifest during a
-   sitting. Live hosts: `parlvuvideo02` (chamber) and `parlvuvideo04`
-   (committees), failover `01` / `03`.
+1. ~~DVR window length on live streams~~ Answered 2026-09-24: about 13 h,
+   sliding (see above). Committee live hosts (`parlvuvideo04`, failover `03`)
+   not yet measured.
