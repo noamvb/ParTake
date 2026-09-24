@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'core/library.dart';
+import 'platform/background_audio.dart';
+import 'platform/pip.dart';
 import 'player/player_screen.dart';
 import 'ui/app_shell.dart';
 import 'ui/open_request.dart';
@@ -16,6 +18,7 @@ class PartakeApp extends StatefulWidget {
     this.playerBuilder,
     this.now,
     this.openRequests,
+    this.audioHandler,
   });
 
   final EventSource source;
@@ -25,6 +28,7 @@ class PartakeApp extends StatefulWidget {
 
   /// Requests to open from outside the UI (tapped alert notifications).
   final Stream<OpenRequest>? openRequests;
+  final PartakeAudioHandler? audioHandler;
 
   @override
   State<PartakeApp> createState() => _PartakeAppState();
@@ -48,6 +52,8 @@ class _PartakeAppState extends State<PartakeApp> {
               request: request,
               source: widget.source,
               library: widget.library,
+              audioHandler: widget.audioHandler,
+              pip: createPipControl(),
             ),
       ),
     );

@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'alerts/alert_runtime.dart';
 import 'app.dart';
+import 'platform/background_audio.dart';
 import 'services/parlvu_event_source.dart';
 import 'services/prefs_library.dart';
 import 'ui/open_request.dart';
@@ -33,12 +34,14 @@ Future<void> main() async {
 
   await AlertRuntime.initialize();
   AlertRuntime.tappedEventIds.listen((id) => opens.add(fromAlert(id)));
+  final audioHandler = await initBackgroundAudio();
 
   runApp(
     PartakeApp(
       source: source,
       library: PrefsLibrary(prefs),
       openRequests: opens.stream,
+      audioHandler: audioHandler,
     ),
   );
 

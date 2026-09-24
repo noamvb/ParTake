@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:parlvu/parlvu.dart';
 
 import '../core/library.dart';
+import '../platform/background_audio.dart';
+import '../platform/pip.dart';
 import '../ui/open_request.dart';
 import 'media_engine.dart';
 import 'player_controller.dart';
@@ -20,12 +23,16 @@ class PlayerScreen extends StatefulWidget {
     required this.library,
     this.engineFactory,
     this.videoBuilder,
+    this.audioHandler,
+    this.pip,
   });
   final OpenRequest request;
   final EventSource source;
   final Library library;
   final MediaEngine Function()? engineFactory;
   final PlayerVideoBuilder? videoBuilder;
+  final PartakeAudioHandler? audioHandler;
+  final PipControl? pip;
   @override
   State<PlayerScreen> createState() => _PlayerScreenState();
 }
@@ -36,6 +43,9 @@ class _PlayerScreenState extends State<PlayerScreen>
   late final PlayerController controller;
   final search = TextEditingController();
   late final TabController _tabs;
+  StreamSubscription<bool>? _pipSubscription;
+  bool _pipActive = false;
+  bool _autoPip = false;
   static const rates = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
   @override
   void initState() {
@@ -47,15 +57,42 @@ class _PlayerScreenState extends State<PlayerScreen>
       library: widget.library,
       engine: engine,
     )..addListener(_changed);
+    widget.audioHandler?.attach(controller, title: widget.request.title);
+    // Android shrinks the whole activity into the PiP window, so the screen
+    // collapses to the video. A browser pops only the <video> out; the page
+    // stays as it is.
+    if (widget.pip?.available == true && !kIsWeb) {
+      _pipSubscription = widget.pip!.active.listen((active) {
+        if (mounted) setState(() => _pipActive = active);
+      });
+    }
     unawaited(controller.open(widget.request));
   }
 
   void _changed() {
+    _syncAutoEnter();
     if (mounted) setState(() {});
+  }
+
+  void _syncAutoEnter() {
+    final pip = widget.pip;
+    if (pip?.available != true) return;
+    final shouldAutoEnter =
+        controller.playing &&
+        controller.stream != null &&
+        !controller.stream!.audioOnly;
+    if (_autoPip == shouldAutoEnter) return;
+    _autoPip = shouldAutoEnter;
+    unawaited(pip!.setAutoEnter(shouldAutoEnter));
   }
 
   @override
   void dispose() {
+    if (widget.pip?.available == true) {
+      unawaited(widget.pip!.setAutoEnter(false));
+    }
+    unawaited(_pipSubscription?.cancel());
+    widget.audioHandler?.detach(controller);
     controller.removeListener(_changed);
     unawaited(controller.close());
     _tabs.dispose();
@@ -158,6 +195,12 @@ class _PlayerScreenState extends State<PlayerScreen>
               : Icons.closed_caption_off,
         ),
       ),
+      if (widget.pip?.available == true)
+        _button(
+          'Picture in picture',
+          Icons.picture_in_picture_alt,
+          widget.pip!.enter,
+        ),
       PopupMenuButton<double>(
         tooltip: 'Speed',
         onSelected: controller.setRate,
@@ -283,6 +326,7 @@ class _PlayerScreenState extends State<PlayerScreen>
   }
 
   Widget _body() {
+    if (_pipActive) return SizedBox.expand(child: Center(child: _video()));
     if (controller.phase == PlayerPhase.loading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -333,35 +377,39 @@ class _PlayerScreenState extends State<PlayerScreen>
   }
 
   @override
-  Widget build(BuildContext context) => CallbackShortcuts(
-    bindings: {
-      const SingleActivator(LogicalKeyboardKey.keyC): () =>
-          controller.setCaptions(!controller.captionsOn),
-      const SingleActivator(LogicalKeyboardKey.keyJ): () =>
-          unawaited(controller.seekRelative(const Duration(seconds: -30))),
-      const SingleActivator(LogicalKeyboardKey.keyL): () =>
-          unawaited(controller.seekRelative(const Duration(seconds: 30))),
-      const SingleActivator(LogicalKeyboardKey.keyK): () =>
-          unawaited(controller.togglePlay()),
-      const SingleActivator(LogicalKeyboardKey.bracketLeft): () =>
-          _stepRate(-1),
-      const SingleActivator(LogicalKeyboardKey.bracketRight): () =>
-          _stepRate(1),
-    },
-    child: Focus(
-      autofocus: true,
-      child: Scaffold(
-        appBar: AppBar(
-          toolbarHeight: 44,
-          title: Text(
-            controller.event?.title ?? widget.request.title,
-            overflow: TextOverflow.ellipsis,
+  Widget build(BuildContext context) {
+    if (_pipActive) return SizedBox.expand(child: Center(child: _video()));
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.keyC): () =>
+            controller.setCaptions(!controller.captionsOn),
+        const SingleActivator(LogicalKeyboardKey.keyJ): () =>
+            unawaited(controller.seekRelative(const Duration(seconds: -30))),
+        const SingleActivator(LogicalKeyboardKey.keyL): () =>
+            unawaited(controller.seekRelative(const Duration(seconds: 30))),
+        const SingleActivator(LogicalKeyboardKey.keyK): () =>
+            unawaited(controller.togglePlay()),
+        const SingleActivator(LogicalKeyboardKey.bracketLeft): () =>
+            _stepRate(-1),
+        const SingleActivator(LogicalKeyboardKey.bracketRight): () =>
+            _stepRate(1),
+      },
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          appBar: AppBar(
+            toolbarHeight: 44,
+            title: Text(
+              controller.event?.title ?? widget.request.title,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
+          body: _body(),
         ),
-        body: _body(),
       ),
-    ),
-  );
+    );
+  }
+
   void _stepRate(int delta) {
     final i = rates.indexOf(controller.rate);
     final n = (i + delta).clamp(0, rates.length - 1);

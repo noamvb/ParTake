@@ -32,7 +32,7 @@ official branding or present itself as a House of Commons product.
 | Default audio | Floor. English / French interpretation switchable per video. |
 | Captions | On by default, toggleable. Source: ParlVU `ccItems`. |
 | Background audio | Yes (Android media session; a browser tab keeps playing in the background). |
-| Picture-in-picture | Yes. Android native PiP; on the web, whatever PiP the browser itself offers (ParTake adds none). |
+| Picture-in-picture | Yes. Android native PiP; on the web, a PiP button where the browser supports it (Chrome, Edge, Safari). Android auto-enters PiP on leaving the app while video (not audio-only) plays. |
 | Live DVR | Pause, rewind and "go to live" within whatever window the live stream offers. Fall back to live-edge only if the window is tiny. |
 | Speaker jumps | Speaker list from Hansard via openparliament.ca, House and committees. Hansard times are 5-minute buckets, so each speech is placed by matching its opening words against the timed captions (see [Speech alignment](#speech-alignment)). Available once Hansard publishes (~next day). |
 | Text search | Search the closed captions of any event, including same-day, and jump to the match. |
