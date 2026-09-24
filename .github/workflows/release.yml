@@ -59,6 +59,8 @@ jobs:
             "$APKSIGNER" verify --print-certs "$apk" > certs.txt 2>&1 || { cat certs.txt; exit 1; }
             grep -E 'certificate (DN|SHA-256)' certs.txt || cat certs.txt
             grep -q 'CN=ParTake' certs.txt || { echo "$apk is not signed with the ParTake release key"; exit 1; }
+            # Resource shrinking once stripped these; without them background audio breaks.
+            "$(dirname "$APKSIGNER")/aapt2" dump resources "$apk" | grep -q 'drawable/audio_service_pause' || { echo "$apk lost audio_service icons to resource shrinking"; exit 1; }
           done
       - uses: softprops/action-gh-release@v2
         with:

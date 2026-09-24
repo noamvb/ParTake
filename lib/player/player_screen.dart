@@ -113,6 +113,9 @@ class _PlayerScreenState extends State<PlayerScreen>
       child = Video(
         controller: _videoController!,
         controls: AdaptiveVideoControls,
+        // media_kit pauses on backgrounding by default, which silences the
+        // background audio the media session is keeping alive.
+        pauseUponEnteringBackgroundMode: false,
       );
     } else {
       child = const SizedBox.expand();

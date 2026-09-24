@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- audio_service looks its notification and media-session icons up by name,
+     so release resource shrinking removes them and every playback-state update
+     then fails ("You must specify an icon resource id to build a CustomAction"),
+     leaving no lock-screen controls and no foreground service. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/audio_service_*" />
