@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:parlvu/parlvu.dart';
+import 'package:partake/core/library.dart';
 import 'package:partake/ui/open_request.dart';
 
 import '../fakes.dart';
@@ -59,6 +60,21 @@ void main() {
     );
   }
 
+  test(
+    'no live caption factory by default, so natively segments are decoded',
+    () {
+      final screen = PlayerScreen(
+        request: OpenRequest(
+          eventId: 45750,
+          title: row.title,
+          eventDate: DateTime.utc(2026, 9, 23),
+        ),
+        source: FakeEventSource(),
+        library: FakeLibrary(),
+      );
+      expect(screen.liveCaptionsFactory, isNull);
+    },
+  );
   testWidgets('responsive layout places panel below and beside video', (
     tester,
   ) async {
@@ -251,6 +267,10 @@ void main() {
       );
       final feed = FakeLiveCaptions();
       final e = FakeEngine();
+      final library = FakeLibrary();
+      await library.updateSettings(
+        const AppSettings(language: AudioLanguage.english),
+      );
       await tester.pumpWidget(
         MaterialApp(
           home: PlayerScreen(
@@ -266,7 +286,7 @@ void main() {
                 date: [liveRow],
               },
             ),
-            library: FakeLibrary(),
+            library: library,
             engineFactory: () => e,
             liveCaptionsFactory: () => feed,
             videoBuilder: (_) => const ColoredBox(color: Colors.black),
@@ -274,6 +294,13 @@ void main() {
         ),
       );
       await tester.pump(const Duration(milliseconds: 50));
+      expect(feed.followed, isNotEmpty);
+      expect(feed.followed.last?.toString(), contains('/VL/EN/Playlist.m3u8'));
+      await tester.tap(find.byTooltip('Audio language'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Floor').last);
+      await tester.pumpAndSettle();
+      expect(feed.followed.last, isNull);
       feed.emit('Honourable Member.');
       await tester.pump();
       await tester.pump();

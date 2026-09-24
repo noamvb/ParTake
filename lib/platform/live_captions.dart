@@ -8,4 +8,8 @@ abstract class LiveCaptionFeed {
   void dispose();
 }
 
+abstract class FollowsCaptionStream {
+  void follow(Uri? url);
+}
+
 LiveCaptionFeed createLiveCaptionFeed() => platform.createLiveCaptionFeed();

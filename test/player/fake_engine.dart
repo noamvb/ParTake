@@ -11,6 +11,7 @@ class FakeEngine implements MediaEngine {
   Duration currentPosition = Duration.zero;
   Duration currentDuration = Duration.zero;
   bool isPlaying = true;
+  double? clock;
 
   /// Whether [open] starts playback, as media_kit's `play: true` should.
   /// The web player sometimes comes up paused after replacing its element.
@@ -60,6 +61,8 @@ class FakeEngine implements MediaEngine {
 
   @override
   Future<void> setRate(double r) async => rates.add(r);
+  @override
+  Future<double?> mediaClock() async => clock;
   @override
   Duration get position => currentPosition;
   @override

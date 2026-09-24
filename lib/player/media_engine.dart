@@ -12,6 +12,7 @@ abstract class MediaEngine {
   Duration get position;
   Duration get duration;
   bool get playing;
+  Future<double?> mediaClock();
   Stream<Duration> get positionStream;
   Stream<Duration> get durationStream;
   Stream<bool> get playingStream;
@@ -73,6 +74,19 @@ class MediaKitEngine implements MediaEngine {
   Duration get duration => player.state.duration;
   @override
   bool get playing => player.state.playing;
+  @override
+  Future<double?> mediaClock() async {
+    if (kIsWeb) return null;
+    final native = player.platform as NativePlayer;
+    final values = await Future.wait([
+      native.getProperty('time-pos'),
+      native.getProperty('demuxer-start-time'),
+    ]);
+    final position = double.tryParse(values[0]);
+    final start = double.tryParse(values[1]);
+    return position == null || start == null ? null : position + start;
+  }
+
   @override
   Stream<Duration> get positionStream => player.stream.position;
   @override

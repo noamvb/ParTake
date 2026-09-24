@@ -13,6 +13,7 @@ import '../platform/live_captions.dart';
 import '../ui/open_request.dart';
 import 'media_engine.dart';
 import 'player_controller.dart';
+import 'segment_captions.dart';
 
 typedef PlayerVideoBuilder = Widget Function(MediaEngine engine);
 
@@ -26,7 +27,7 @@ class PlayerScreen extends StatefulWidget {
     this.videoBuilder,
     this.audioHandler,
     this.pip,
-    this.liveCaptionsFactory = createLiveCaptionFeed,
+    this.liveCaptionsFactory,
   });
   final OpenRequest request;
   final EventSource source;
@@ -39,6 +40,12 @@ class PlayerScreen extends StatefulWidget {
   @override
   State<PlayerScreen> createState() => _PlayerScreenState();
 }
+
+/// The live caption source when none is injected: the web reads the <video>
+/// element's caption track; natively ParTake decodes the SD segments itself
+/// (media_kit's Android mpv has no CEA-608 decoder).
+LiveCaptionFeed defaultLiveCaptionFeed(MediaEngine engine) =>
+    kIsWeb ? createLiveCaptionFeed() : SegmentCaptionFeed(engine: engine);
 
 class _PlayerScreenState extends State<PlayerScreen>
     with SingleTickerProviderStateMixin {
@@ -57,7 +64,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     _tabs = TabController(length: 2, vsync: this);
     engine = widget.engineFactory?.call() ?? MediaKitEngine();
     _liveCaptions =
-        widget.liveCaptionsFactory?.call() ?? createLiveCaptionFeed();
+        widget.liveCaptionsFactory?.call() ?? defaultLiveCaptionFeed(engine);
     controller = PlayerController(
       source: widget.source,
       library: widget.library,
@@ -77,9 +84,33 @@ class _PlayerScreenState extends State<PlayerScreen>
   }
 
   void _changed() {
+    final feed = _liveCaptions;
+    if (feed is FollowsCaptionStream) {
+      final stream = controller.detail?.streams.where(
+        (s) =>
+            s.language == controller.language &&
+            s.isSd &&
+            !s.audioOnly &&
+            s.isLive,
+      );
+      final url =
+          controller.isLive &&
+              controller.captionsOn &&
+              controller.language != AudioLanguage.floor &&
+              stream != null &&
+              stream.isNotEmpty
+          ? stream.first.url
+          : null;
+      if (url != _followedCaptionUrl) {
+        _followedCaptionUrl = url;
+        (feed as FollowsCaptionStream).follow(url);
+      }
+    }
     _syncAutoEnter();
     if (mounted) setState(() {});
   }
+
+  Uri? _followedCaptionUrl;
 
   void _syncAutoEnter() {
     final pip = widget.pip;
