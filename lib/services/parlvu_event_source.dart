@@ -60,7 +60,11 @@ class ParlVuEventSource implements EventSource {
             _now().difference(existing.fetchedAt) < ttl)) {
       return existing.value ?? await existing.future;
     }
-    final future = parlvu.eventsBetween(date, date);
+    final future = parlvu.eventsBetween(
+      date,
+      date,
+      includeUpcoming: !date.isBefore(today),
+    );
     final entry = (
       fetchedAt: _now(),
       future: future,

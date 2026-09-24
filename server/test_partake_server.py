@@ -11,6 +11,7 @@ from server.partake_server import allowed_proxy_path, make_server
 
 LISTING = "/Harmony/en/api/Data/GetListViewData?categoryId=-1&fromDate=20260923&endDate=20260923&searchTime=&searchForward=true&order=asc"
 EVENT = "/Harmony/en/PowerBrowser/PowerBrowserV2/-1/-1/45806"
+UPCOMING = "/Harmony/en/api/Data/GetUpcomingEvents?lastModified="
 
 
 class FakeUpstreamHandler(BaseHTTPRequestHandler):
@@ -22,6 +23,10 @@ class FakeUpstreamHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             body = b'{"Weeks": []}'
+        elif self.path.startswith("/Harmony/en/api/Data/GetUpcomingEvents"):
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            body = b'{"ContentEntityDatas": []}'
         elif self.path == EVENT:
             self.send_response(200)
             self.send_header("Content-Type", "text/html")
@@ -113,10 +118,22 @@ class PartakeServerTests(unittest.TestCase):
         status, _headers, body = self.request("/parlvu" + EVENT)
         self.assertEqual((status, body), (200, b"<html>event</html>"))
 
+    def test_upcoming_events_are_proxied(self):
+        status, _headers, body = self.request("/parlvu" + UPCOMING)
+        self.assertEqual((status, body), (200, b'{"ContentEntityDatas": []}'))
+        self.assertEqual(FakeUpstreamHandler.records[0][0], UPCOMING)
+
     def test_allowed_proxy_paths(self):
         cases = [
             (LISTING, True),
             (EVENT, True),
+            ("/Harmony/en/api/Data/GetUpcomingEvents?lastModified=", True),
+            ("/Harmony/en/api/Data/GetUpcomingEvents?lastModified=20260924161128080", True),
+            ("/Harmony/en/api/Data/GetUpcomingEvents", False),
+            ("/Harmony/en/api/Data/GetUpcomingEvents?lastModified=abc", False),
+            ("/Harmony/en/api/Data/GetUpcomingEvents?lastModified=2026092416112808", False),
+            ("/Harmony/en/api/Data/GetUpcomingEvents?lastModified=&x=1", False),
+            ("/Harmony/en/api/Data/GetUpcomingEvents?lastModified=&lastModified=", False),
             ("/Harmony/en/api/Data/GetCategoryList", False),
             (EVENT + "?x=1", False),
             ("/Harmony/en/PowerBrowser/PowerBrowserV2/-1/-1/abc", False),

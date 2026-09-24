@@ -117,7 +117,11 @@ Future<void> _syncNow() async {
   final tomorrow = today.add(const Duration(days: 1));
   final client = ParlVuClient();
   try {
-    final events = await client.eventsBetween(today, tomorrow);
+    final events = await client.eventsBetween(
+      today,
+      tomorrow,
+      includeUpcoming: true,
+    );
     final prefs = await _freshPrefs();
     final follows = (prefs.getStringList('follows') ?? <String>[]).toSet();
     final notified = _readIds(prefs.getStringList(AlertRuntime.notifiedKey));
@@ -170,7 +174,11 @@ Future<void> _checkAlarm(int id, Map<String, dynamic> params) async {
   final today = parliamentDate(now);
   final client = ParlVuClient();
   try {
-    final events = await client.eventsBetween(today, today);
+    final events = await client.eventsBetween(
+      today,
+      today,
+      includeUpcoming: true,
+    );
     ListingEvent? row;
     for (final event in events) {
       if (event.id == id) {

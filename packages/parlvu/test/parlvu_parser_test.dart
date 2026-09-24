@@ -22,6 +22,18 @@ void main() {
       45774,
     ]);
   });
+  test('parses upcoming groups and live rows', () {
+    final events = parseUpcoming(fixture('upcoming_20260924.json'));
+    expect(events, hasLength(25));
+    final live = events.singleWhere((event) => event.id == 45729);
+    expect(live.status, EventStatus.live);
+    expect(live.title, 'HoC Sitting No. 143');
+  });
+  test('rejects malformed upcoming groups', () {
+    for (final body in ['{"ContentEntityDatas":[{"Id":1}]}', '{"Weeks":[]}']) {
+      expect(() => parseUpcoming(body), throwsA(isA<ParlVuFormatException>()));
+    }
+  });
   test('maps chamber listing fields', () {
     final event = parseListing(fixture('listing_20260923.json')).first;
     expect(event.title, 'HoC Sitting No. 142');
@@ -160,6 +172,17 @@ void main() {
       ).preferredStream(AudioLanguage.english)!.tag,
       'English Audio',
     );
+  });
+  test('parses a live page whose ccItems is null', () {
+    final detail = parseEventPage(
+      fixture('event_live_hoc143_45729.html'),
+      id: 45729,
+    );
+    expect(detail.captions, isEmpty);
+    expect(detail.streams, hasLength(9));
+    expect(detail.streams.every((s) => s.isLive), isTrue);
+    expect(detail.streams.every((s) => s.preRoll == Duration.zero), isTrue);
+    expect(detail.recordingStart, parliamentTime('2026-09-24T10:08:25'));
   });
   test('names unavailable page data in format errors', () {
     final html = fixture('event_fewo_13596766.html');

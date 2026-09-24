@@ -18,6 +18,7 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 USER_AGENT = "ParTake/0.1 (+https://github.com/noamvb/ParTake; personal, non-commercial)"
 LISTING_PATH = "/Harmony/en/api/Data/GetListViewData"
+UPCOMING_PATH = "/Harmony/en/api/Data/GetUpcomingEvents"
 EVENT_RE = re.compile(r"^/Harmony/en/PowerBrowser/PowerBrowserV2/-1/-1/[0-9]+$")
 QUERY_KEYS = {"categoryId", "fromDate", "endDate", "searchTime", "searchForward", "order"}
 MAX_CACHE_ENTRIES = 64
@@ -26,7 +27,7 @@ CACHE_SECONDS = 30
 
 
 def allowed_proxy_path(path_and_query: str) -> bool:
-    """Return whether a path and query match one of the two ParlVU routes."""
+    """Return whether a path and query match one of the three ParlVU routes."""
     parts = urlsplit(path_and_query)
     path = unquote(parts.path)
     if parts.scheme or parts.netloc or not path.startswith("/") or path.startswith("//") or "\\" in path:
@@ -47,6 +48,14 @@ def allowed_proxy_path(path_and_query: str) -> bool:
             if key in values and any(not re.fullmatch(r"[0-9]{8}", value) for value in values[key]):
                 return False
         return True
+    if path == UPCOMING_PATH:
+        try:
+            pairs = parse_qsl(parts.query, keep_blank_values=True, strict_parsing=True)
+        except ValueError:
+            return False
+        return len(pairs) == 1 and pairs[0][0] == "lastModified" and (
+            pairs[0][1] == "" or re.fullmatch(r"[0-9]{17}", pairs[0][1]) is not None
+        )
     return not parts.query and bool(EVENT_RE.fullmatch(path))
 
 

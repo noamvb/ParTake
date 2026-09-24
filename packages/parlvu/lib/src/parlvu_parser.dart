@@ -21,14 +21,73 @@ DateTime _time(Object? value, String input, String field) {
 DateTime? _optionalTime(Object? value, String input, String field) =>
     value == null ? null : _time(value, input, field);
 
-List<ListingEvent> parseListing(String body) {
+ListingEvent _parseListingRow(Object? value, String input) {
+  if (value is! Map<String, dynamic>) {
+    _bad('listing row must be an object', input);
+  }
+  final row = value;
+  for (final field in ['Id', 'Title', 'ScheduledStart', 'EntityStatus']) {
+    if (!row.containsKey(field)) {
+      _bad('listing row is missing $field', jsonEncode(row));
+    }
+  }
+  if (row['Id'] is! int ||
+      row['Title'] is! String ||
+      row['EntityStatus'] is! int) {
+    _bad('listing row has a field with the wrong type', jsonEncode(row));
+  }
+  for (final field in ['Description', 'Location', 'EntityStatusDesc']) {
+    final v = row[field];
+    if (v != null && v is! String) {
+      _bad('$field must be a string', jsonEncode(row));
+    }
+  }
+  final code = row['EntityStatus'] as int;
+  final fk = row['ForeignKey'];
+  if (fk != null && fk is! String) {
+    _bad('ForeignKey must be a string', jsonEncode(row));
+  }
+  return ListingEvent(
+    id: row['Id'] as int,
+    foreignKey: fk as String?,
+    title: row['Title'] as String,
+    description: (row['Description'] as String?) ?? '',
+    location: (row['Location'] as String?) ?? '',
+    scheduledStart: _time(
+      row['ScheduledStart'],
+      jsonEncode(row),
+      'ScheduledStart',
+    ),
+    scheduledEnd: _optionalTime(
+      row['ScheduledEnd'],
+      jsonEncode(row),
+      'ScheduledEnd',
+    ),
+    actualStart: _optionalTime(
+      row['ActualStart'],
+      jsonEncode(row),
+      'ActualStart',
+    ),
+    actualEnd: _optionalTime(row['ActualEnd'], jsonEncode(row), 'ActualEnd'),
+    status: EventStatus.fromCode(code),
+    statusCode: code,
+    statusText: (row['EntityStatusDesc'] as String?) ?? '',
+  );
+}
+
+Object? _decodeObject(String body, String label) {
   Object? decoded;
   try {
     decoded = jsonDecode(body);
   } on FormatException {
-    _bad('listing is not valid JSON', body);
+    _bad('$label is not valid JSON', body);
   }
-  if (decoded is! Map<String, dynamic>) _bad('listing must be an object', body);
+  if (decoded is! Map<String, dynamic>) _bad('$label must be an object', body);
+  return decoded;
+}
+
+List<ListingEvent> parseListing(String body) {
+  final decoded = _decodeObject(body, 'listing') as Map<String, dynamic>;
   final weeks = decoded['Weeks'];
   if (weeks is! List) _bad('Weeks must be a list', body);
   final result = <ListingEvent>[];
@@ -37,71 +96,32 @@ List<ListingEvent> parseListing(String body) {
       _bad('ContentEntityDatas must be a list', body);
     }
     for (final row in week['ContentEntityDatas'] as List) {
-      if (row is! Map<String, dynamic>) {
-        _bad('listing row must be an object', body);
-      }
-      for (final field in ['Id', 'Title', 'ScheduledStart', 'EntityStatus']) {
-        if (!row.containsKey(field)) {
-          _bad('listing row is missing $field', jsonEncode(row));
-        }
-      }
-      if (row['Id'] is! int ||
-          row['Title'] is! String ||
-          row['EntityStatus'] is! int) {
-        _bad('listing row has a field with the wrong type', jsonEncode(row));
-      }
-      for (final field in ['Description', 'Location', 'EntityStatusDesc']) {
-        final v = row[field];
-        if (v != null && v is! String) {
-          _bad('$field must be a string', jsonEncode(row));
-        }
-      }
-      final code = row['EntityStatus'] as int;
-      final fk = row['ForeignKey'];
-      if (fk != null && fk is! String) {
-        _bad('ForeignKey must be a string', jsonEncode(row));
-      }
-      result.add(
-        ListingEvent(
-          id: row['Id'] as int,
-          foreignKey: fk as String?,
-          title: row['Title'] as String,
-          description: (row['Description'] as String?) ?? '',
-          location: (row['Location'] as String?) ?? '',
-          scheduledStart: _time(
-            row['ScheduledStart'],
-            jsonEncode(row),
-            'ScheduledStart',
-          ),
-          scheduledEnd: _optionalTime(
-            row['ScheduledEnd'],
-            jsonEncode(row),
-            'ScheduledEnd',
-          ),
-          actualStart: _optionalTime(
-            row['ActualStart'],
-            jsonEncode(row),
-            'ActualStart',
-          ),
-          actualEnd: _optionalTime(
-            row['ActualEnd'],
-            jsonEncode(row),
-            'ActualEnd',
-          ),
-          status: EventStatus.fromCode(code),
-          statusCode: code,
-          statusText: (row['EntityStatusDesc'] as String?) ?? '',
-        ),
-      );
+      result.add(_parseListingRow(row, body));
     }
   }
   return result;
 }
 
-String _jsonAt(String input, int start, String piece) {
+List<ListingEvent> parseUpcoming(String body) {
+  final decoded = _decodeObject(body, 'upcoming') as Map<String, dynamic>;
+  final groups = decoded['ContentEntityDatas'];
+  if (groups is! List || groups.any((group) => group is! List)) {
+    _bad('ContentEntityDatas must be a list of groups', body);
+  }
+  final result = <ListingEvent>[];
+  for (final group in groups) {
+    for (final row in group as List) {
+      result.add(_parseListingRow(row, body));
+    }
+  }
+  return result;
+}
+
+String _jsonAt(String input, int start, String piece, {bool nullable = false}) {
   while (start < input.length && input[start].trim().isEmpty) {
     start++;
   }
+  if (nullable && input.startsWith('null', start)) return 'null';
   if (start >= input.length || (input[start] != '{' && input[start] != '[')) {
     _bad('$piece value is missing', input);
   }
@@ -132,7 +152,13 @@ String _jsonAt(String input, int start, String piece) {
   _bad('$piece value is incomplete', input);
 }
 
-Object? _embedded(String html, String marker, String piece, String nextMarker) {
+Object? _embedded(
+  String html,
+  String marker,
+  String piece,
+  String nextMarker, {
+  bool nullable = false,
+}) {
   final at = html.indexOf(marker);
   if (at < 0 || html.indexOf(marker, at + marker.length) >= 0) {
     _bad('$piece marker is missing or ambiguous', html);
@@ -140,7 +166,7 @@ Object? _embedded(String html, String marker, String piece, String nextMarker) {
   final start = at + marker.length;
   String raw;
   try {
-    raw = _jsonAt(html, start, piece);
+    raw = _jsonAt(html, start, piece, nullable: nullable);
     return jsonDecode(raw);
   } on ParlVuFormatException {
     rethrow;
@@ -166,8 +192,12 @@ EventDetail parseEventPage(String html, {required int id}) {
   final timestamp = start is Map ? start['timestamp'] : null;
   if (timestamp == null) _bad('STARTTIME is missing', html);
   final recordingStart = _time(timestamp, html, 'STARTTIME');
-  final ccValue = _embedded(html, '\tccItems:', 'ccItems', '');
-  if (ccValue is! Map<String, dynamic>) _bad('ccItems must be an object', html);
+  // Live pages carry `ccItems:null`: live captions are CEA-608 inside the
+  // video segments, not in the page.
+  final ccValue = _embedded(html, '\tccItems:', 'ccItems', '', nullable: true);
+  if (ccValue != null && ccValue is! Map<String, dynamic>) {
+    _bad('ccItems must be an object', html);
+  }
   final streams = <StreamVariant>[];
   for (final value in streamsValue) {
     if (value is! Map<String, dynamic>) {
@@ -211,7 +241,8 @@ EventDetail parseEventPage(String html, {required int id}) {
     (AudioLanguage.english, 'en'),
     (AudioLanguage.french, 'fr'),
   ]) {
-    final value = ccValue[entry.$2];
+    if (ccValue == null) break;
+    final value = (ccValue as Map<String, dynamic>)[entry.$2];
     if (value == null) continue;
     if (value is! List) _bad('ccItems ${entry.$2} must be a list', html);
     if (value.isEmpty) continue;

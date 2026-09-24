@@ -19,7 +19,10 @@ void main() {
       var now = t0, requests = 0;
       final source = ParlVuEventSource(
         parlvu: ParlVuClient(
-          httpClient: MockClient((_) async {
+          httpClient: MockClient((request) async {
+            if (request.url.path.endsWith('GetUpcomingEvents')) {
+              return http.Response('{"ContentEntityDatas":[]}', 200);
+            }
             requests++;
             return http.Response(fixture('listing_20260923.json'), 200);
           }),
@@ -49,6 +52,9 @@ void main() {
       final source = ParlVuEventSource(
         parlvu: ParlVuClient(
           httpClient: MockClient((request) async {
+            if (request.url.path.endsWith('GetUpcomingEvents')) {
+              return http.Response('{"ContentEntityDatas":[]}', 200);
+            }
             requests++;
             if (request.url.queryParameters['fromDate'] == '20260926') {
               return pending!.future;
@@ -87,7 +93,14 @@ void main() {
     final body = jsonEncode(listing);
     final source = ParlVuEventSource(
       parlvu: ParlVuClient(
-        httpClient: MockClient((_) async => http.Response(body, 200)),
+        httpClient: MockClient(
+          (request) async => http.Response(
+            request.url.path.endsWith('GetUpcomingEvents')
+                ? '{"ContentEntityDatas":[]}'
+                : body,
+            200,
+          ),
+        ),
       ),
       openParliament: OpenParliamentClient(
         httpClient: MockClient((_) async => http.Response('{}', 200)),
@@ -102,6 +115,61 @@ void main() {
       isTrue,
     );
     expect(live.map((event) => event.id), [45728, 45801]);
+  });
+
+  test('liveNow loads live ids from the upcoming endpoint', () async {
+    final requests = <String>{};
+    final source = ParlVuEventSource(
+      parlvu: ParlVuClient(
+        httpClient: MockClient((request) async {
+          requests.add(request.url.path);
+          return http.Response.bytes(
+            utf8.encode(
+              fixture(
+                request.url.path.endsWith('GetUpcomingEvents')
+                    ? 'upcoming_20260924.json'
+                    : 'listing_20260924.json',
+              ),
+            ),
+            200,
+          );
+        }),
+      ),
+      openParliament: OpenParliamentClient(
+        httpClient: MockClient((_) async => http.Response('{}', 200)),
+      ),
+      now: () => DateTime.utc(2026, 9, 24, 16),
+    );
+    final live = await source.liveNow();
+    expect(live.map((event) => event.id).toSet(), {45729, 45772});
+    expect(
+      requests,
+      containsAll([
+        '/Harmony/en/api/Data/GetListViewData',
+        '/Harmony/en/api/Data/GetUpcomingEvents',
+      ]),
+    );
+  });
+
+  test('past day does not request upcoming events', () async {
+    final paths = <String>[];
+    final source = ParlVuEventSource(
+      parlvu: ParlVuClient(
+        httpClient: MockClient((request) async {
+          paths.add(request.url.path);
+          return http.Response.bytes(
+            utf8.encode(fixture('listing_20260923.json')),
+            200,
+          );
+        }),
+      ),
+      openParliament: OpenParliamentClient(
+        httpClient: MockClient((_) async => http.Response('{}', 200)),
+      ),
+      now: () => DateTime.utc(2026, 9, 24, 16),
+    );
+    await source.day(DateTime.utc(2026, 9, 23));
+    expect(paths, ['/Harmony/en/api/Data/GetListViewData']);
   });
 
   test('detail is cached and live streams expire after 30 seconds', () async {
