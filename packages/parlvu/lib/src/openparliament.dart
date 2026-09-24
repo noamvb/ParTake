@@ -51,6 +51,12 @@ SpeechPage parseSpeechPage(String body) {
           speaker: item['attribution']['en'] as String,
           politicianUrl: item['politician_url'] as String?,
           textEn: _plainText(item['content']['en'] as String),
+          paragraphs: _speechParagraphs(
+            item['content']['en'] as String,
+            item['content']['fr'] is String
+                ? item['content']['fr'] as String
+                : '',
+          ),
           procedural: item['procedural'] == true,
           url: item['url'] as String,
         ),
@@ -62,6 +68,73 @@ SpeechPage parseSpeechPage(String body) {
   final pagination = decoded['pagination'];
   final next = pagination is Map ? pagination['next_url'] : null;
   return SpeechPage(speeches, next is String ? next : null);
+}
+
+class _HtmlParagraph {
+  const _HtmlParagraph(this.id, this.language, this.text);
+  final String? id;
+  final AudioLanguage? language;
+  final String text;
+}
+
+List<SpeechParagraph> _speechParagraphs(String htmlEn, String htmlFr) {
+  List<_HtmlParagraph> parse(String html) =>
+      RegExp(
+        r'<p\b([^>]*)>(.*?)</p\s*>',
+        caseSensitive: false,
+        dotAll: true,
+      ).allMatches(html).map((match) {
+        final attrs = match.group(1)!;
+        final id = RegExp(
+          r'''\bdata-hocid\s*=\s*["'](\d+)["']''',
+          caseSensitive: false,
+        ).firstMatch(attrs)?.group(1);
+        final lang = RegExp(
+          r'''\bdata-originallang\s*=\s*["'](en|fr)["']''',
+          caseSensitive: false,
+        ).firstMatch(attrs)?.group(1)?.toLowerCase();
+        return _HtmlParagraph(
+          id,
+          lang == null ? null : AudioLanguage.fromCode(lang),
+          _plainText(match.group(2)!),
+        );
+      }).toList();
+
+  final en = parse(htmlEn);
+  final fr = parse(htmlFr);
+  final frById = <String, int>{};
+  for (var i = 0; i < fr.length; i++) {
+    final id = fr[i].id;
+    if (id != null) frById[id] = i;
+  }
+  final usedFr = <int>{};
+  final result = <SpeechParagraph>[];
+  for (var i = 0; i < en.length; i++) {
+    final e = en[i];
+    int? j;
+    if (e.id == null || (i < fr.length && fr[i].id == null)) {
+      if (i < fr.length && !usedFr.contains(i)) j = i;
+    } else {
+      j = frById[e.id];
+    }
+    if (j != null) usedFr.add(j);
+    final f = j == null ? null : fr[j];
+    result.add(
+      SpeechParagraph(
+        language: e.language ?? f?.language,
+        textEn: e.text,
+        textFr: f?.text ?? '',
+      ),
+    );
+  }
+  for (var i = 0; i < fr.length; i++) {
+    if (usedFr.contains(i)) continue;
+    final f = fr[i];
+    result.add(
+      SpeechParagraph(language: f.language, textEn: '', textFr: f.text),
+    );
+  }
+  return result;
 }
 
 String _plainText(String html) {

@@ -204,6 +204,18 @@ class EventDetail {
 }
 
 /// One speech from openparliament.ca.
+class SpeechParagraph {
+  const SpeechParagraph({
+    required this.language,
+    required this.textEn,
+    required this.textFr,
+  });
+
+  final AudioLanguage? language;
+  final String textEn;
+  final String textFr;
+}
+
 class Speech {
   const Speech({
     required this.bucketTime,
@@ -212,6 +224,7 @@ class Speech {
     required this.textEn,
     required this.procedural,
     required this.url,
+    this.paragraphs = const [],
   });
 
   /// The speech's `time`, UTC. openparliament.ca publishes Hansard's
@@ -231,6 +244,9 @@ class Speech {
 
   /// openparliament.ca path of the speech, e.g. `/committees/ethics/45-1/49/the-chair-1/`.
   final String url;
+
+  /// Paired Hansard paragraphs in their source order when available.
+  final List<SpeechParagraph> paragraphs;
 }
 
 /// How a [SpeakerMark]'s time was found.

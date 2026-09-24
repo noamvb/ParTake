@@ -50,6 +50,47 @@ void main() {
     expect(page.speeches.single.textEn, "Fish & chips' <b> next");
   });
 
+  test('parses ETHI 49 paragraph languages and paired text', () {
+    final speeches = parseSpeechPage(fixture('op_speeches_ethi49_p1.json'))
+        .speeches;
+    // URLs identify the source_id 13595381 and 13595409 fixture records.
+    final lapointe = speeches.singleWhere(
+      (s) => s.url.endsWith('/linda-lapointe-3/'),
+    );
+    final chair = speeches.singleWhere((s) => s.url.endsWith('/the-chair-23/'));
+    expect(lapointe.paragraphs, hasLength(2));
+    expect(
+      lapointe.paragraphs.map((p) => p.language),
+      everyElement(AudioLanguage.french),
+    );
+    expect(
+      lapointe.paragraphs.first.textFr,
+      startsWith("Monsieur le président, j'invoque le Règlement."),
+    );
+    expect(chair.paragraphs, hasLength(3));
+    expect(chair.paragraphs.map((p) => p.language), [
+      AudioLanguage.french,
+      AudioLanguage.english,
+      AudioLanguage.english,
+    ]);
+    expect(chair.paragraphs.first.textEn, 'Thank you, Mr. Hardy.');
+  });
+
+  test('counts ETHI 49 paragraph languages across both pages', () {
+    final paragraphs = [
+      ...parseSpeechPage(fixture('op_speeches_ethi49_p1.json')).speeches,
+      ...parseSpeechPage(fixture('op_speeches_ethi49_p2.json')).speeches,
+    ].expand((s) => s.paragraphs);
+    expect(
+      paragraphs.where((p) => p.language == AudioLanguage.english).length,
+      251,
+    );
+    expect(
+      paragraphs.where((p) => p.language == AudioLanguage.french).length,
+      126,
+    );
+  });
+
   test('rejects malformed and incomplete speech pages', () {
     expect(
       () => parseSpeechPage('<html>'),
