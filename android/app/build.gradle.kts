@@ -16,7 +16,6 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "io.github.noamvb.partake"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
@@ -30,11 +29,28 @@ android {
         versionName = flutter.versionName
     }
 
+    // Release signing comes from the environment (CI secrets, or a local
+    // export pointing at ~/.config/partake/). Every release must use the same
+    // key or Android refuses the update; without it, builds use the debug key.
+    val releaseKeystore = System.getenv("PARTAKE_KEYSTORE_PATH")
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storePassword = System.getenv("PARTAKE_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("PARTAKE_KEY_ALIAS")
+                keyPassword = System.getenv("PARTAKE_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (releaseKeystore != null) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

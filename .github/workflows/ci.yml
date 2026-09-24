@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+          cache: true
+      - name: parlvu package
+        working-directory: packages/parlvu
+        run: |
+          dart pub get
+          dart format --output=none --set-exit-if-changed lib test
+          dart analyze --fatal-infos
+          dart test
+      - name: app
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+      - name: home server
+        run: python3 -m unittest server/test_partake_server.py -v
