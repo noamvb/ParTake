@@ -51,9 +51,15 @@ jobs:
           ls -la dist
       - name: Verify signature
         run: |
+          ls "$ANDROID_HOME/build-tools/"
           APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
-          "$APKSIGNER" verify --print-certs dist/partake-*-arm64-v8a.apk | grep -E 'Signer #1 certificate (DN|SHA-256)'
-          "$APKSIGNER" verify --print-certs dist/partake-*-arm64-v8a.apk | grep -q 'CN=ParTake' || { echo "APK not signed with the ParTake release key"; exit 1; }
+          echo "apksigner: $APKSIGNER"
+          for apk in dist/*.apk; do
+            echo "== $apk"
+            "$APKSIGNER" verify --print-certs "$apk" > certs.txt 2>&1 || { cat certs.txt; exit 1; }
+            grep -E 'Signer #1 certificate (DN|SHA-256)' certs.txt || cat certs.txt
+            grep -q 'CN=ParTake' certs.txt || { echo "$apk is not signed with the ParTake release key"; exit 1; }
+          done
       - uses: softprops/action-gh-release@v2
         with:
           files: dist/*
