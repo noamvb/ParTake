@@ -55,6 +55,45 @@ void main() {
     feed.dispose();
   });
 
+  test('whole-window playback fetches segments at the playhead', () async {
+    final paths = <String>[];
+    final client = MockClient((request) async {
+      paths.add(request.url.path);
+      if (request.url.path.endsWith('Playlist.m3u8')) {
+        return http.Response(
+          '#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=1\nchunklist.m3u8\n',
+          200,
+        );
+      }
+      if (request.url.path.endsWith('chunklist.m3u8')) {
+        return http.Response(
+          playlist(10).replaceFirst(
+            '#EXT-X-MEDIA-SEQUENCE:1\n',
+            '#EXT-X-MEDIA-SEQUENCE:1\n#STARTTIME:2026-09-24T08:00:00Z\n',
+          ),
+          200,
+        );
+      }
+      return http.Response.bytes(fixture, 200);
+    });
+    // The playhead is 25 s into a window that starts 20 s before the SD
+    // playlist's: 08:00:05, inside s1 (08:00:00-08:00:10.01).
+    final engine = FakeEngine()
+      ..windowStart = DateTime.utc(2026, 9, 24, 7, 59, 40)
+      ..currentPosition = const Duration(seconds: 25);
+    final feed = SegmentCaptionFeed(
+      engine: engine,
+      client: client,
+      pollEvery: const Duration(hours: 1),
+      tickEvery: const Duration(hours: 1),
+    );
+    feed.follow(Uri.parse(master));
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    final segments = paths.where((p) => p.endsWith('.ts')).toList();
+    expect(segments, ['/VL/EN/s1.ts', '/VL/EN/s2.ts', '/VL/EN/s3.ts']);
+    feed.dispose();
+  });
+
   test('selects decoded caption by raw media clock', () async {
     final decoder = Cea608Decoder();
     final changes = <CaptionChange>[];

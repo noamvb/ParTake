@@ -32,6 +32,7 @@ class SegmentCaptionFeed implements LiveCaptionFeed, FollowsCaptionStream {
   bool _disposed = false;
   bool _polling = false;
   bool _hasPolled = false;
+  int? _lastIndex;
   int _generation = 0;
   String? _emitted;
 
@@ -53,6 +54,7 @@ class SegmentCaptionFeed implements LiveCaptionFeed, FollowsCaptionStream {
     _seen.clear();
     _decoder = Cea608Decoder();
     _hasPolled = false;
+    _lastIndex = null;
     _emitted = null;
     _text.add(null);
     if (sdMasterUrl == null) return;
@@ -94,24 +96,35 @@ class SegmentCaptionFeed implements LiveCaptionFeed, FollowsCaptionStream {
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return;
       }
-      final lines = response.body
-          .split(RegExp(r'\r?\n'))
-          .map((s) => s.trim())
-          .toList();
-      final segments = <Uri>[];
-      for (var i = 0; i < lines.length; i++) {
-        final value = lines[i];
-        if (value.isNotEmpty && !value.startsWith('#')) {
-          segments.add(chunklist.resolve(value));
+      final segments = _parseSegments(response.body, chunklist);
+      final anchor = engine.liveWindowStart;
+      final List<_Segment> pending;
+      if (anchor != null &&
+          segments.isNotEmpty &&
+          segments.first.start != null) {
+        // Whole-window playback (Android): fetch the segments around the
+        // playhead, found by wall clock, instead of the newest ones.
+        final wall = anchor.add(engine.position);
+        var at = 0;
+        for (var i = 0; i < segments.length; i++) {
+          if (!segments[i].start!.isAfter(wall)) at = i;
         }
+        final from = at > 0 ? at - 1 : 0;
+        final to = at + 3 < segments.length ? at + 3 : segments.length;
+        pending = segments
+            .sublist(from, to)
+            .where((s) => !_seen.contains(s.uri.toString()))
+            .toList();
+      } else {
+        pending = _hasPolled
+            ? segments.where((s) => !_seen.contains(s.uri.toString())).toList()
+            : segments
+                  .skip(segments.length > 5 ? segments.length - 5 : 0)
+                  .toList();
       }
-      final pending = _hasPolled
-          ? segments.where((u) => !_seen.contains(u.toString())).toList()
-          : segments
-                .skip(segments.length > 5 ? segments.length - 5 : 0)
-                .toList();
       _hasPolled = true;
-      for (final uri in pending) {
+      for (final next in pending) {
+        final uri = next.uri;
         if (_disposed || generation != _generation) return;
         final segment = await _client.get(uri, headers: _headers);
         if (_disposed || generation != _generation) return;
@@ -119,6 +132,12 @@ class SegmentCaptionFeed implements LiveCaptionFeed, FollowsCaptionStream {
           continue;
         }
         _seen.add(uri.toString());
+        // Captions span segments; a decoder fed a segment that does not
+        // follow the last one would join unrelated text.
+        if (_lastIndex != null && next.index != _lastIndex! + 1) {
+          _decoder = Cea608Decoder();
+        }
+        _lastIndex = next.index;
         for (final pair in extractCcPairs(
           Uint8List.fromList(segment.bodyBytes),
         )) {
@@ -144,13 +163,48 @@ class SegmentCaptionFeed implements LiveCaptionFeed, FollowsCaptionStream {
     final clock = await engine.mediaClock();
     if (_disposed || clock == null) return;
     final pts = (clock * 90000).round();
+    // Segments arrive out of order after a seek: take the latest change at
+    // or before the clock, not the last one fetched.
     String? value;
+    int? best;
     for (final change in _changes) {
-      if (_signedDelta(change.pts, pts) <= 0) value = change.text;
+      final delta = _signedDelta(change.pts, pts);
+      if (delta <= 0 && (best == null || delta >= best)) {
+        best = delta;
+        value = change.text;
+      }
     }
     if (value == _emitted) return;
     _emitted = value;
     _text.add(value);
+  }
+
+  /// Segments of media playlist [text], with ParlVU's `#STARTTIME:` wall
+  /// clock, when present, carried forward by `#EXTINF` durations.
+  static List<_Segment> _parseSegments(String text, Uri base) {
+    final out = <_Segment>[];
+    DateTime? wall;
+    var sequence = 0;
+    Duration? length;
+    for (final raw in text.split(RegExp(r'\r?\n'))) {
+      final line = raw.trim();
+      if (line.isEmpty) continue;
+      if (line.startsWith('#STARTTIME:')) {
+        wall = DateTime.tryParse(line.substring(11).trim());
+      } else if (line.startsWith('#EXT-X-MEDIA-SEQUENCE:')) {
+        sequence = int.tryParse(line.substring(22).trim()) ?? 0;
+      } else if (line.startsWith('#EXTINF:')) {
+        final seconds = double.tryParse(line.substring(8).split(',').first);
+        length = seconds == null
+            ? null
+            : Duration(microseconds: (seconds * 1e6).round());
+      } else if (!line.startsWith('#')) {
+        out.add(_Segment(sequence++, base.resolve(line), wall));
+        wall = wall == null || length == null ? null : wall.add(length);
+        length = null;
+      }
+    }
+    return out;
   }
 
   static const _ptsModulus = 1 << 33;
@@ -171,4 +225,11 @@ class SegmentCaptionFeed implements LiveCaptionFeed, FollowsCaptionStream {
     _client.close();
     _text.close();
   }
+}
+
+class _Segment {
+  const _Segment(this.index, this.uri, this.start);
+  final int index;
+  final Uri uri;
+  final DateTime? start;
 }

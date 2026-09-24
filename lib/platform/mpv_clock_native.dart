@@ -11,3 +11,8 @@ Future<double?> readMpvClock(Player player) async {
   final start = double.tryParse(values[1]);
   return position == null || start == null ? null : position + start;
 }
+
+Future<void> setMpvProperty(Player player, String name, String value) async {
+  final native = player.platform;
+  if (native is NativePlayer) await native.setProperty(name, value);
+}
