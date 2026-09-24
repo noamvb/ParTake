@@ -33,7 +33,7 @@ official branding or present itself as a House of Commons product.
 | Background audio | Yes (Android media session; desktop keeps playing when minimised). |
 | Picture-in-picture | Yes. Android native PiP; desktop is an always-on-top mini window. |
 | Live DVR | Pause, rewind and "go to live" within whatever window the live stream offers. Fall back to live-edge only if the window is tiny. |
-| Speaker jumps | Speaker list from Hansard via openparliament.ca, aligned to the video (±~1 min). House sittings confirmed; committees if the data allows. Available once Hansard publishes (~next day). |
+| Speaker jumps | Speaker list from Hansard via openparliament.ca, House and committees. Hansard times are 5-minute buckets, so each speech is placed by matching its opening words against the timed captions (see [Speech alignment](#speech-alignment)). Available once Hansard publishes (~next day). |
 | Text search | Search the closed captions of any event, including same-day, and jump to the match. |
 
 ### App
@@ -113,9 +113,48 @@ minute.
 
 **Archive.** Public web access since 2004-02-02.
 
-## Open questions for the first build
+## Findings from the second research pass (2026-09-23)
 
-1. DVR window length on live streams: measure it from a live manifest.
-2. Whether openparliament.ca committee evidence has per-speech times.
-3. How to open an event whose listing row has `ForeignKey: null`.
-4. Whether `ccItems` is populated for committees as well as the chamber.
+Research run `20260923-213446-agy-64907`, spot-checked by hand; the fixtures in
+`packages/parlvu/test/fixtures/` are the evidence.
+
+- **Listing shape**: `{"NextTime", "PreviousTime", "Weeks": [{"WeekStart",
+  "ContentEntityDatas": [row, ...]}]}`. `EntityStatus`: 0 not started, 1 live,
+  2 paused, -1 ended ("Adjourned"), -3 cancelled, -4 opened, 101 in camera.
+- **Every event opens by `Id`**: `/Harmony/en/PowerBrowser/PowerBrowserV2/-1/-1/{Id}`
+  works for all rows, including `ForeignKey: null`. `?fk={Id}` redirects to
+  `NoEvent`.
+- **Inline JSON**: `var availableStreams = [...];`, `\tEventInfo:{...},` and
+  `\tccItems:{...},` each parse as JSON on their own; the enclosing
+  `var dataModel` does not.
+- **Video offset** = wall clock − `STARTTIME` + `PreRoll` (30 s). The media
+  file name carries the file start (`…_16-30-09_VL.mp4` for STARTTIME
+  16:30:39).
+- **Streams**: per language a `Video`, sometimes a `Video SD`, and an `Audio`
+  variant. Non-televised committees have only `Audio` streams and no captions.
+- **Captions** exist for televised committees as well as the chamber, in
+  English and French, timed in wall clock.
+- **Language switching**: fl/en/fr playlists have identical segment counts and
+  durations (House Sitting 142: 1,855 segments, 18,614.862 s each).
+
+### Speech alignment
+
+openparliament.ca `time` values (House and committees) are Hansard's
+5-minute markers, not speech starts. `alignSpeeches` places each speech in
+two passes:
+
+1. Match: for speeches with at least 8 words, find the first 8 in the English
+   caption word stream within [bucket − 60 s, bucket + 7 min] and not before
+   the previous match; accept 5 of 8 words in order.
+2. Place the rest proportionally through their bucket by word count, clamped
+   between the neighbouring matches.
+
+Simulated on ETHI meeting 49: 25 of 108 speeches matched exactly; all
+hand-checked anchors land exactly. Short speeches ("I have a point of order")
+are never matched, because they recur and cause false matches.
+
+## Open questions
+
+1. DVR window length on live streams: measure it from a live manifest during a
+   sitting. Live hosts: `parlvuvideo02` (chamber) and `parlvuvideo04`
+   (committees), failover `01` / `03`.
