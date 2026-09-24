@@ -4,3 +4,7 @@ library;
 
 export 'src/models.dart';
 export 'src/time.dart';
+export 'src/parlvu_parser.dart';
+export 'src/parlvu_client.dart';
+export 'src/openparliament.dart';
+export 'src/alignment.dart';
