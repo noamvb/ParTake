@@ -41,8 +41,12 @@ jobs:
           PARTAKE_KEY_PASSWORD: ${{ secrets.PARTAKE_KEY_PASSWORD }}
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          flutter build apk --release --split-per-abi --build-name "$VERSION" --build-number "${{ github.run_number }}"
-          flutter build web --release --build-name "$VERSION" --build-number "${{ github.run_number }}"
+          # Split APKs get versionCode = ABI x 1000 + build number (arm64:
+          # 2000 + n). Local test builds on 2026-09-24 put the phone at
+          # arm64 4005, so releases add 3000 to stay above it (arm64 5000+).
+          BUILD=$(( ${{ github.run_number }} + 3000 ))
+          flutter build apk --release --split-per-abi --build-name "$VERSION" --build-number "$BUILD"
+          flutter build web --release --build-name "$VERSION" --build-number "$BUILD"
           mkdir -p dist
           for f in build/app/outputs/flutter-apk/app-*-release.apk; do
             cp "$f" "dist/partake-$VERSION-$(basename "$f" | sed 's/^app-//; s/-release\.apk$//').apk"
@@ -62,6 +66,11 @@ jobs:
             # Resource shrinking once stripped these; without them background audio breaks.
             "$(dirname "$APKSIGNER")/aapt2" dump resources "$apk" | grep -q 'drawable/audio_service_pause' || { echo "$apk lost audio_service icons to resource shrinking"; exit 1; }
           done
+          # The owner's phone has arm64 versionCode 4005 installed; a lower
+          # release can never update it.
+          CODE=$("$(dirname "$APKSIGNER")/aapt2" dump badging dist/*-arm64-v8a.apk | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p")
+          echo "arm64 versionCode: $CODE"
+          [ "$CODE" -gt 4005 ] || { echo "arm64 versionCode $CODE is not above 4005"; exit 1; }
       - uses: softprops/action-gh-release@v2
         with:
           files: dist/*
