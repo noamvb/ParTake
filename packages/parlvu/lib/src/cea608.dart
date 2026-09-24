@@ -96,15 +96,19 @@ List<int>? _section(List<int> bytes) {
   return bytes.length >= total ? bytes.sublist(0, total) : null;
 }
 
-void _readPes(List<int> bytes, List<({CcPair pair, int order})> found,
-    int Function() nextOrder) {
+void _readPes(
+  List<int> bytes,
+  List<({CcPair pair, int order})> found,
+  int Function() nextOrder,
+) {
   if (bytes.length < 9 || bytes[0] != 0 || bytes[1] != 0 || bytes[2] != 1) {
     return;
   }
   final flags = (bytes[7] >> 6) & 3;
   var pts = 0;
   if ((flags & 2) != 0 && bytes.length >= 14) {
-    pts = ((bytes[9] & 0x0e) << 29) |
+    pts =
+        ((bytes[9] & 0x0e) << 29) |
         (bytes[10] << 22) |
         ((bytes[11] & 0xfe) << 14) |
         (bytes[12] << 7) |
@@ -117,7 +121,10 @@ void _readPes(List<int> bytes, List<({CcPair pair, int order})> found,
     if (nal.isEmpty || (nal[0] & 0x1f) != 6) continue;
     final rbsp = <int>[];
     for (var i = 1; i < nal.length; i++) {
-      if (i + 2 < nal.length && nal[i] == 0 && nal[i + 1] == 0 && nal[i + 2] == 3) {
+      if (i + 2 < nal.length &&
+          nal[i] == 0 &&
+          nal[i + 1] == 0 &&
+          nal[i + 2] == 3) {
         rbsp.add(0);
         rbsp.add(0);
         i += 2;
@@ -157,8 +164,11 @@ List<List<int>> _annexBNals(List<int> bytes) {
     if (bytes[i] == 0 && bytes[i + 1] == 0 && bytes[i + 2] == 1) {
       starts.add((i, 3));
       i += 3;
-    } else if (i + 4 <= bytes.length && bytes[i] == 0 && bytes[i + 1] == 0 &&
-        bytes[i + 2] == 0 && bytes[i + 3] == 1) {
+    } else if (i + 4 <= bytes.length &&
+        bytes[i] == 0 &&
+        bytes[i + 1] == 0 &&
+        bytes[i + 2] == 0 &&
+        bytes[i + 3] == 1) {
       starts.add((i, 4));
       i += 4;
     } else {
@@ -167,16 +177,29 @@ List<List<int>> _annexBNals(List<int> bytes) {
   }
   return [
     for (var i = 0; i < starts.length; i++)
-      bytes.sublist(starts[i].$1 + starts[i].$2,
-          i + 1 < starts.length ? starts[i + 1].$1 : bytes.length),
+      bytes.sublist(
+        starts[i].$1 + starts[i].$2,
+        i + 1 < starts.length ? starts[i + 1].$1 : bytes.length,
+      ),
   ];
 }
 
-void _readT35(List<int> data, int pts, List<({CcPair pair, int order})> found,
-    int Function() nextOrder) {
-  if (data.length < 7 || data[0] != 0xb5 || data[1] != 0 || data[2] != 0x31 ||
-      data[3] != 0x47 || data[4] != 0x41 || data[5] != 0x39 || data[6] != 0x34 ||
-      data.length < 10 || data[7] != 3) {
+void _readT35(
+  List<int> data,
+  int pts,
+  List<({CcPair pair, int order})> found,
+  int Function() nextOrder,
+) {
+  if (data.length < 7 ||
+      data[0] != 0xb5 ||
+      data[1] != 0 ||
+      data[2] != 0x31 ||
+      data[3] != 0x47 ||
+      data[4] != 0x41 ||
+      data[5] != 0x39 ||
+      data[6] != 0x34 ||
+      data.length < 10 ||
+      data[7] != 3) {
     return;
   }
   final flags = data[8];
@@ -188,7 +211,10 @@ void _readT35(List<int> data, int pts, List<({CcPair pair, int order})> found,
     if ((header & 4) == 0) continue;
     final ccType = header & 3;
     if (ccType > 1) continue;
-    found.add((pair: CcPair(pts, ccType, data[index + 1], data[index + 2]), order: nextOrder()));
+    found.add((
+      pair: CcPair(pts, ccType, data[index + 1], data[index + 2]),
+      order: nextOrder(),
+    ));
   }
 }
 
@@ -224,8 +250,74 @@ class Cea608Decoder {
       if (!_channel2 && !_textMode) {
         _backspace();
         final chars = b1 == 0x12
-            ? const ['Á', 'É', 'Ó', 'Ú', 'Ü', 'ü', "'", '¡', '*', "'", '—', '©', '℠', '•', '“', '”', 'À', 'Â', 'Ç', 'È', 'Ê', 'Ë', 'ë', 'Î', 'Ï', 'ï', 'Ô', 'Ù', 'ù', 'Û', '«', '»']
-            : const ['Ã', 'ã', 'Í', 'Ì', 'ì', 'Ò', 'ò', 'Õ', 'õ', '{', '}', '\\', '^', '_', '|', '~', 'Ä', 'ä', 'Ö', 'ö', 'ß', '¥', '¤', '│', 'Å', 'å', 'Ø', 'ø', '┌', '┐', '└', '┘'];
+            ? const [
+                'Á',
+                'É',
+                'Ó',
+                'Ú',
+                'Ü',
+                'ü',
+                "'",
+                '¡',
+                '*',
+                "'",
+                '—',
+                '©',
+                '℠',
+                '•',
+                '“',
+                '”',
+                'À',
+                'Â',
+                'Ç',
+                'È',
+                'Ê',
+                'Ë',
+                'ë',
+                'Î',
+                'Ï',
+                'ï',
+                'Ô',
+                'Ù',
+                'ù',
+                'Û',
+                '«',
+                '»',
+              ]
+            : const [
+                'Ã',
+                'ã',
+                'Í',
+                'Ì',
+                'ì',
+                'Ò',
+                'ò',
+                'Õ',
+                'õ',
+                '{',
+                '}',
+                '\\',
+                '^',
+                '_',
+                '|',
+                '~',
+                'Ä',
+                'ä',
+                'Ö',
+                'ö',
+                'ß',
+                '¥',
+                '¤',
+                '│',
+                'Å',
+                'å',
+                'Ø',
+                'ø',
+                '┌',
+                '┐',
+                '└',
+                '┘',
+              ];
         _put(chars[b2 - 0x20]);
       }
       return _changeIfVisible(pts, before);
@@ -251,7 +343,9 @@ class Cea608Decoder {
     if (b1 >= 0x10 && b1 <= 0x17 && b2 >= 0x20 && b2 <= 0x2f) {
       _channel2 = false;
       if ((b1 == 0x14 || b1 == 0x15) && b2 >= 0x20) _command(b2);
-      if (b1 == 0x17 && b2 >= 0x21 && b2 <= 0x23) _column = (_column + b2 - 0x20).clamp(0, 31);
+      if (b1 == 0x17 && b2 >= 0x21 && b2 <= 0x23) {
+        _column = (_column + b2 - 0x20).clamp(0, 31);
+      }
       return _changeIfVisible(pts, before);
     }
     if (b1 >= 0x10 && b1 <= 0x17 && b2 >= 0x40 && b2 <= 0x7f) {
@@ -265,7 +359,28 @@ class Cea608Decoder {
       return _changeIfVisible(pts, before);
     }
     if (b1 == 0x11 && b2 >= 0x30 && b2 <= 0x3f) {
-      if (!_textMode) _put(const ['®', '°', '½', '¿', '™', '¢', '£', '♪', 'à', ' ', 'è', 'â', 'ê', 'î', 'ô', 'û'][b2 - 0x30]);
+      if (!_textMode) {
+        _put(
+          const [
+            '®',
+            '°',
+            '½',
+            '¿',
+            '™',
+            '¢',
+            '£',
+            '♪',
+            'à',
+            ' ',
+            'è',
+            'â',
+            'ê',
+            'î',
+            'ô',
+            'û',
+          ][b2 - 0x30],
+        );
+      }
       return _changeIfVisible(pts, before);
     }
     if ((b1 >= 0x20 && b1 <= 0x7f) || (b2 >= 0x20 && b2 <= 0x7f)) {
@@ -280,26 +395,53 @@ class Cea608Decoder {
 
   void _command(int command) {
     switch (command) {
-      case 0x20: _mode = 'pop'; _rollRows = 0; _textMode = false; break;
-      case 0x21: _backspace(); break;
+      case 0x20:
+        _mode = 'pop';
+        _rollRows = 0;
+        _textMode = false;
+        break;
+      case 0x21:
+        _backspace();
+        break;
       case 0x24:
         for (var c = _column; c < 32; c++) {
           _active()[_row][c] = ' ';
         }
         break;
-      case 0x25: case 0x26: case 0x27:
-        _mode = 'roll'; _rollRows = command - 0x23; _textMode = false; break;
-      case 0x28: break;
-      case 0x29: _mode = 'paint'; _rollRows = 0; _textMode = false; break;
-      case 0x2a: case 0x2b: _textMode = true; break;
-      case 0x2c: _displayed = _grid(); break;
-      case 0x2d: _carriageReturn(); break;
-      case 0x2e: _nonDisplayed = _grid(); break;
+      case 0x25:
+      case 0x26:
+      case 0x27:
+        _mode = 'roll';
+        _rollRows = command - 0x23;
+        _textMode = false;
+        break;
+      case 0x28:
+        break;
+      case 0x29:
+        _mode = 'paint';
+        _rollRows = 0;
+        _textMode = false;
+        break;
+      case 0x2a:
+      case 0x2b:
+        _textMode = true;
+        break;
+      case 0x2c:
+        _displayed = _grid();
+        break;
+      case 0x2d:
+        _carriageReturn();
+        break;
+      case 0x2e:
+        _nonDisplayed = _grid();
+        break;
       case 0x2f:
         final old = _displayed;
         _displayed = _nonDisplayed;
         _nonDisplayed = old;
-        _mode = 'pop'; _rollRows = 0; _textMode = false;
+        _mode = 'pop';
+        _rollRows = 0;
+        _textMode = false;
         break;
     }
   }
@@ -354,8 +496,16 @@ List<List<String>> _grid() => List.generate(15, (_) => List.filled(32, ' '));
 
 String _standardChar(int code) {
   const replacements = {
-    0x2a: 'á', 0x5c: 'é', 0x5e: 'í', 0x5f: 'ó', 0x60: 'ú',
-    0x7b: 'ç', 0x7c: '÷', 0x7d: 'Ñ', 0x7e: 'ñ', 0x7f: '█',
+    0x2a: 'á',
+    0x5c: 'é',
+    0x5e: 'í',
+    0x5f: 'ó',
+    0x60: 'ú',
+    0x7b: 'ç',
+    0x7c: '÷',
+    0x7d: 'Ñ',
+    0x7e: 'ñ',
+    0x7f: '█',
   };
   return replacements[code] ?? String.fromCharCode(code == 0x27 ? 0x27 : code);
 }

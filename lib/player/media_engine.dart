@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:media_kit/media_kit.dart';
 
+import '../platform/mpv_clock.dart';
 import '../platform/video_ready.dart';
 
 abstract class MediaEngine {
@@ -75,17 +76,7 @@ class MediaKitEngine implements MediaEngine {
   @override
   bool get playing => player.state.playing;
   @override
-  Future<double?> mediaClock() async {
-    if (kIsWeb) return null;
-    final native = player.platform as NativePlayer;
-    final values = await Future.wait([
-      native.getProperty('time-pos'),
-      native.getProperty('demuxer-start-time'),
-    ]);
-    final position = double.tryParse(values[0]);
-    final start = double.tryParse(values[1]);
-    return position == null || start == null ? null : position + start;
-  }
+  Future<double?> mediaClock() => readMpvClock(player);
 
   @override
   Stream<Duration> get positionStream => player.stream.position;
