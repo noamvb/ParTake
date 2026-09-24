@@ -1,0 +1,12 @@
+[Unit]
+Description=ParTake home server
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 %h/partake/server/partake_server.py --root %h/partake/web --host 0.0.0.0 --port 8790
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
