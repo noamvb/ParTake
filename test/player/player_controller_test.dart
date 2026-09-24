@@ -176,7 +176,7 @@ void main() {
     },
   );
   test(
-    'live stream does not save and goLive seeks duration when behind',
+    'live stream does not save and goLive seeks just short of the edge',
     () async {
       final live = EventDetail(
         id: 1,
@@ -207,11 +207,15 @@ void main() {
       );
       await c.open(request());
       e.emitDuration(const Duration(seconds: 600));
+      e.emitPosition(const Duration(seconds: 550));
+      await Future<void>.delayed(Duration.zero);
+      expect(c.behindLive, false);
       e.emitPosition(const Duration(seconds: 500));
       await Future<void>.delayed(Duration.zero);
       expect(c.behindLive, true);
       await c.goLive();
-      expect(e.seeks.last, const Duration(seconds: 600));
+      expect(e.seeks.last, const Duration(seconds: 564));
+      expect(c.behindLive, false);
       await c.close();
       expect(lib.record(45750), isNull);
     },

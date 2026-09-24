@@ -61,8 +61,7 @@ class PlayerController extends ChangeNotifier {
   Set<AudioLanguage> get availableLanguages =>
       detail?.streams.map((s) => s.language).toSet() ?? {};
   bool get isLive => stream?.isLive ?? false;
-  bool get behindLive =>
-      isLive && duration - position > const Duration(seconds: 30);
+  bool get behindLive => isLive && duration - position > liveBehindThreshold;
   List<Caption> get _captionList {
     final map = detail?.captions ?? const <AudioLanguage, List<Caption>>{};
     final wanted = language == AudioLanguage.french
@@ -179,7 +178,20 @@ class PlayerController extends ChangeNotifier {
     return seek(target < Duration.zero ? Duration.zero : target);
   }
 
-  Future<void> goLive() => seek(duration);
+  /// How far short of the live edge [goLive] lands. ParlVU publishes 10 s
+  /// segments (target duration 12 s); landing closer than about three of
+  /// them plays into the edge and stalls repeatedly (measured 2026-09-24:
+  /// 3.5 s at the edge, 9 s and 12 s stalls from 12 s short). hls.js itself
+  /// opens a live stream 40-45 s behind.
+  static const liveEdgeMargin = Duration(seconds: 36);
+
+  /// Behind the edge by more than this, the player offers "Go live". Kept
+  /// above hls.js's own live position so a freshly opened stream is "live".
+  static const liveBehindThreshold = Duration(seconds: 60);
+
+  Future<void> goLive() => seek(
+    duration > liveEdgeMargin ? duration - liveEdgeMargin : Duration.zero,
+  );
   Future<void> setRate(double value) async {
     const allowed = [0.75, 1, 1.25, 1.5, 1.75, 2];
     if (!allowed.contains(value)) throw ArgumentError.value(value, 'rate');

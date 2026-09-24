@@ -160,4 +160,68 @@ void main() {
     expect(e.seeks, isNotEmpty);
     await tester.pumpWidget(const SizedBox());
   });
+  testWidgets('live controls stay put when Go live appears', (tester) async {
+    final live = parseEventPage(
+      File('packages/parlvu/test/fixtures/event_live_hoc143_45729.html')
+          .readAsStringSync(),
+      id: 45729,
+    );
+    final date = DateTime.utc(2026, 9, 24);
+    final liveRow = ListingEvent(
+      id: 45729,
+      foreignKey: null,
+      title: 'HoC Sitting No. 143',
+      description: '',
+      location: '',
+      scheduledStart: date,
+      scheduledEnd: null,
+      actualStart: null,
+      actualEnd: null,
+      status: EventStatus.live,
+      statusCode: 1,
+      statusText: '',
+    );
+    final e = FakeEngine();
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PlayerScreen(
+          request: OpenRequest(
+            eventId: 45729,
+            title: liveRow.title,
+            eventDate: date,
+            event: liveRow,
+          ),
+          source: FakeEventSource(
+            details: {45729: live},
+            days: {
+              date: [liveRow],
+            },
+          ),
+          library: FakeLibrary(),
+          engineFactory: () => e,
+          videoBuilder: (_) => const ColoredBox(color: Colors.black),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+    e.emitDuration(const Duration(seconds: 600));
+    e.emitPosition(const Duration(seconds: 595));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('LIVE'), findsOneWidget);
+    expect(find.text('Go live').hitTestable(), findsNothing);
+    final back = tester.getTopLeft(find.byTooltip('Back 30 seconds'));
+    e.emitPosition(const Duration(seconds: 500));
+    await tester.pump();
+    await tester.pump();
+    expect(find.text('Go live').hitTestable(), findsOneWidget);
+    expect(tester.getTopLeft(find.byTooltip('Back 30 seconds')), back);
+    await tester.tap(find.text('Go live'));
+    await tester.pump();
+    expect(e.seeks.last, const Duration(seconds: 564));
+    tester.view.resetPhysicalSize();
+    await tester.pumpWidget(const SizedBox());
+  });
 }

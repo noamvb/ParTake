@@ -217,11 +217,17 @@ class _PlayerScreenState extends State<PlayerScreen>
       ),
       if (controller.isLive) ...[
         const Chip(label: Text('LIVE')),
-        if (controller.behindLive)
-          TextButton(
+        // Always laid out so the centred row does not shift when it appears.
+        Visibility(
+          visible: controller.behindLive,
+          maintainSize: true,
+          maintainAnimation: true,
+          maintainState: true,
+          child: TextButton(
             onPressed: controller.goLive,
             child: const Text('Go live'),
           ),
+        ),
       ],
     ],
   );
