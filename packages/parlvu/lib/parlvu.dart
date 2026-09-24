@@ -1,8 +1,6 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
+/// Unofficial client for ParlVU (House of Commons video) and
+/// openparliament.ca speech times. Not affiliated with the House of Commons.
 library;
 
-export 'src/parlvu_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'src/models.dart';
+export 'src/time.dart';

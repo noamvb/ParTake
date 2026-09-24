@@ -1,5 +1,5 @@
 name: parlvu
-description: A starting point for Dart libraries or applications.
+description: Unofficial client for ParlVU (House of Commons video) and openparliament.ca speech times.
 version: 1.0.0
 # repository: https://github.com/my_org/my_repo
 
@@ -8,6 +8,8 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
+  http: ^1.6.0
+  timezone: ^0.11.1
   # path: ^1.9.0
 
 dev_dependencies:
