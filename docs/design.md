@@ -1,7 +1,8 @@
 # ParTake — design
 
 A personal viewer for ParlVU (https://parlvu.parl.gc.ca), the Canadian House of
-Commons video site, for Windows, macOS and Android. Settled in a design
+Commons video site: a native Android app, plus a web app for Windows and
+macOS browsers served from a home machine. Settled in a design
 interview on 2026-09-23.
 
 Unofficial and non-commercial. The House permits reproduction of its
@@ -22,7 +23,7 @@ official branding or present itself as a House of Commons product.
 | Stack | Flutter, one codebase. `media_kit` (libmpv) for playback, `audio_service` for background audio, `workmanager` / exact alarms for alerts. |
 | Backend | Android: none, scraping on-device. Web: a small Python standard-library server on the Pixelbook (ChromeOS Linux, `ssh pixelbook`) serves the built web app and proxies ParlVU's listing and event pages on the same origin (ParlVU sends no CORS headers). Video (CDN) and openparliament.ca are fetched directly by the browser (both send `access-control-allow-origin: *`). |
 | History / resume | Per device only, no sync. |
-| Distribution | CI builds APK + Windows + macOS artifacts per tag into GitHub Releases. Android updates via Obtainium; desktop checks GitHub Releases on launch and prompts. |
+| Distribution | A `v*` tag makes CI build signed per-ABI APKs plus a web tarball into GitHub Releases. Android updates via Obtainium; the web app is redeployed to the home server. |
 
 ### Player
 
@@ -30,8 +31,8 @@ official branding or present itself as a House of Commons product.
 |---|---|
 | Default audio | Floor. English / French interpretation switchable per video. |
 | Captions | On by default, toggleable. Source: ParlVU `ccItems`. |
-| Background audio | Yes (Android media session; desktop keeps playing when minimised). |
-| Picture-in-picture | Yes. Android native PiP; desktop is an always-on-top mini window. |
+| Background audio | Yes (Android media session; a browser tab keeps playing in the background). |
+| Picture-in-picture | Yes. Android native PiP; on the web, whatever PiP the browser itself offers (ParTake adds none). |
 | Live DVR | Pause, rewind and "go to live" within whatever window the live stream offers. Fall back to live-edge only if the window is tiny. |
 | Speaker jumps | Speaker list from Hansard via openparliament.ca, House and committees. Hansard times are 5-minute buckets, so each speech is placed by matching its opening words against the timed captions (see [Speech alignment](#speech-alignment)). Available once Hansard publishes (~next day). |
 | Text search | Search the closed captions of any event, including same-day, and jump to the match. |
@@ -78,7 +79,8 @@ HESA=901, PACP=904 in the 45th Parliament, 1st session). Row sample:
 
 `ForeignKey` is the event page id (`fk=`), but is sometimes `null`
 (in-progress multi-part meetings, some Question Period sub-rows) while `Id`
-is set. How to resolve those is an open question.
+is set. Resolved: the path form `PowerBrowserV2/-1/-1/{Id}` works for every row
+(see below), so the app always uses `Id`.
 
 **Event page.** `GET /Harmony/en/PowerBrowser/PowerBrowserV2?fk=<id>` embeds
 inline JS holding:
