@@ -1,11 +1,11 @@
 {
-    "name": "partake",
-    "short_name": "partake",
+    "name": "ParTake",
+    "short_name": "ParTake",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Unofficial viewer for ParlVU, House of Commons video.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
