@@ -70,8 +70,12 @@ class ListingEvent {
   /// Raw `EntityStatusDesc`, e.g. `Adjourned`.
   final String statusText;
 
-  /// True for House of Commons chamber sittings (`HoC Sitting No. N`).
-  bool get isChamber => title.startsWith('HoC ');
+  /// True for House of Commons chamber sittings (`HoC Sitting No. N`) and
+  /// their Question Period clips (`Question Period for HoC Sitting No. N`).
+  bool get isChamber => title.contains('HoC Sitting');
+
+  /// True for the Question Period clip ParlVU lists beside a sitting.
+  bool get isQuestionPeriod => title.startsWith('Question Period');
 
   /// Committee acronym from the title (`FEWO`), or null for the chamber.
   String? get committeeCode {

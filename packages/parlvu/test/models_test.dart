@@ -72,5 +72,11 @@ void main() {
     expect(event('HESA Meeting No. 35-2').number, 35);
     expect(event('HoC Sitting No. 142').committeeCode, isNull);
     expect(event('HoC Sitting No. 142').isChamber, isTrue);
+    final qp = event('Question Period for HoC Sitting No. 142');
+    expect(qp.isChamber, isTrue);
+    expect(qp.isQuestionPeriod, isTrue);
+    expect(qp.committeeCode, isNull);
+    expect(qp.number, 142);
+    expect(event('FEWO Meeting No. 47').isQuestionPeriod, isFalse);
   });
 }
