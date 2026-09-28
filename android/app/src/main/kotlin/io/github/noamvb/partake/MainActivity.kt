@@ -10,7 +10,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : AudioServiceActivity() {
     // Set from Dart while a video is playing. Android 12's auto-enter flag
     // only fires on the home gesture; quick-switching to the previous app
-    // (and every leave on Android 8-11) needs the explicit call below.
+    // (and every leave on Android 8-11) needs the explicit calls below.
     private var pipOnLeave = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -29,6 +29,20 @@ class MainActivity : AudioServiceActivity() {
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
+        enterPipIfPlaying()
+    }
+
+    // One UI's quick-switch hands the top spot to the launcher first and then
+    // pauses this activity as a background task, where Android refuses PiP
+    // (auto-enter and explicit alike). Losing the top spot while still
+    // resumed is the last moment PiP is allowed, so enter it then.
+    override fun onTopResumedActivityChanged(isTopResumedActivity: Boolean) {
+        super.onTopResumedActivityChanged(isTopResumedActivity)
+        if (isTopResumedActivity || isInMultiWindowMode || isFinishing) return
+        enterPipIfPlaying()
+    }
+
+    private fun enterPipIfPlaying() {
         if (!pipOnLeave || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         if (isInPictureInPictureMode) return
         try {
