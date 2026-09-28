@@ -12,6 +12,7 @@ class MainActivity : AudioServiceActivity() {
     // only fires on the home gesture; quick-switching to the previous app
     // (and every leave on Android 8-11) needs the explicit calls below.
     private var pipOnLeave = false
+    private var resumed = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -32,13 +33,25 @@ class MainActivity : AudioServiceActivity() {
         enterPipIfPlaying()
     }
 
+    override fun onResume() {
+        super.onResume()
+        resumed = true
+    }
+
+    override fun onPause() {
+        resumed = false
+        super.onPause()
+    }
+
     // One UI's quick-switch hands the top spot to the launcher first and then
     // pauses this activity as a background task, where Android refuses PiP
-    // (auto-enter and explicit alike). Losing the top spot while still
-    // resumed is the last moment PiP is allowed, so enter it then.
-    override fun onTopResumedActivityChanged(isTopResumedActivity: Boolean) {
-        super.onTopResumedActivityChanged(isTopResumedActivity)
-        if (isTopResumedActivity || isInMultiWindowMode || isFinishing) return
+    // (auto-enter and explicit alike), and the app hears nothing in between
+    // except losing window focus. So enter PiP then. Pulling down the
+    // notification shade also takes focus and so also enters PiP; the owner
+    // chose that trade-off on 28 Sep 2026.
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus || !resumed || isInMultiWindowMode || isFinishing) return
         enterPipIfPlaying()
     }
 
