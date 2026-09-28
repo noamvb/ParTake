@@ -2,6 +2,7 @@ package io.github.noamvb.partake
 
 import android.app.PictureInPictureParams
 import android.os.Build
+import android.util.Log
 import android.util.Rational
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -21,6 +22,7 @@ class MainActivity : AudioServiceActivity() {
                 when (call.method) {
                     "setPipOnLeave" -> {
                         pipOnLeave = call.arguments as? Boolean ?: false
+                        Log.i(TAG, "setPipOnLeave $pipOnLeave")
                         result.success(null)
                     }
                     else -> result.notImplemented()
@@ -30,6 +32,7 @@ class MainActivity : AudioServiceActivity() {
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
+        Log.i(TAG, "onUserLeaveHint")
         enterPipIfPlaying()
     }
 
@@ -51,21 +54,33 @@ class MainActivity : AudioServiceActivity() {
     // chose that trade-off on 28 Sep 2026.
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
+        Log.i(
+            TAG,
+            "onWindowFocusChanged hasFocus=$hasFocus resumed=$resumed " +
+                "multiWindow=$isInMultiWindowMode finishing=$isFinishing",
+        )
         if (hasFocus || !resumed || isInMultiWindowMode || isFinishing) return
         enterPipIfPlaying()
     }
 
     private fun enterPipIfPlaying() {
+        Log.i(TAG, "enterPipIfPlaying pipOnLeave=$pipOnLeave inPip=$isInPictureInPictureMode")
         if (!pipOnLeave || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         if (isInPictureInPictureMode) return
         try {
-            enterPictureInPictureMode(
+            val entered = enterPictureInPictureMode(
                 PictureInPictureParams.Builder()
                     .setAspectRatio(Rational(16, 9))
                     .build()
             )
-        } catch (_: IllegalStateException) {
+            Log.i(TAG, "enterPictureInPictureMode returned $entered")
+        } catch (e: IllegalStateException) {
             // The system refused (e.g. PiP disabled for the app in settings).
+            Log.w(TAG, "enterPictureInPictureMode refused", e)
         }
+    }
+
+    private companion object {
+        const val TAG = "PartakePip"
     }
 }
