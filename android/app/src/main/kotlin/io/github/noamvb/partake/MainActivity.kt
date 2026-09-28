@@ -2,18 +2,19 @@ package io.github.noamvb.partake
 
 import android.app.PictureInPictureParams
 import android.os.Build
-import android.util.Log
 import android.util.Rational
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : AudioServiceActivity() {
-    // Set from Dart while a video is playing. Android 12's auto-enter flag
-    // only fires on the home gesture; quick-switching to the previous app
-    // (and every leave on Android 8-11) needs the explicit calls below.
+    // Set from Dart while a video is playing. Android 8-11 has no auto-enter
+    // flag, so leaving the app needs the explicit call below. One UI's
+    // quick-switch cannot be covered: it pauses this activity as a
+    // background task, and every callback (this one, focus loss, top-resumed
+    // loss) arrives only then, when enterPictureInPictureMode returns false.
+    // Verified with logging in v0.2.11 on 28 Sep 2026.
     private var pipOnLeave = false
-    private var resumed = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -22,7 +23,6 @@ class MainActivity : AudioServiceActivity() {
                 when (call.method) {
                     "setPipOnLeave" -> {
                         pipOnLeave = call.arguments as? Boolean ?: false
-                        Log.i(TAG, "setPipOnLeave $pipOnLeave")
                         result.success(null)
                     }
                     else -> result.notImplemented()
@@ -32,55 +32,16 @@ class MainActivity : AudioServiceActivity() {
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        Log.i(TAG, "onUserLeaveHint")
-        enterPipIfPlaying()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        resumed = true
-    }
-
-    override fun onPause() {
-        resumed = false
-        super.onPause()
-    }
-
-    // One UI's quick-switch hands the top spot to the launcher first and then
-    // pauses this activity as a background task, where Android refuses PiP
-    // (auto-enter and explicit alike), and the app hears nothing in between
-    // except losing window focus. So enter PiP then. Pulling down the
-    // notification shade also takes focus and so also enters PiP; the owner
-    // chose that trade-off on 28 Sep 2026.
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        Log.i(
-            TAG,
-            "onWindowFocusChanged hasFocus=$hasFocus resumed=$resumed " +
-                "multiWindow=$isInMultiWindowMode finishing=$isFinishing",
-        )
-        if (hasFocus || !resumed || isInMultiWindowMode || isFinishing) return
-        enterPipIfPlaying()
-    }
-
-    private fun enterPipIfPlaying() {
-        Log.i(TAG, "enterPipIfPlaying pipOnLeave=$pipOnLeave inPip=$isInPictureInPictureMode")
         if (!pipOnLeave || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         if (isInPictureInPictureMode) return
         try {
-            val entered = enterPictureInPictureMode(
+            enterPictureInPictureMode(
                 PictureInPictureParams.Builder()
                     .setAspectRatio(Rational(16, 9))
                     .build()
             )
-            Log.i(TAG, "enterPictureInPictureMode returned $entered")
-        } catch (e: IllegalStateException) {
+        } catch (_: IllegalStateException) {
             // The system refused (e.g. PiP disabled for the app in settings).
-            Log.w(TAG, "enterPictureInPictureMode refused", e)
         }
-    }
-
-    private companion object {
-        const val TAG = "PartakePip"
     }
 }
