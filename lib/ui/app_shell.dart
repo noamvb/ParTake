@@ -15,11 +15,15 @@ class AppShell extends StatefulWidget {
     required this.library,
     required this.onOpen,
     this.now,
+    this.overlay,
+    this.fullscreenOverlay = false,
   });
 
   final EventSource source;
   final Library library;
   final OpenEvent onOpen;
+  final Widget? overlay;
+  final bool fullscreenOverlay;
 
   /// Defaults to [DateTime.now] when null.
   final DateTime Function()? now;
@@ -102,7 +106,7 @@ class _AppShellState extends State<AppShell> {
           )
         : content;
 
-    return Scaffold(
+    final scaffold = Scaffold(
       appBar: AppBar(
         title: const Text('ParTake'),
         actions: [
@@ -113,7 +117,14 @@ class _AppShellState extends State<AppShell> {
           ),
         ],
       ),
-      body: body,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          body,
+          if (widget.overlay != null && !widget.fullscreenOverlay)
+            Positioned(right: 12, bottom: 12, child: widget.overlay!),
+        ],
+      ),
       bottomNavigationBar: wide
           ? null
           : NavigationBar(
@@ -127,6 +138,16 @@ class _AppShellState extends State<AppShell> {
                   ),
               ],
             ),
+    );
+    // Keep the selected tab and browsing state while Android shrinks the
+    // activity into a system PiP window.
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Offstage(offstage: widget.fullscreenOverlay, child: scaffold),
+        if (widget.fullscreenOverlay && widget.overlay != null)
+          Positioned.fill(child: widget.overlay!),
+      ],
     );
   }
 }

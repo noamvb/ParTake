@@ -9,6 +9,7 @@ import 'package:parlvu/parlvu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
+import '../core/library.dart';
 import 'alert_logic.dart';
 
 const _channel = AndroidNotificationChannel(
@@ -114,6 +115,11 @@ Future<void> _syncNow() async {
   await _initializeNotifications();
   final now = DateTime.now().toUtc();
   final today = parliamentDate(now);
+  try {
+    await _syncPm(now);
+  } catch (error) {
+    debugPrint('ParTake alerts: pm itinerary failed: $error');
+  }
   final tomorrow = today.add(const Duration(days: 1));
   final client = ParlVuClient();
   try {
@@ -163,6 +169,10 @@ Future<void> _syncNow() async {
 Future<void> _checkAlarm(int id, Map<String, dynamic> params) async {
   await _initializeNotifications();
   final prefs = await _freshPrefs();
+  if (params['kind'] == 'pmQp') {
+    await _checkPmAlarm(prefs, id, params);
+    return;
+  }
   final notified = _readIds(prefs.getStringList(AlertRuntime.notifiedKey));
   final scheduledValue = params['scheduledStart']?.toString();
   final scheduledStart = DateTime.tryParse(scheduledValue ?? '')?.toUtc();
@@ -273,4 +283,131 @@ Future<SharedPreferences> _freshPrefs() async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.reload();
   return prefs;
+}
+
+const _pmDetails = NotificationDetails(
+  android: AndroidNotificationDetails(
+    'partake_live',
+    'Live proceedings',
+    channelDescription: 'Alerts when followed proceedings go live.',
+    importance: Importance.high,
+    priority: Priority.high,
+    icon: '@mipmap/ic_launcher',
+  ),
+);
+
+String _pmDayKey(DateTime day) => day.toIso8601String().substring(0, 10);
+
+Future<void> _syncPm(DateTime now) async {
+  final prefs = await _freshPrefs();
+  final scheduled = _readIds(prefs.getStringList('alerts.pmScheduled'));
+  if (!(prefs.getStringList('follows') ?? []).contains(pmQuestionPeriodKey)) {
+    for (final id in scheduled) {
+      await AndroidAlarmManager.cancel(id);
+    }
+    await prefs.setStringList('alerts.pmScheduled', []);
+    return;
+  }
+  final client = PmItineraryClient();
+  try {
+    final all = await client.questionPeriods();
+    final notified = (prefs.getStringList('alerts.pmNotified') ?? []).toSet();
+    for (final qp in pmHeadsUps(all, now, notified)) {
+      final id = pmHeadsUpId(qp.day);
+      await _armPm(qp.startsAt, id, {
+        'kind': 'pmQp',
+        'startsAt': qp.startsAt.toIso8601String(),
+      });
+      scheduled.add(id);
+      await prefs.setStringList(
+        'alerts.pmScheduled',
+        scheduled.map((id) => '$id').toList(),
+      );
+      await _notifications.show(
+        id: id,
+        title: 'Carney will attend Question Period',
+        body: pmHeadsUpBody(qp, now),
+        notificationDetails: _pmDetails,
+      );
+      notified.add(_pmDayKey(qp.day));
+      final days = notified.toList()..sort();
+      await prefs.setStringList(
+        'alerts.pmNotified',
+        days.skip(days.length > 60 ? days.length - 60 : 0).toList(),
+      );
+    }
+  } finally {
+    client.close();
+  }
+}
+
+Future<void> _armPm(DateTime at, int id, Map<String, dynamic> params) async {
+  await AndroidAlarmManager.oneShotAt(
+    at,
+    id,
+    alertAlarmCallback,
+    exact: true,
+    wakeup: true,
+    allowWhileIdle: true,
+    rescheduleOnReboot: true,
+    params: params,
+  );
+}
+
+Future<void> _removePmScheduled(SharedPreferences prefs, int id) async {
+  final ids = _readIds(prefs.getStringList('alerts.pmScheduled'))..remove(id);
+  await prefs.setStringList(
+    'alerts.pmScheduled',
+    ids.map((id) => '$id').toList(),
+  );
+}
+
+Future<void> _checkPmAlarm(
+  SharedPreferences prefs,
+  int id,
+  Map<String, dynamic> params,
+) async {
+  final startsAt = DateTime.tryParse(params['startsAt']?.toString() ?? '')
+      ?.toUtc();
+  if (startsAt == null ||
+      !(prefs.getStringList('follows') ?? []).contains(pmQuestionPeriodKey)) {
+    await _removePmScheduled(prefs, id);
+    return;
+  }
+  final now = DateTime.now().toUtc();
+  final today = parliamentDate(now);
+  final dayKey = _pmDayKey(parliamentDate(startsAt));
+  final notified = (prefs.getStringList('alerts.pmLiveNotified') ?? []).toSet();
+  final client = ParlVuClient();
+  try {
+    final events = await client.eventsBetween(
+      today,
+      today,
+      includeUpcoming: true,
+    );
+    final outcome = decidePmCheck(
+      events: events,
+      startsAt: startsAt,
+      now: now,
+      alreadyNotified: notified.contains(dayKey),
+    );
+    if (outcome case NotifyLive(:final event)) {
+      await _notifications.show(
+        id: pmLiveId(parliamentDate(startsAt)),
+        title: 'Carney is in Question Period',
+        body: 'Tap to watch the House live.',
+        notificationDetails: _pmDetails,
+        payload: event.id.toString(),
+      );
+      notified.add(dayKey);
+      await prefs.setStringList('alerts.pmLiveNotified', notified.toList());
+      await _removePmScheduled(prefs, id);
+    } else if (outcome case CheckAgain(:final at)) {
+      await _armPm(at, id, params);
+    } else {
+      await _removePmScheduled(prefs, id);
+    }
+  } finally {
+    client.close();
+  }
 }

@@ -61,6 +61,14 @@ official branding or present itself as a House of Commons product.
 The sync in step 1 also catches events added the same day and rescheduled
 start times.
 
+The optional `PM-QP` follow reads the PMO itinerary RSS at
+`https://www.pm.gc.ca/en/news.rss` during Android sync. It sends one heads-up per
+Ottawa day for attendance within 36 hours, then checks ParlVU's chamber status
+at the published QP time (or 11:15 Friday / 14:15 otherwise), retrying every two
+minutes for up to 30 minutes. A live or paused House event triggers a second
+notification with a watch link. Unfollowing cancels recorded PM alarms on sync;
+feed failures are isolated from ordinary ParlVU alerts.
+
 ## What ParlVU exposes (research, 2026-09-23)
 
 ParlVU is a server-rendered ASP.NET MVC 4 app, "Harmony" by Sliq Media

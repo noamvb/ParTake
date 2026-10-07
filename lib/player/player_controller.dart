@@ -19,6 +19,7 @@ class PlayerController extends ChangeNotifier {
     LiveCaptionFeed? liveCaptions,
     DateTime Function()? now,
     this.saveEvery = const Duration(seconds: 15),
+    this.audioOnlySwapsStream = true,
   }) : now = now ?? DateTime.now {
     if (liveCaptions != null) {
       _subscriptions.add(
@@ -61,6 +62,10 @@ class PlayerController extends ChangeNotifier {
   bool captionsOn = true;
   List<SpeakerMark> speakers = [];
   List<LanguageSwitch> floorSwitches = [];
+
+  /// Floor switches read from the captions' interpretation markers; used
+  /// until Hansard (and with it [floorSwitches]) is published.
+  List<LanguageSwitch> captionSwitches = [];
   bool speakersLoading = false;
   Duration position = Duration.zero;
   Duration duration = Duration.zero;
@@ -75,6 +80,13 @@ class PlayerController extends ChangeNotifier {
       detail?.streams.map((s) => s.language).toSet() ?? {};
   bool get isLive => stream?.isLive ?? false;
 
+  /// Whether [setAudioOnly] switches to the audio-only stream (saving data)
+  /// or only covers the video. The web covers: a browser pauses media_kit's
+  /// <video> element while a reopened audio-only stream leaves it detached.
+  final bool audioOnlySwapsStream;
+  bool _videoCovered = false;
+  bool get audioOnly => _videoCovered || (stream?.audioOnly ?? false);
+
   /// Text for the caption overlay.
   String? get captionText =>
       isLive ? (captionsOn ? liveCaptionText : null) : currentCaption?.text;
@@ -84,11 +96,10 @@ class PlayerController extends ChangeNotifier {
     final wall = stream == null || detail == null
         ? null
         : detail!.wallClockAt(position, stream!);
+    final switches = floorSwitches.isNotEmpty ? floorSwitches : captionSwitches;
     final wanted =
-        language == AudioLanguage.floor &&
-            floorSwitches.isNotEmpty &&
-            wall != null
-        ? floorLanguageAt(floorSwitches, wall) ?? AudioLanguage.english
+        language == AudioLanguage.floor && switches.isNotEmpty && wall != null
+        ? floorLanguageAt(switches, wall) ?? AudioLanguage.english
         : language == AudioLanguage.french
         ? AudioLanguage.french
         : AudioLanguage.english;
@@ -108,6 +119,7 @@ class PlayerController extends ChangeNotifier {
     try {
       final loaded = await source.detail(request.eventId);
       detail = loaded;
+      captionSwitches = captionLanguageSwitches(loaded.captions);
       language = library.settings.language;
       captionsOn = library.settings.captions;
       stream = loaded.preferredStream(language);
@@ -155,15 +167,43 @@ class PlayerController extends ChangeNotifier {
     notifyListeners();
   }
 
+  StreamVariant? _streamFor(AudioLanguage value, bool audio) {
+    final candidates = detail?.streams
+        .where((s) => s.language == value && s.audioOnly == audio)
+        .toList();
+    if (candidates == null || candidates.isEmpty) return null;
+    candidates.sort((a, b) => (a.isSd ? 1 : 0).compareTo(b.isSd ? 1 : 0));
+    return candidates.first;
+  }
+
+  Future<void> setAudioOnly(bool on) async {
+    if (on == audioOnly) return;
+    if (!audioOnlySwapsStream) {
+      _videoCovered = on;
+      notifyListeners();
+      return;
+    }
+    final next = _streamFor(language, on);
+    if (next == null) return;
+    await _reopen(next);
+  }
+
   Future<void> setLanguage(AudioLanguage value) async {
     if (value == language || detail == null) return;
+    final next =
+        _streamFor(value, stream?.audioOnly ?? false) ??
+        detail!.preferredStream(value);
+    if (next == null) return;
+    await _reopen(next);
+  }
+
+  Future<void> _reopen(StreamVariant next) async {
     final at = position;
     final wasPlaying = engine.playing;
-    final next = detail!.preferredStream(value);
-    if (next == null) return;
+    final start = next.isLive && !behindLive ? null : at;
     stream = next;
     language = next.language;
-    await engine.open(next.url, start: next.isLive && !behindLive ? null : at);
+    await engine.open(next.url, start: start);
     await engine.setRate(rate);
     // Keep the play state across the reopen: on the web, media_kit swaps its
     // <video> element and the new one can come up paused.

@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 import 'package:parlvu/parlvu.dart';
 
 import '../core/library.dart';
@@ -13,9 +11,9 @@ import '../platform/live_captions.dart';
 import '../ui/open_request.dart';
 import 'media_engine.dart';
 import 'player_controller.dart';
-import 'segment_captions.dart';
+import 'player_session.dart';
 
-typedef PlayerVideoBuilder = Widget Function(MediaEngine engine);
+export 'player_session.dart' show PlayerVideoBuilder, defaultLiveCaptionFeed;
 
 class PlayerScreen extends StatefulWidget {
   const PlayerScreen({
@@ -28,7 +26,9 @@ class PlayerScreen extends StatefulWidget {
     this.audioHandler,
     this.pip,
     this.liveCaptionsFactory,
+    this.session,
   });
+  final PlayerSession? session;
   final OpenRequest request;
   final EventSource source;
   final Library library;
@@ -41,150 +41,53 @@ class PlayerScreen extends StatefulWidget {
   State<PlayerScreen> createState() => _PlayerScreenState();
 }
 
-/// The live caption source when none is injected: the web reads the <video>
-/// element's caption track; natively ParTake decodes the SD segments itself
-/// (media_kit's Android mpv has no CEA-608 decoder).
-LiveCaptionFeed defaultLiveCaptionFeed(MediaEngine engine) =>
-    kIsWeb ? createLiveCaptionFeed() : SegmentCaptionFeed(engine: engine);
-
 class _PlayerScreenState extends State<PlayerScreen>
     with SingleTickerProviderStateMixin {
-  late final MediaEngine engine;
-  late final PlayerController controller;
-  late final LiveCaptionFeed _liveCaptions;
+  late final PlayerSession session;
+  PlayerController get controller => session.controller;
   final search = TextEditingController();
   late final TabController _tabs;
-  StreamSubscription<bool>? _pipSubscription;
-  bool _pipActive = false;
-  bool _autoPip = false;
   static const rates = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0];
+
   @override
   void initState() {
     super.initState();
     _tabs = TabController(length: 2, vsync: this);
-    engine = widget.engineFactory?.call() ?? MediaKitEngine();
-    _liveCaptions =
-        widget.liveCaptionsFactory?.call() ?? defaultLiveCaptionFeed(engine);
-    controller = PlayerController(
-      source: widget.source,
-      library: widget.library,
-      engine: engine,
-      liveCaptions: _liveCaptions,
-    )..addListener(_changed);
-    widget.audioHandler?.attach(controller, title: widget.request.title);
-    // Android shrinks the whole activity into the PiP window, so the screen
-    // collapses to the video. A browser pops only the <video> out; the page
-    // stays as it is.
-    if (widget.pip?.available == true && !kIsWeb) {
-      _pipSubscription = widget.pip!.active.listen((active) {
-        if (mounted) setState(() => _pipActive = active);
-      });
-    }
-    unawaited(controller.open(widget.request));
+    session =
+        widget.session ??
+        PlayerSession(
+          request: widget.request,
+          source: widget.source,
+          library: widget.library,
+          engineFactory: widget.engineFactory,
+          liveCaptionsFactory: widget.liveCaptionsFactory,
+          videoBuilder: widget.videoBuilder,
+          audioHandler: widget.audioHandler,
+          pip: widget.pip,
+        );
+    session.addListener(_changed);
   }
 
   void _changed() {
-    final feed = _liveCaptions;
-    if (feed is FollowsCaptionStream) {
-      final stream = controller.detail?.streams.where(
-        (s) =>
-            s.language == controller.language &&
-            s.isSd &&
-            !s.audioOnly &&
-            s.isLive,
-      );
-      final url =
-          controller.isLive &&
-              controller.captionsOn &&
-              controller.language != AudioLanguage.floor &&
-              stream != null &&
-              stream.isNotEmpty
-          ? stream.first.url
-          : null;
-      if (url != _followedCaptionUrl) {
-        _followedCaptionUrl = url;
-        (feed as FollowsCaptionStream).follow(url);
-      }
-    }
-    _syncAutoEnter();
     if (mounted) setState(() {});
-  }
-
-  Uri? _followedCaptionUrl;
-
-  void _syncAutoEnter() {
-    final pip = widget.pip;
-    if (pip?.available != true) return;
-    final shouldAutoEnter =
-        controller.playing &&
-        controller.stream != null &&
-        !controller.stream!.audioOnly;
-    if (_autoPip == shouldAutoEnter) return;
-    _autoPip = shouldAutoEnter;
-    unawaited(pip!.setAutoEnter(shouldAutoEnter));
   }
 
   @override
   void dispose() {
-    if (widget.pip?.available == true) {
-      unawaited(widget.pip!.setAutoEnter(false));
-    }
-    unawaited(_pipSubscription?.cancel());
-    widget.audioHandler?.detach(controller);
-    controller.removeListener(_changed);
-    unawaited(controller.close());
-    _liveCaptions.dispose();
+    session.removeListener(_changed);
+    if (widget.session == null) unawaited(session.close());
     _tabs.dispose();
     search.dispose();
     super.dispose();
   }
 
-  VideoController? _videoController;
-
-  Widget _video() {
-    Widget child;
-    if (widget.videoBuilder != null) {
-      child = widget.videoBuilder!(engine);
-    } else if (engine is MediaKitEngine) {
-      // One VideoController per engine: the screen rebuilds on every
-      // position tick, and a new controller per build recreates the texture.
-      _videoController ??= VideoController((engine as MediaKitEngine).player);
-      child = Video(
-        controller: _videoController!,
-        controls: AdaptiveVideoControls,
-        // media_kit pauses on backgrounding by default, which silences the
-        // background audio the media session is keeping alive.
-        pauseUponEnteringBackgroundMode: false,
-      );
-    } else {
-      child = const SizedBox.expand();
-    }
-    return AspectRatio(
-      aspectRatio: 16 / 9,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          child,
-          if (controller.captionText != null)
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                margin: const EdgeInsets.all(20),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                color: Colors.black.withValues(alpha: .7),
-                child: Text(
-                  controller.captionText!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 18),
-                ),
-              ),
-            ),
-        ],
-      ),
+  bool get _canSwitchAudio {
+    final streams = controller.detail?.streams.where(
+      (s) => s.language == controller.language,
     );
+    return streams != null &&
+        streams.any((s) => s.audioOnly) &&
+        streams.any((s) => !s.audioOnly);
   }
 
   Widget _controls() => Wrap(
@@ -237,11 +140,17 @@ class _PlayerScreenState extends State<PlayerScreen>
               : Icons.closed_caption_off,
         ),
       ),
-      if (widget.pip?.available == true)
+      if (_canSwitchAudio)
+        _button(
+          controller.audioOnly ? 'Show video' : 'Background audio',
+          controller.audioOnly ? Icons.videocam : Icons.headphones,
+          () => controller.setAudioOnly(!controller.audioOnly),
+        ),
+      if (session.pip?.available == true)
         _button(
           'Picture in picture',
           Icons.picture_in_picture_alt,
-          widget.pip!.enter,
+          session.pip!.enter,
         ),
       PopupMenuButton<double>(
         tooltip: 'Speed',
@@ -389,7 +298,9 @@ class _PlayerScreenState extends State<PlayerScreen>
   }
 
   Widget _body() {
-    if (_pipActive) return SizedBox.expand(child: Center(child: _video()));
+    if (session.pipActive) {
+      return SizedBox.expand(child: Center(child: session.video()));
+    }
     if (controller.phase == PlayerPhase.loading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -410,7 +321,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     final video = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _video(),
+        session.video(),
         _controls(),
         if (controller.error != null)
           MaterialBanner(
@@ -441,33 +352,66 @@ class _PlayerScreenState extends State<PlayerScreen>
 
   @override
   Widget build(BuildContext context) {
-    if (_pipActive) return SizedBox.expand(child: Center(child: _video()));
-    return CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.keyC): () =>
-            controller.setCaptions(!controller.captionsOn),
-        const SingleActivator(LogicalKeyboardKey.keyJ): () =>
-            unawaited(controller.seekRelative(const Duration(seconds: -30))),
-        const SingleActivator(LogicalKeyboardKey.keyL): () =>
-            unawaited(controller.seekRelative(const Duration(seconds: 30))),
-        const SingleActivator(LogicalKeyboardKey.keyK): () =>
-            unawaited(controller.togglePlay()),
-        const SingleActivator(LogicalKeyboardKey.bracketLeft): () =>
-            _stepRate(-1),
-        const SingleActivator(LogicalKeyboardKey.bracketRight): () =>
-            _stepRate(1),
+    // Pop animations retain the route. Unmount its video immediately when
+    // minimized so the web's single video element never has two owners.
+    if (session.closed || session.minimized) {
+      return const SizedBox();
+    }
+    if (session.pipActive) {
+      return SizedBox.expand(child: Center(child: session.video()));
+    }
+    return PopScope(
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop && widget.session != null) session.minimize();
       },
-      child: Focus(
-        autofocus: true,
-        child: Scaffold(
-          appBar: AppBar(
-            toolbarHeight: 44,
-            title: Text(
-              controller.event?.title ?? widget.request.title,
-              overflow: TextOverflow.ellipsis,
+      child: CallbackShortcuts(
+        bindings: {
+          const SingleActivator(LogicalKeyboardKey.keyC): () =>
+              controller.setCaptions(!controller.captionsOn),
+          const SingleActivator(LogicalKeyboardKey.keyJ): () =>
+              unawaited(controller.seekRelative(const Duration(seconds: -30))),
+          const SingleActivator(LogicalKeyboardKey.keyL): () =>
+              unawaited(controller.seekRelative(const Duration(seconds: 30))),
+          const SingleActivator(LogicalKeyboardKey.keyK): () =>
+              unawaited(controller.togglePlay()),
+          const SingleActivator(LogicalKeyboardKey.bracketLeft): () =>
+              _stepRate(-1),
+          const SingleActivator(LogicalKeyboardKey.bracketRight): () =>
+              _stepRate(1),
+        },
+        child: Focus(
+          autofocus: true,
+          child: Scaffold(
+            appBar: AppBar(
+              toolbarHeight: 44,
+              leading: widget.session == null
+                  ? null
+                  : IconButton(
+                      tooltip: 'Minimize',
+                      icon: const Icon(Icons.keyboard_arrow_down),
+                      onPressed: () {
+                        session.minimize();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+              actions: [
+                if (widget.session != null)
+                  IconButton(
+                    tooltip: 'Close player',
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      unawaited(session.close());
+                      Navigator.of(context).pop();
+                    },
+                  ),
+              ],
+              title: Text(
+                controller.event?.title ?? widget.request.title,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
+            body: _body(),
           ),
-          body: _body(),
         ),
       ),
     );

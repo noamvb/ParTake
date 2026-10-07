@@ -209,4 +209,106 @@ void main() {
     expect(a.hashCode, b.hashCode);
     expect(a, isNot(c));
   });
+  PmQuestionPeriod qp(
+    DateTime day,
+    DateTime start, [
+    String label = '2:15 p.m.',
+  ]) => PmQuestionPeriod(
+    day: day,
+    startsAt: start,
+    timeLabel: label,
+    link: Uri.parse('https://www.pm.gc.ca/itinerary'),
+  );
+
+  test('PM alert ids are stable and distinct', () {
+    expect(pmHeadsUpId(DateTime.utc(2026, 10, 7)), 1900522014);
+    expect(pmLiveId(DateTime.utc(2026, 10, 7)), 1900522015);
+  });
+
+  test('PM heads ups filter past distant and notified attendances', () {
+    final clock = DateTime.utc(2026, 10, 6, 22, 15);
+    final upcoming = qp(
+      DateTime.utc(2026, 10, 8),
+      clock.add(const Duration(hours: 20)),
+    );
+    expect(
+      pmHeadsUps(
+        [
+          upcoming,
+          qp(DateTime.utc(2026, 10, 6), clock),
+          qp(DateTime.utc(2026, 10, 9), clock.add(const Duration(hours: 40))),
+          qp(DateTime.utc(2026, 10, 7), clock.add(const Duration(hours: 20))),
+        ],
+        clock,
+        {'2026-10-07'},
+      ),
+      [upcoming],
+    );
+  });
+
+  test('PM heads up body uses Ottawa today and tomorrow', () {
+    final attendance = qp(
+      DateTime.utc(2026, 10, 7),
+      DateTime.utc(2026, 10, 7, 18, 15),
+    );
+    expect(
+      pmHeadsUpBody(attendance, DateTime.utc(2026, 10, 6, 21, 30)),
+      'Tomorrow at 2:15 p.m.',
+    );
+    expect(
+      pmHeadsUpBody(attendance, DateTime.utc(2026, 10, 7, 13)),
+      'Today at 2:15 p.m.',
+    );
+  });
+
+  test('PM heads up body uses weekday beyond tomorrow', () {
+    final attendance = qp(
+      DateTime.utc(2026, 10, 9),
+      DateTime.utc(2026, 10, 9, 15, 15),
+      '11:15 a.m.',
+    );
+    expect(
+      pmHeadsUpBody(attendance, DateTime.utc(2026, 10, 7, 13)),
+      'Friday at 11:15 a.m.',
+    );
+  });
+
+  test('PM check notifies live chamber rather than committee', () {
+    final chamber = event(1, 'HoC Sitting No. 1', EventStatus.live, now);
+    final outcome = decidePmCheck(
+      events: [event(2, 'FEWO', EventStatus.notStarted, now), chamber],
+      startsAt: now,
+      now: now,
+      alreadyNotified: false,
+    );
+    expect((outcome as NotifyLive).event, same(chamber));
+  });
+
+  test('PM check retries when only committee is live', () {
+    final clock = now.add(const Duration(minutes: 5));
+    final outcome = decidePmCheck(
+      events: [event(2, 'FEWO', EventStatus.live, now)],
+      startsAt: now,
+      now: clock,
+      alreadyNotified: false,
+    );
+    expect((outcome as CheckAgain).at, clock.add(const Duration(minutes: 2)));
+  });
+
+  test('PM check stops at thirty minutes or when notified', () {
+    final outcome = decidePmCheck(
+      events: [],
+      startsAt: now,
+      now: now.add(const Duration(minutes: 30)),
+      alreadyNotified: false,
+    );
+    expect((outcome as StopChecking).reason, 'gave up after 30 minutes');
+    final notified = decidePmCheck(
+      events: [event(1, 'HoC Sitting No. 1', EventStatus.live, now)],
+      startsAt: now,
+      now: now,
+      alreadyNotified: true,
+    );
+    expect((notified as StopChecking).reason, 'already notified');
+  });
 }

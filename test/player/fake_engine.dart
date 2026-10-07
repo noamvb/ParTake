@@ -6,6 +6,7 @@ class FakeEngine implements MediaEngine {
   final opened = <({Uri url, Duration? start})>[];
   final seeks = <Duration>[];
   final rates = <double>[];
+  bool disposed = false;
   var plays = 0;
   var pauses = 0;
   Duration currentPosition = Duration.zero;
@@ -84,6 +85,7 @@ class FakeEngine implements MediaEngine {
   Stream<String> get errorStream => _errors.stream;
   @override
   Future<void> dispose() async {
+    disposed = true;
     await _positions.close();
     await _durations.close();
     await _playing.close();

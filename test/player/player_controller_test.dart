@@ -10,6 +10,7 @@ import 'package:partake/ui/open_request.dart';
 
 import '../fakes.dart';
 import 'fake_engine.dart';
+import 'audio_variants.dart';
 import 'fake_live_captions.dart';
 
 void main() {
@@ -273,7 +274,9 @@ void main() {
       );
       e.emitPosition(at);
       await Future<void>.delayed(Duration.zero);
-      expect(c.currentCaption!.text, '>> Voice of Interpreter: Welcome');
+      // The chair opens in French (the English track reads ">> Voice of
+      // Interpreter: Welcome"), so Floor captions show the French track.
+      expect(c.currentCaption!.text, 'Condition féminine, le comité');
       c.setCaptions(false);
       expect(c.currentCaption, isNull);
       await c.close();
@@ -437,6 +440,146 @@ void main() {
     expect(e.opened.single.url, only.streams.single.url);
     await c.close();
   });
+  Future<(PlayerController, FakeEngine)> openedAudio({
+    bool audio = true,
+  }) async {
+    final e = FakeEngine();
+    final c = PlayerController(
+      source: source(d: audioVideoDetail(audio: audio)),
+      library: FakeLibrary(),
+      engine: e,
+    );
+    await c.open(request(event: row, resume: const Duration(seconds: 120)));
+    return (c, e);
+  }
+
+  test(
+    'case 1 audio-only VOD preserves position rate and play state',
+    () async {
+      final (c, e) = await openedAudio();
+      addTearDown(c.close);
+      await c.setRate(1.5);
+      e.playOnOpen = false;
+      await c.setAudioOnly(true);
+      expect(
+        e.opened.last.url.toString(),
+        'https://example.test/45750/floor/audio.m3u8',
+      );
+      expect(e.opened.last.start, const Duration(seconds: 120));
+      expect(e.rates.last, 1.5);
+      expect(c.audioOnly, isTrue);
+      expect(c.playing, isTrue);
+      final count = e.opened.length;
+      await c.setAudioOnly(true);
+      expect(e.opened, hasLength(count));
+    },
+  );
+
+  test('case 2 show video prefers non-SD at the current position', () async {
+    final (c, e) = await openedAudio();
+    addTearDown(c.close);
+    await c.setAudioOnly(true);
+    await c.seek(const Duration(seconds: 240));
+    await c.togglePlay();
+    await c.setAudioOnly(false);
+    expect(
+      e.opened.last.url.toString(),
+      'https://example.test/45750/floor/video.m3u8',
+    );
+    expect(e.opened.last.start, const Duration(seconds: 240));
+    expect(c.audioOnly, isFalse);
+    expect(c.playing, isFalse);
+  });
+
+  test('case 3 language change preserves audio-only mode', () async {
+    final (c, e) = await openedAudio();
+    addTearDown(c.close);
+    await c.setAudioOnly(true);
+    await c.setLanguage(AudioLanguage.french);
+    expect(
+      e.opened.last.url.toString(),
+      'https://example.test/45750/french/audio.m3u8',
+    );
+    expect(c.language, AudioLanguage.french);
+    expect(c.audioOnly, isTrue);
+  });
+
+  test('case 4 missing audio-only variant is a no-op', () async {
+    final (c, e) = await openedAudio(audio: false);
+    addTearDown(c.close);
+    await c.setAudioOnly(true);
+    expect(e.opened, hasLength(1));
+    expect(c.audioOnly, isFalse);
+  });
+
+  test('audio only without stream swaps covers the video in place', () async {
+    final e = FakeEngine();
+    final c = PlayerController(
+      source: source(d: audioVideoDetail()),
+      library: FakeLibrary(),
+      engine: e,
+      audioOnlySwapsStream: false,
+    );
+    addTearDown(c.close);
+    await c.open(request(event: row));
+    final video = e.opened.single.url;
+    await c.setAudioOnly(true);
+    expect(c.audioOnly, isTrue);
+    expect(e.opened, hasLength(1));
+    await c.setLanguage(AudioLanguage.french);
+    expect(c.audioOnly, isTrue);
+    expect(c.stream!.audioOnly, isFalse);
+    await c.setAudioOnly(false);
+    expect(c.audioOnly, isFalse);
+    expect(e.opened.first.url, video);
+  });
+
+  test(
+    'Floor captions follow caption markers to French before Hansard',
+    () async {
+      final t0 = detail.recordingStart.add(const Duration(minutes: 1));
+      Caption cap(int seconds, String text) => Caption(
+        begin: t0.add(Duration(seconds: seconds)),
+        end: t0.add(Duration(seconds: seconds + 5)),
+        text: text,
+      );
+      final marked = EventDetail(
+        id: 45750,
+        recordingStart: detail.recordingStart,
+        streams: detail.streams,
+        captions: {
+          AudioLanguage.english: [
+            cap(0, 'Thank you, chair.'),
+            cap(10, '[Speaking French]'),
+            cap(20, 'We need answers.'),
+          ],
+          AudioLanguage.french: [
+            cap(0, "(voix de l'interprète) Merci, monsieur le président."),
+            cap(10, 'Bonjour à tous.'),
+            cap(20, 'Il nous faut des réponses.'),
+          ],
+        },
+      );
+      final e = FakeEngine();
+      final c = PlayerController(
+        source: source(d: marked),
+        library: FakeLibrary(),
+        engine: e,
+      );
+      await c.open(request(event: row));
+      await Future<void>.delayed(Duration.zero);
+      expect(c.language, AudioLanguage.floor);
+      expect(c.speakers, isEmpty);
+      final offset = marked.offsetOf(t0, c.stream!);
+      e.emitPosition(offset + const Duration(seconds: 2));
+      await Future<void>.delayed(Duration.zero);
+      expect(c.captionText, 'Thank you, chair.');
+      e.emitPosition(offset + const Duration(seconds: 22));
+      await Future<void>.delayed(Duration.zero);
+      expect(c.captionText, 'Il nous faut des réponses.');
+      await c.close();
+    },
+  );
 }
 
 class _RecordingLibrary extends FakeLibrary {

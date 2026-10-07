@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:parlvu/parlvu.dart';
 
+const pmQuestionPeriodKey = 'PM-QP';
+
 /// Follow key for an event: `HOC` for the chamber (sittings and Question
 /// Period), otherwise the committee acronym (`FEWO`). Events with neither
 /// (rare, e.g. special joint sessions) fall back to their title.

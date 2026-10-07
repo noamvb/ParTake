@@ -17,9 +17,19 @@ class FollowingScreen extends StatelessWidget {
     return ListenableBuilder(
       listenable: library,
       builder: (context, _) {
-        final keys = library.follows.toList()..sort();
+        final keys =
+            library.follows.where((key) => key != pmQuestionPeriodKey).toList()
+              ..sort();
         return Column(
           children: [
+            SwitchListTile(
+              title: const Text('Prime Minister at Question Period'),
+              subtitle: const Text(
+                "Alert when Carney's itinerary says he will attend, and again when it starts.",
+              ),
+              value: library.follows.contains(pmQuestionPeriodKey),
+              onChanged: (on) => library.setFollowed(pmQuestionPeriodKey, on),
+            ),
             Expanded(
               child: keys.isEmpty
                   ? const Center(

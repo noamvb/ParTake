@@ -13,6 +13,16 @@ the reproduction is accurate and is not presented as official"; see the
 [ParlVU FAQ](https://www.ourcommons.ca/Content/Misc/parlvu-faq-e.pdf), §1.1).
 Speaker times come from [openparliament.ca](https://openparliament.ca).
 
+On Android, the Following screen's Prime Minister at Question Period switch
+reads the [PMO news RSS feed](https://www.pm.gc.ca/en/news.rss). It alerts when
+Carney's itinerary announces attendance within 36 hours, then checks the House
+at the published start time and sends a notification that opens the live event.
+
+Use **Background audio** in the player to switch to the current language's
+audio-only stream, then **Show video** to switch back. **Minimize** keeps the
+same playback in a floating mini player while you browse Home, Browse or
+Following; tap its video to return, or close it to stop playback.
+
 ## Parts
 
 | Path | What |

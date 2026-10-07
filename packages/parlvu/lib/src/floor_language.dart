@@ -9,10 +9,19 @@ class LanguageSwitch {
 
 final _wordTokens = RegExp(r"[\p{L}\p{N}']+", unicode: true);
 final _markerText = RegExp(
-  r'\[?speaking in (?:french|english)\]?|voice of interpretor|voice of interpreter|'
+  r'\[?speaking in (?:french|english)\]?|\[?speaking french\]?|voice of interpretor|'
+  r'voice of interpreter|voice of the interpreter|'
   r'\[?end of interpretation\]?|voix de l.interpr[eè]te|>>',
   caseSensitive: false,
 );
+
+const _frenchCaptionMarkers = [
+  'speaking in french',
+  'speaking french',
+  'voice of interpretor',
+  'voice of interpreter',
+  'voice of the interpreter',
+];
 
 List<String> _words(String value) => _wordTokens
     .allMatches(value.toLowerCase().replaceAll(_markerText, ' '))
@@ -177,8 +186,10 @@ List<DateTime> _markerCandidates(
       AudioLanguage.english,
       (text) =>
           text.contains('speaking in french') ||
+          text.contains('speaking french') ||
           text.contains('voice of interpretor') ||
-          text.contains('voice of interpreter'),
+          text.contains('voice of interpreter') ||
+          text.contains('voice of the interpreter'),
     );
   } else if (oldLanguage == AudioLanguage.french &&
       newLanguage == AudioLanguage.english) {
@@ -195,6 +206,59 @@ List<DateTime> _markerCandidates(
   }
   return result;
 }
+
+/// Floor language switches found from caption interpretation markers alone,
+/// for when no Hansard speeches are available. Sorted by time, no two
+/// consecutive entries with the same language, empty when no marker exists.
+List<LanguageSwitch> captionLanguageSwitches(
+  Map<AudioLanguage, List<Caption>> captions,
+) {
+  final events = <({DateTime time, AudioLanguage language})>[];
+  for (final caption in captions[AudioLanguage.english] ?? const <Caption>[]) {
+    final text = caption.text.toLowerCase();
+    if (_frenchCaptionMarkers.any(text.contains)) {
+      events.add((time: caption.begin, language: AudioLanguage.french));
+    }
+    if (text.contains('end of interpretation')) {
+      events.add((time: caption.begin, language: AudioLanguage.english));
+    }
+  }
+  for (final caption in captions[AudioLanguage.french] ?? const <Caption>[]) {
+    final text = caption.text.toLowerCase();
+    if (text.contains("voix de l'interpr") ||
+        text.contains('voix de l’interpr')) {
+      events.add((time: caption.begin, language: AudioLanguage.english));
+    }
+  }
+  if (events.isEmpty) return [];
+  events.sort((a, b) => a.time.compareTo(b.time));
+
+  final result = <LanguageSwitch>[];
+  // The floor is English until someone switches, so a French first marker
+  // needs an English start at the first caption of either track.
+  if (events.first.language == AudioLanguage.french) {
+    final firstCaption = [
+      for (final track in captions.values)
+        for (final caption in track) caption.begin,
+    ].reduce((a, b) => a.isBefore(b) ? a : b);
+    result.add(LanguageSwitch(firstCaption, AudioLanguage.english));
+  }
+  for (final event in events) {
+    if (result.isNotEmpty && result.last.language == event.language) continue;
+    // Markers from the two tracks arrive a second or two out of step at a
+    // handover ("[End of Interpretation]", then ">> Voice of Interpreter:").
+    // A switch reversed this soon is lag, not a new speaker: drop it.
+    if (result.length > 1 &&
+        event.time.difference(result.last.wallClock) < _markerLag) {
+      result.removeLast();
+      if (result.last.language == event.language) continue;
+    }
+    result.add(LanguageSwitch(event.time, event.language));
+  }
+  return result;
+}
+
+const _markerLag = Duration(seconds: 3);
 
 AudioLanguage? floorLanguageAt(
   List<LanguageSwitch> switches,

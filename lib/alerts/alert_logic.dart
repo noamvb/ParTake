@@ -94,3 +94,62 @@ CheckOutcome decideCheck({
   }
   return CheckAgain(now.add(const Duration(minutes: 2)));
 }
+
+/// Alarm and notification ids for PM-QP alerts.
+int pmHeadsUpId(DateTime day) =>
+    1900000000 + ((day.year % 100) * 10000 + day.month * 100 + day.day) * 2;
+
+int pmLiveId(DateTime day) => pmHeadsUpId(day) + 1;
+
+List<PmQuestionPeriod> pmHeadsUps(
+  List<PmQuestionPeriod> all,
+  DateTime now,
+  Set<String> notifiedDays,
+) => [
+  for (final qp in all)
+    if (qp.startsAt.isAfter(now) &&
+        !qp.startsAt.isAfter(now.add(const Duration(hours: 36))) &&
+        !notifiedDays.contains(qp.day.toIso8601String().substring(0, 10)))
+      qp,
+];
+
+String pmHeadsUpBody(PmQuestionPeriod qp, DateTime now) {
+  final today = parliamentDate(now);
+  final String label;
+  if (qp.day == today) {
+    label = 'Today';
+  } else if (qp.day == today.add(const Duration(days: 1))) {
+    label = 'Tomorrow';
+  } else {
+    label = const [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ][qp.day.weekday - 1];
+  }
+  return '$label at ${qp.timeLabel}';
+}
+
+CheckOutcome decidePmCheck({
+  required List<ListingEvent> events,
+  required DateTime startsAt,
+  required DateTime now,
+  required bool alreadyNotified,
+}) {
+  if (alreadyNotified) return StopChecking('already notified');
+  for (final event in events) {
+    if (event.isChamber &&
+        (event.status == EventStatus.live ||
+            event.status == EventStatus.paused)) {
+      return NotifyLive(event);
+    }
+  }
+  if (!now.isBefore(startsAt.add(const Duration(minutes: 30)))) {
+    return StopChecking('gave up after 30 minutes');
+  }
+  return CheckAgain(now.add(const Duration(minutes: 2)));
+}

@@ -192,4 +192,124 @@ void main() {
       AudioLanguage.english,
     );
   });
+
+  test('English captions alone find the Floor switches without Hansard', () {
+    final t0 = DateTime.utc(2026, 7, 7, 12);
+    final result = captionLanguageSwitches({
+      AudioLanguage.english: [
+        caption(t0, 'Good morning'),
+        caption(t0.add(const Duration(seconds: 10)), '[Speaking in French]'),
+        caption(t0.add(const Duration(seconds: 40)), '[End of Interpretation]'),
+      ],
+    });
+    expect(result.map((s) => (s.wallClock, s.language)), [
+      (t0, AudioLanguage.english),
+      (t0.add(const Duration(seconds: 10)), AudioLanguage.french),
+      (t0.add(const Duration(seconds: 40)), AudioLanguage.english),
+    ]);
+  });
+
+  test('"[Speaking French]" without "in" switches the Floor to French', () {
+    final t0 = DateTime.utc(2026, 7, 7, 12);
+    final result = captionLanguageSwitches({
+      AudioLanguage.english: [
+        caption(t0, 'Good morning'),
+        caption(t0.add(const Duration(seconds: 5)), '[Speaking French]'),
+      ],
+    });
+    expect(result.map((s) => (s.wallClock, s.language)), [
+      (t0, AudioLanguage.english),
+      (t0.add(const Duration(seconds: 5)), AudioLanguage.french),
+    ]);
+  });
+
+  test('"(Voice of the Interpreter)" switches the Floor to French', () {
+    final t0 = DateTime.utc(2026, 7, 7, 12);
+    final result = captionLanguageSwitches({
+      AudioLanguage.english: [
+        caption(t0, 'Good morning'),
+        caption(
+          t0.add(const Duration(seconds: 5)),
+          '(Voice of the Interpreter)',
+        ),
+      ],
+    });
+    expect(result.map((s) => (s.wallClock, s.language)), [
+      (t0, AudioLanguage.english),
+      (t0.add(const Duration(seconds: 5)), AudioLanguage.french),
+    ]);
+  });
+
+  test('French track alone yields the English switch at its marker', () {
+    final t0 = DateTime.utc(2026, 7, 7, 12);
+    final result = captionLanguageSwitches({
+      AudioLanguage.french: [
+        caption(t0, 'Bonjour'),
+        caption(
+          t0.add(const Duration(seconds: 20)),
+          "(voix de l'interprète) Merci",
+        ),
+      ],
+    });
+    expect(result.map((s) => (s.wallClock, s.language)), [
+      (t0.add(const Duration(seconds: 20)), AudioLanguage.english),
+    ]);
+  });
+
+  test('captions without interpretation markers yield no Floor switches', () {
+    final t0 = DateTime.utc(2026, 7, 7, 12);
+    final result = captionLanguageSwitches({
+      AudioLanguage.english: [caption(t0, 'Hello')],
+      AudioLanguage.french: [caption(t0, 'Bonjour')],
+    });
+    expect(result, isEmpty);
+  });
+
+  test('ETHI 49 captions alone follow Floor language across both switches', () {
+    final detail = parseEventPage(
+      File('test/fixtures/event_ethi49_45680.html').readAsStringSync(),
+      id: 45680,
+    );
+    final switches = captionLanguageSwitches(detail.captions);
+    expect(
+      floorLanguageAt(switches, parliamentTime('2026-07-07T11:15:24')),
+      AudioLanguage.english,
+    );
+    expect(
+      floorLanguageAt(switches, parliamentTime('2026-07-07T11:15:36')),
+      AudioLanguage.french,
+    );
+    expect(
+      floorLanguageAt(switches, parliamentTime('2026-07-07T11:44:12')),
+      AudioLanguage.french,
+    );
+    expect(
+      floorLanguageAt(switches, parliamentTime('2026-07-07T11:44:22')),
+      AudioLanguage.english,
+    );
+  });
+
+  test(
+    'a switch reversed within three seconds is caption lag, not a speaker',
+    () {
+      final t0 = DateTime.utc(2026, 10, 7, 18);
+      DateTime at(int seconds) => t0.add(Duration(seconds: seconds));
+      final result = captionLanguageSwitches({
+        AudioLanguage.english: [
+          caption(at(0), 'Thank you, Mr. Speaker.'),
+          caption(at(10), '[ Speaking French ]'),
+          caption(at(40), '[ End of Interpretation ]'),
+          caption(at(41), '>> Voice of Interpreter:'),
+          caption(at(80), '[ Speaking French ]'),
+          caption(at(82), '[ End of Interpretation ]'),
+        ],
+        AudioLanguage.french: [caption(at(41), "- (voix de l'interprète) Je")],
+      });
+      expect(result.map((s) => (s.wallClock, s.language)), [
+        (at(0), AudioLanguage.english),
+        (at(10), AudioLanguage.french),
+        (at(41), AudioLanguage.english),
+      ]);
+    },
+  );
 }

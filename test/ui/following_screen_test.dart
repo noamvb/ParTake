@@ -37,4 +37,27 @@ void main() {
       );
     },
   );
+  testWidgets('PM switch follows and unfollows PM-QP', (tester) async {
+    final library = FakeLibrary();
+    await tester.pumpWidget(_wrap(FollowingScreen(library: library)));
+    await tester.tap(find.text('Prime Minister at Question Period'));
+    await tester.pump();
+    expect(library.follows.contains('PM-QP'), isTrue);
+    await tester.tap(find.text('Prime Minister at Question Period'));
+    await tester.pump();
+    expect(library.follows.contains('PM-QP'), isFalse);
+  });
+
+  testWidgets('PM only follow leaves committee list empty', (tester) async {
+    final library = FakeLibrary();
+    await library.setFollowed('PM-QP', true);
+    await tester.pumpWidget(_wrap(FollowingScreen(library: library)));
+    expect(find.widgetWithText(ListTile, 'PM-QP'), findsNothing);
+    expect(
+      find.text(
+        'Follow the chamber or a committee with the star on any event.',
+      ),
+      findsOneWidget,
+    );
+  });
 }

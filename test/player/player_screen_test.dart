@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -9,6 +11,9 @@ import 'package:partake/ui/open_request.dart';
 
 import '../fakes.dart';
 import 'fake_engine.dart';
+import 'audio_variants.dart';
+
+import 'package:partake/player/player_session.dart';
 
 import 'package:partake/player/player_screen.dart';
 
@@ -319,4 +324,91 @@ void main() {
       feed.dispose();
     },
   );
+  Future<void> closeSession(WidgetTester tester, PlayerSession session) async {
+    final closing = session.close();
+    for (var i = 0; i < 12; i++) {
+      await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+      await tester.pump();
+    }
+    await closing;
+  }
+
+  Future<PlayerSession> audioSession({bool audio = true}) async =>
+      PlayerSession(
+        request: OpenRequest(
+          eventId: 45750,
+          title: row.title,
+          eventDate: row.scheduledStart,
+          event: row,
+        ),
+        source: FakeEventSource(
+          details: {45750: audioVideoDetail(audio: audio)},
+        ),
+        library: FakeLibrary(),
+        engineFactory: FakeEngine.new,
+        liveCaptionsFactory: FakeLiveCaptions.new,
+        videoBuilder: (_) => const ColoredBox(color: Colors.black),
+      );
+
+  testWidgets(
+    'case 5 background audio button shows placeholder and show video',
+    (tester) async {
+      final session = await audioSession();
+      addTearDown(() {
+        unawaited(session.close());
+      });
+      await tester.pumpWidget(
+        MaterialApp(
+          home: PlayerScreen(
+            request: session.request,
+            source: session.controller.source,
+            library: session.controller.library,
+            session: session,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Background audio'), findsOneWidget);
+      await tester.tap(find.byTooltip('Background audio'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Audio only - keeps playing in the background'),
+        findsOneWidget,
+      );
+      expect(find.byTooltip('Show video'), findsOneWidget);
+      expect(session.controller.audioOnly, isTrue);
+      await tester.tap(find.byTooltip('Show video'));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Background audio'), findsOneWidget);
+      expect(session.controller.audioOnly, isFalse);
+      await tester.pumpWidget(const SizedBox());
+      await closeSession(tester, session);
+    },
+  );
+
+  testWidgets('case 6 background audio button absent without audio variant', (
+    tester,
+  ) async {
+    final session = await audioSession(audio: false);
+    addTearDown(() {
+      unawaited(session.close());
+    });
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PlayerScreen(
+          request: session.request,
+          source: session.controller.source,
+          library: session.controller.library,
+          session: session,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    // Positive control: the ready player controls are mounted.
+    expect(find.byTooltip('Pause'), findsOneWidget);
+    expect(find.byTooltip('Background audio'), findsNothing);
+    expect(find.byTooltip('Show video'), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+    await closeSession(tester, session);
+  });
 }
