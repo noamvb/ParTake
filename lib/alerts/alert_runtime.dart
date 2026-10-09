@@ -95,7 +95,7 @@ Future<void> alertAlarmCallback(int id, Map<String, dynamic> params) async {
 
 Future<void> _initializeNotifications() async {
   const settings = InitializationSettings(
-    android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+    android: AndroidInitializationSettings('@drawable/ic_stat_partake'),
   );
   await _notifications.initialize(
     settings: settings,
@@ -239,7 +239,7 @@ Future<void> _notify(ListingEvent event) async {
         channelDescription: 'Alerts when followed proceedings go live.',
         importance: Importance.high,
         priority: Priority.high,
-        icon: '@mipmap/ic_launcher',
+        icon: '@drawable/ic_stat_partake',
       ),
     ),
     payload: event.id.toString(),
@@ -292,7 +292,7 @@ const _pmDetails = NotificationDetails(
     channelDescription: 'Alerts when followed proceedings go live.',
     importance: Importance.high,
     priority: Priority.high,
-    icon: '@mipmap/ic_launcher',
+    icon: '@drawable/ic_stat_partake',
   ),
 );
 
