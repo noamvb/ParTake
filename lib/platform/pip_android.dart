@@ -9,6 +9,22 @@ import 'pip.dart';
 PipControl createPipControl() => _AndroidPipControl();
 
 class _AndroidPipControl implements PipControl {
+  _AndroidPipControl() {
+    if (!_handlerInstalled) {
+      _channel.setMethodCallHandler(_handleMethodCall);
+      _handlerInstalled = true;
+    }
+  }
+
+  static final _audioOnlyRequests = StreamController<void>.broadcast();
+  static bool _handlerInstalled = false;
+
+  static Future<void> _handleMethodCall(MethodCall call) async {
+    if (call.method == 'audioOnlyRequested') {
+      _audioOnlyRequests.add(null);
+    }
+  }
+
   final Floating _floating = Floating();
   static const _channel = MethodChannel('partake/pip');
 
@@ -18,6 +34,14 @@ class _AndroidPipControl implements PipControl {
   @override
   Stream<bool> get active =>
       _floating.pipStatusStream.map((status) => status == PiPStatus.enabled);
+
+  @override
+  Stream<void> get audioOnlyRequests => _audioOnlyRequests.stream;
+
+  @override
+  Future<void> closeWindow() async {
+    await _channel.invokeMethod<void>('closePipWindow');
+  }
 
   @override
   Future<void> enter() async {

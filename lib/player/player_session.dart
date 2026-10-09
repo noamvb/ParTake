@@ -48,6 +48,9 @@ class PlayerSession extends ChangeNotifier {
     audioHandler?.attach(controller, title: request.title);
     // Android shrinks the activity; browsers pop out only the video element.
     if (pip?.available == true && !kIsWeb) {
+      _audioOnlySubscription = pip!.audioOnlyRequests.listen((_) {
+        unawaited(_requestAudioOnly());
+      });
       _pipSubscription = pip!.active.listen((active) {
         if (_closed || active == _pipActive) return;
         _pipActive = active;
@@ -86,6 +89,7 @@ class PlayerSession extends ChangeNotifier {
   late final PlayerController controller;
   late final LiveCaptionFeed _liveCaptions;
   late final Future<void> _opening;
+  StreamSubscription<void>? _audioOnlySubscription;
   StreamSubscription<bool>? _pipSubscription;
   StreamSubscription<bool>? _playingSubscription;
   bool _pipActive = false;
@@ -154,6 +158,15 @@ class PlayerSession extends ChangeNotifier {
     unawaited(pip!.setAutoEnter(shouldAutoEnter));
   }
 
+  Future<void> _requestAudioOnly() async {
+    if (_closed) return;
+    try {
+      await controller.setAudioOnly(true);
+    } finally {
+      await pip!.closeWindow();
+    }
+  }
+
   Future<void> close() {
     if (_closing != null) return _closing!;
     _closed = true;
@@ -168,6 +181,7 @@ class PlayerSession extends ChangeNotifier {
 
   Future<void> _finishClose() async {
     await _pipSubscription?.cancel();
+    await _audioOnlySubscription?.cancel();
     await _playingSubscription?.cancel();
     // An event opened by a notification may still be loading when closed.
     await _opening;

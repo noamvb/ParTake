@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:parlvu/parlvu.dart';
 import 'package:partake/player/player_screen.dart';
+import 'package:partake/player/player_session.dart';
 import 'package:partake/ui/open_request.dart';
 
 import '../fakes.dart';
+import '../player/audio_variants.dart';
 import '../player/fake_engine.dart';
 import 'fake_pip.dart';
 
@@ -134,5 +136,62 @@ void main() {
     expect(engine.playing, isTrue);
     expect(pip.autoEnterCalls, isNot(contains(true)));
     await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets(
+    'PiP headphones action switches to audio only, then closes the window',
+    (tester) async {
+      final pip = FakePip(available: true);
+      final engine = FakeEngine();
+      await tester.pumpWidget(app(pip, engine, event: audioVideoDetail()));
+      await tester.pumpAndSettle();
+      final session =
+          (tester.state(find.byType(PlayerScreen)) as dynamic).session
+              as PlayerSession;
+      expect(engine.playing, isTrue);
+      expect(engine.opened.last.url.path, endsWith('/video.m3u8'));
+      pip.states.add(true);
+      pip.audioOnlyRequestsController.add(null);
+      await tester.pumpAndSettle();
+      expect(pip.closeWindowCalls, 1);
+      expect(session.controller.audioOnly, isTrue);
+      expect(engine.opened.last.url.path, endsWith('/audio.m3u8'));
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets(
+    'PiP headphones action still closes the window when no audio-only stream exists',
+    (tester) async {
+      final pip = FakePip(available: true);
+      final engine = FakeEngine();
+      await tester.pumpWidget(
+        app(pip, engine, event: audioVideoDetail(audio: false)),
+      );
+      await tester.pumpAndSettle();
+      expect(engine.playing, isTrue);
+      pip.states.add(true);
+      pip.audioOnlyRequestsController.add(null);
+      await tester.pumpAndSettle();
+      expect(pip.closeWindowCalls, 1);
+      expect(engine.opened.last.url.path, endsWith('/video.m3u8'));
+      expect(engine.playing, isTrue);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets('PiP headphones action is ignored after the player closes', (
+    tester,
+  ) async {
+    final pip = FakePip(available: true);
+    final engine = FakeEngine();
+    await tester.pumpWidget(app(pip, engine, event: audioVideoDetail()));
+    await tester.pumpAndSettle();
+    expect(pip.audioOnlyRequestsController.hasListener, isTrue);
+    await tester.pumpWidget(const SizedBox());
+    pip.audioOnlyRequestsController.add(null);
+    await tester.pumpAndSettle();
+    expect(pip.closeWindowCalls, 0);
+    expect(tester.takeException(), isNull);
   });
 }

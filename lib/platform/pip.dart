@@ -6,6 +6,12 @@ import 'pip_stub.dart'
 abstract class PipControl {
   bool get available;
   Stream<bool> get active;
+
+  /// Fires when the user taps the headphones action in the system PiP window.
+  Stream<void> get audioOnlyRequests;
+
+  /// Closes the system PiP window, leaving playback running in the background.
+  Future<void> closeWindow();
   Future<void> enter();
   Future<void> setAutoEnter(bool on);
 }

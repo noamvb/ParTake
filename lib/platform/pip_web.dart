@@ -42,6 +42,12 @@ class _WebPipControl implements PipControl {
   }
 
   @override
+  Stream<void> get audioOnlyRequests => const Stream<void>.empty();
+
+  @override
+  Future<void> closeWindow() async {}
+
+  @override
   Future<void> enter() async {
     _bindVideo();
     final video = _video;
