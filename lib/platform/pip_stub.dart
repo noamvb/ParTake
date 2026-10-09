@@ -10,6 +10,12 @@ class _StubPipControl implements PipControl {
   Stream<bool> get active => const Stream<bool>.empty();
 
   @override
+  Stream<void> get audioOnlyRequests => const Stream<void>.empty();
+
+  @override
+  Future<void> closeWindow() async {}
+
+  @override
   Future<void> enter() async {}
 
   @override

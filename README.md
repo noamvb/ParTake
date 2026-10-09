@@ -21,7 +21,9 @@ at the published start time and sends a notification that opens the live event.
 Use **Background audio** in the player to switch to the current language's
 audio-only stream, then **Show video** to switch back. **Minimize** keeps the
 same playback in a floating mini player while you browse Home, Browse or
-Following; tap its video to return, or close it to stop playback.
+Following; tap its video to return, or close it to stop playback. On Android,
+the picture-in-picture window has a headphones button too: it closes the
+window and keeps playing the audio-only stream in the background.
 
 ## Parts
 
