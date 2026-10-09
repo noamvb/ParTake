@@ -8,9 +8,8 @@ class FakePip implements PipControl {
   @override
   final bool available;
   final states = StreamController<bool>.broadcast(sync: true);
-  final audioOnlyRequestsController = StreamController<void>.broadcast(
-    sync: true,
-  );
+  final actionsController = StreamController<PipAction>.broadcast(sync: true);
+  final setPlayingCalls = <bool>[];
   int closeWindowCalls = 0;
   int enterCalls = 0;
   final autoEnterCalls = <bool>[];
@@ -19,7 +18,12 @@ class FakePip implements PipControl {
   Stream<bool> get active => states.stream;
 
   @override
-  Stream<void> get audioOnlyRequests => audioOnlyRequestsController.stream;
+  Stream<PipAction> get actions => actionsController.stream;
+
+  @override
+  Future<void> setPlaying(bool playing) async {
+    setPlayingCalls.add(playing);
+  }
 
   @override
   Future<void> closeWindow() async {
