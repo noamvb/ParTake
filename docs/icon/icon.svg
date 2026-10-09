@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108" width="108" height="108">
+  <!-- 108x108 adaptive-icon canvas; artwork stays inside the 66-unit safe circle. -->
+  <rect width="108" height="108" fill="#1F5246"/>
+  <path fill="#F4EBD6" fill-rule="evenodd" d="M36,78 L36,52 A30,30 0 0 1 54,24.5 A30,30 0 0 1 72,52 L72,78 Z M41,78 L41,52.5 A25,25 0 0 1 54,31.5 A25,25 0 0 1 67,52.5 L67,78 Z"/>
+  <path fill="#D4AF55" d="M48,47.6 Q48,44.2 51,45.9 L63.2,53.2 Q66.2,55 63.2,56.8 L51,64.1 Q48,65.8 48,62.4 Z"/>
+  <path fill="#D4AF55" d="M37,76 L71,76 A2.25,2.25 0 0 1 71,80.5 L37,80.5 A2.25,2.25 0 0 1 37,76 Z"/>
+</svg>

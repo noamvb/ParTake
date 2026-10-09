@@ -17,13 +17,21 @@
         "preflight": [
           {
             "id": "tag-is-main-tip",
-            "argv": ["sh", "-c", "git fetch -q origin main && test \"$(git rev-parse v0.3.0^{commit})\" = \"$(git rev-parse origin/main)\""],
+            "argv": [
+              "sh",
+              "-c",
+              "git fetch -q origin main && test \"$(git rev-parse v0.3.0^{commit})\" = \"$(git rev-parse origin/main)\""
+            ],
             "cwd": ".",
             "timeout_seconds": 60
           },
           {
             "id": "tag-not-on-remote",
-            "argv": ["sh", "-c", "! git ls-remote --exit-code origin refs/tags/v0.3.0"],
+            "argv": [
+              "sh",
+              "-c",
+              "! git ls-remote --exit-code origin refs/tags/v0.3.0"
+            ],
             "cwd": ".",
             "timeout_seconds": 60
           }
@@ -33,7 +41,12 @@
         "action": [
           {
             "id": "push-tag",
-            "argv": ["git", "push", "origin", "refs/tags/v0.3.0"],
+            "argv": [
+              "git",
+              "push",
+              "origin",
+              "refs/tags/v0.3.0"
+            ],
             "cwd": ".",
             "timeout_seconds": 120
           }
@@ -41,7 +54,11 @@
         "verification": [
           {
             "id": "remote-tag-matches",
-            "argv": ["sh", "-c", "test \"$(git ls-remote origin refs/tags/v0.3.0^{} | cut -f1)\" = \"$(git rev-parse v0.3.0^{commit})\""],
+            "argv": [
+              "sh",
+              "-c",
+              "test \"$(git ls-remote origin refs/tags/v0.3.0^{} | cut -f1)\" = \"$(git rev-parse v0.3.0^{commit})\""
+            ],
             "cwd": ".",
             "timeout_seconds": 60
           }
@@ -49,13 +66,25 @@
         "recovery": [
           {
             "id": "show-remote-tag",
-            "argv": ["git", "ls-remote", "origin", "refs/tags/v0.3.0"],
+            "argv": [
+              "git",
+              "ls-remote",
+              "origin",
+              "refs/tags/v0.3.0"
+            ],
             "cwd": ".",
             "timeout_seconds": 60
           }
         ]
       },
       "recovery_description": "A pushed tag is not rolled back automatically. If the release run fails, fix forward with a higher version; delete the tag on GitHub only with the owner's OK."
+    },
+    {
+      "id": "push-app-icon-lancet",
+      "adapter": "git_push",
+      "description": "Fast-forward push of local app-icon-lancet to origin/app-icon-lancet",
+      "remote": "origin",
+      "branch": "app-icon-lancet"
     }
   ]
 }
