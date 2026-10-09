@@ -16,12 +16,17 @@ class _AndroidPipControl implements PipControl {
     }
   }
 
-  static final _audioOnlyRequests = StreamController<void>.broadcast();
+  static final _actions = StreamController<PipAction>.broadcast();
   static bool _handlerInstalled = false;
 
   static Future<void> _handleMethodCall(MethodCall call) async {
-    if (call.method == 'audioOnlyRequested') {
-      _audioOnlyRequests.add(null);
+    switch (call.method) {
+      case 'audioOnlyRequested':
+        _actions.add(PipAction.audioOnly);
+      case 'playPauseRequested':
+        _actions.add(PipAction.playPause);
+      case 'pipDismissed':
+        _actions.add(PipAction.dismissed);
     }
   }
 
@@ -36,7 +41,12 @@ class _AndroidPipControl implements PipControl {
       _floating.pipStatusStream.map((status) => status == PiPStatus.enabled);
 
   @override
-  Stream<void> get audioOnlyRequests => _audioOnlyRequests.stream;
+  Stream<PipAction> get actions => _actions.stream;
+
+  @override
+  Future<void> setPlaying(bool playing) async {
+    await _channel.invokeMethod<void>('setPipPlaying', playing);
+  }
 
   @override
   Future<void> closeWindow() async {

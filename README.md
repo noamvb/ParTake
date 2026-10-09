@@ -22,8 +22,9 @@ Use **Background audio** in the player to switch to the current language's
 audio-only stream, then **Show video** to switch back. **Minimize** keeps the
 same playback in a floating mini player while you browse Home, Browse or
 Following; tap its video to return, or close it to stop playback. On Android,
-the picture-in-picture window has a headphones button too: it closes the
-window and keeps playing the audio-only stream in the background.
+the picture-in-picture window has pause/play and a headphones button: headphones
+closes the window and keeps the same stream playing in the background without
+a reload. Closing the window with X pauses playback.
 
 ## Parts
 

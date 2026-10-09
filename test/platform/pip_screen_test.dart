@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:parlvu/parlvu.dart';
+import 'package:partake/platform/pip.dart';
 import 'package:partake/player/player_screen.dart';
 import 'package:partake/player/player_session.dart';
 import 'package:partake/ui/open_request.dart';
@@ -139,7 +140,7 @@ void main() {
   });
 
   testWidgets(
-    'PiP headphones action switches to audio only, then closes the window',
+    'PiP headphones keeps the current stream and only hides the picture',
     (tester) async {
       final pip = FakePip(available: true);
       final engine = FakeEngine();
@@ -149,47 +150,102 @@ void main() {
           (tester.state(find.byType(PlayerScreen)) as dynamic).session
               as PlayerSession;
       expect(engine.playing, isTrue);
-      expect(engine.opened.last.url.path, endsWith('/video.m3u8'));
+      final opened = engine.opened.length;
       pip.states.add(true);
-      pip.audioOnlyRequestsController.add(null);
+      pip.actionsController.add(PipAction.audioOnly);
       await tester.pumpAndSettle();
       expect(pip.closeWindowCalls, 1);
       expect(session.controller.audioOnly, isTrue);
-      expect(engine.opened.last.url.path, endsWith('/audio.m3u8'));
-      await tester.pumpWidget(const SizedBox());
-    },
-  );
-
-  testWidgets(
-    'PiP headphones action still closes the window when no audio-only stream exists',
-    (tester) async {
-      final pip = FakePip(available: true);
-      final engine = FakeEngine();
-      await tester.pumpWidget(
-        app(pip, engine, event: audioVideoDetail(audio: false)),
-      );
-      await tester.pumpAndSettle();
-      expect(engine.playing, isTrue);
-      pip.states.add(true);
-      pip.audioOnlyRequestsController.add(null);
-      await tester.pumpAndSettle();
-      expect(pip.closeWindowCalls, 1);
+      expect(engine.opened.length, opened);
       expect(engine.opened.last.url.path, endsWith('/video.m3u8'));
       expect(engine.playing, isTrue);
       await tester.pumpWidget(const SizedBox());
     },
   );
 
-  testWidgets('PiP headphones action is ignored after the player closes', (
+  testWidgets('Show video after PiP headphones uncovers without reopening', (
     tester,
   ) async {
     final pip = FakePip(available: true);
     final engine = FakeEngine();
     await tester.pumpWidget(app(pip, engine, event: audioVideoDetail()));
     await tester.pumpAndSettle();
-    expect(pip.audioOnlyRequestsController.hasListener, isTrue);
+    final session =
+        (tester.state(find.byType(PlayerScreen)) as dynamic).session
+            as PlayerSession;
+    final opened = engine.opened.length;
+    pip.actionsController.add(PipAction.audioOnly);
+    await tester.pumpAndSettle();
+    expect(session.controller.audioOnly, isTrue);
+    await session.controller.setAudioOnly(false);
+    expect(session.controller.audioOnly, isFalse);
+    expect(engine.opened.length, opened);
     await tester.pumpWidget(const SizedBox());
-    pip.audioOnlyRequestsController.add(null);
+  });
+
+  testWidgets('PiP play/pause action toggles playback', (tester) async {
+    final pip = FakePip(available: true);
+    final engine = FakeEngine();
+    await tester.pumpWidget(app(pip, engine, event: audioVideoDetail()));
+    await tester.pumpAndSettle();
+    expect(engine.playing, isTrue);
+    pip.actionsController.add(PipAction.playPause);
+    await tester.pumpAndSettle();
+    expect(engine.playing, isFalse);
+    pip.actionsController.add(PipAction.playPause);
+    await tester.pumpAndSettle();
+    expect(engine.playing, isTrue);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('Dismissing the PiP window pauses playback', (tester) async {
+    final pip = FakePip(available: true);
+    final engine = FakeEngine();
+    await tester.pumpWidget(app(pip, engine, event: audioVideoDetail()));
+    await tester.pumpAndSettle();
+    expect(engine.playing, isTrue);
+    pip.actionsController.add(PipAction.dismissed);
+    await tester.pumpAndSettle();
+    expect(engine.playing, isFalse);
+    expect(pip.closeWindowCalls, 0);
+    pip.actionsController.add(PipAction.dismissed);
+    await tester.pumpAndSettle();
+    expect(engine.playing, isFalse);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('PiP window is told when playback pauses and resumes', (
+    tester,
+  ) async {
+    final pip = FakePip(available: true);
+    final engine = FakeEngine();
+    await tester.pumpWidget(app(pip, engine, event: audioVideoDetail()));
+    await tester.pumpAndSettle();
+    expect(pip.setPlayingCalls.last, isTrue);
+    pip.actionsController.add(PipAction.playPause);
+    await tester.pumpAndSettle();
+    expect(pip.setPlayingCalls.last, isFalse);
+    pip.actionsController.add(PipAction.playPause);
+    await tester.pumpAndSettle();
+    expect(pip.setPlayingCalls.last, isTrue);
+    for (var i = 1; i < pip.setPlayingCalls.length; i++) {
+      expect(pip.setPlayingCalls[i], isNot(pip.setPlayingCalls[i - 1]));
+    }
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('PiP actions are ignored after the player closes', (
+    tester,
+  ) async {
+    final pip = FakePip(available: true);
+    final engine = FakeEngine();
+    await tester.pumpWidget(app(pip, engine, event: audioVideoDetail()));
+    await tester.pumpAndSettle();
+    expect(pip.actionsController.hasListener, isTrue);
+    await tester.pumpWidget(const SizedBox());
+    for (final action in PipAction.values) {
+      pip.actionsController.add(action);
+    }
     await tester.pumpAndSettle();
     expect(pip.closeWindowCalls, 0);
     expect(tester.takeException(), isNull);

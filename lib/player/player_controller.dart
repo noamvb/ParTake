@@ -176,10 +176,15 @@ class PlayerController extends ChangeNotifier {
     return candidates.first;
   }
 
-  Future<void> setAudioOnly(bool on) async {
+  Future<void> setAudioOnly(bool on, {bool keepStream = false}) async {
     if (on == audioOnly) return;
-    if (!audioOnlySwapsStream) {
-      _videoCovered = on;
+    if (!on && _videoCovered) {
+      _videoCovered = false;
+      notifyListeners();
+      return;
+    }
+    if (on && (keepStream || !audioOnlySwapsStream)) {
+      _videoCovered = true;
       notifyListeners();
       return;
     }

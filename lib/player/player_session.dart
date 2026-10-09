@@ -48,8 +48,8 @@ class PlayerSession extends ChangeNotifier {
     audioHandler?.attach(controller, title: request.title);
     // Android shrinks the activity; browsers pop out only the video element.
     if (pip?.available == true && !kIsWeb) {
-      _audioOnlySubscription = pip!.audioOnlyRequests.listen((_) {
-        unawaited(_requestAudioOnly());
+      _pipActionSubscription = pip!.actions.listen((action) {
+        unawaited(_requestPipAction(action));
       });
       _pipSubscription = pip!.active.listen((active) {
         if (_closed || active == _pipActive) return;
@@ -89,9 +89,10 @@ class PlayerSession extends ChangeNotifier {
   late final PlayerController controller;
   late final LiveCaptionFeed _liveCaptions;
   late final Future<void> _opening;
-  StreamSubscription<void>? _audioOnlySubscription;
+  StreamSubscription<PipAction>? _pipActionSubscription;
   StreamSubscription<bool>? _pipSubscription;
   StreamSubscription<bool>? _playingSubscription;
+  bool? _lastPipPlaying;
   bool _pipActive = false;
   bool _autoPip = false;
   bool _minimized = false;
@@ -141,6 +142,12 @@ class PlayerSession extends ChangeNotifier {
       }
     }
     _syncAutoEnter();
+    if (pip?.available == true &&
+        !kIsWeb &&
+        controller.playing != _lastPipPlaying) {
+      _lastPipPlaying = controller.playing;
+      unawaited(pip!.setPlaying(controller.playing));
+    }
     notifyListeners();
   }
 
@@ -158,12 +165,19 @@ class PlayerSession extends ChangeNotifier {
     unawaited(pip!.setAutoEnter(shouldAutoEnter));
   }
 
-  Future<void> _requestAudioOnly() async {
+  Future<void> _requestPipAction(PipAction action) async {
     if (_closed) return;
-    try {
-      await controller.setAudioOnly(true);
-    } finally {
-      await pip!.closeWindow();
+    switch (action) {
+      case PipAction.audioOnly:
+        try {
+          await controller.setAudioOnly(true, keepStream: true);
+        } finally {
+          await pip!.closeWindow();
+        }
+      case PipAction.playPause:
+        await controller.togglePlay();
+      case PipAction.dismissed:
+        if (controller.playing) await controller.togglePlay();
     }
   }
 
@@ -181,7 +195,7 @@ class PlayerSession extends ChangeNotifier {
 
   Future<void> _finishClose() async {
     await _pipSubscription?.cancel();
-    await _audioOnlySubscription?.cancel();
+    await _pipActionSubscription?.cancel();
     await _playingSubscription?.cancel();
     // An event opened by a notification may still be loading when closed.
     await _opening;
