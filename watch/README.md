@@ -76,3 +76,38 @@ backfilling from 26 May 2025 and refreshing yesterday, today and upcoming events
 Each run loads English archived captions for up to five adjourned events,
 retains raw listings and event pages, and records its health under `parlvu`.
 Pages without captions are retried up to three times; requests pause 1 s apart.
+
+## Caption paragraphs and speaker accuracy (Phase 2)
+
+`watch.speaker.CallIndex(members_rows, ministries_rows)` resolves the last
+call in a presiding speech by riding (exact or a conservative fuzzy match),
+ministry title, or a unique surname when `committee=True`. `label(text)`
+recognizes presiding and interpreter labels, including bracketed interpreter
+labels. Unknown or ambiguous calls return no guess; incomplete titles and
+heavily garbled riding names are left unknown.
+
+`watch.segment.segment_event(db, event_id, index)` writes complete caption
+speeches as paragraphs of at most 200 words; `segment_all(db, index)` handles
+eligible events without an official document. Segmentation starts with archive
+captions when available, otherwise live captions, and keeps that source after
+paragraphs exist. The `segment:<event>` metadata saves the line and character
+cursor, speech and paragraph numbers, speaker state, and speech spans. Repeated
+calls resume without duplicate text, and an adjourned archive's final speech
+can be extended when another batch arrives. A call applies to one member
+speech, with interpreter speeches inheriting the guess.
+
+`watch.align.align(interventions, lines)` matches the first eight normalized
+English tokens of each official intervention against caption words within
+one minute before to seven minutes after its minute bucket. Matches require
+at least five equal tokens, preserve chronological order, and retain the first
+best score on a tie. Bisected word times bound each search; unmatched or short
+interventions return `None`, with no interpolation.
+
+`watch.accuracy.measure(db, event_id)` compares guesses with stored official
+speakers at aligned caption speech times. Run
+`python3 -m watch.accuracy --data "$D" --event 45735 --event 45822` to print one
+JSON object per event with counts, precision, recall, results by call type,
+and up to 20 errors (including missed guesses). Both official and caption
+paragraphs must already be stored. Fixture precision/recall are 87.9%/28.4%
+for House sitting 149 and 100%/16.7% for INDU meeting 50; abbreviations, missing
+calls, and distorted captions limit recall under the conservative rules.
