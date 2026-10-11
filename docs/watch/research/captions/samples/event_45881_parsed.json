@@ -1,0 +1,200 @@
+{
+  "availableStreams": [
+    {
+      "GlobalEssenceFormatId": 15,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 2,
+      "StreamFormatId": 1622,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-fl/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-09/45881_CC39%20Meeting%20No.%201_08-51-34_VL.mp4/playlist.m3u8?audioindex=2",
+      "Lang": "fl",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 7229,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": false,
+      "Id": 577987,
+      "Tag": "Floor Video"
+    },
+    {
+      "GlobalEssenceFormatId": 16,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 0,
+      "StreamFormatId": 1621,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-fr/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-09/45881_CC39%20Meeting%20No.%201_08-51-34_VL.mp4/playlist.m3u8?audioindex=0&wowzalanguage=fra",
+      "Lang": "fr",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 7229,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": true,
+      "Id": 577986,
+      "Tag": "French Video"
+    },
+    {
+      "GlobalEssenceFormatId": 14,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 1,
+      "StreamFormatId": 1620,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-en/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-09/45881_CC39%20Meeting%20No.%201_08-51-34_VL.mp4/playlist.m3u8?audioindex=1&wowzalanguage=eng",
+      "Lang": "en",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 7229,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": true,
+      "Id": 577985,
+      "Tag": "English Video"
+    },
+    {
+      "GlobalEssenceFormatId": 25,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": true,
+      "VideoIndex": null,
+      "AudioIndex": null,
+      "StreamFormatId": 1631,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-09/45881_CC39%20Meeting%20No.%201_08-51-34_FL.mp4/playlist.m3u8?audioindex=0",
+      "Lang": "fl",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 7229,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": false,
+      "Id": 577996,
+      "Tag": "Floor Audio"
+    },
+    {
+      "GlobalEssenceFormatId": 24,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": true,
+      "VideoIndex": null,
+      "AudioIndex": null,
+      "StreamFormatId": 1630,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-09/45881_CC39%20Meeting%20No.%201_08-51-34_FR.mp4/playlist.m3u8?audioindex=0",
+      "Lang": "fr",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 7229,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": false,
+      "Id": 577995,
+      "Tag": "French Audio"
+    },
+    {
+      "GlobalEssenceFormatId": 23,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": true,
+      "VideoIndex": null,
+      "AudioIndex": null,
+      "StreamFormatId": 1629,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-09/45881_CC39%20Meeting%20No.%201_08-51-34_EN.mp4/playlist.m3u8?audioindex=0",
+      "Lang": "en",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 7229,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": false,
+      "Id": 577994,
+      "Tag": "English Audio"
+    }
+  ],
+  "EventInfo": {
+    "id": "45881",
+    "children": null,
+    "textTags": {
+      "TITLE": {
+        "id": "45881",
+        "text": "CC39 Meeting No. 1"
+      },
+      "DESCRIPTION": {
+        "id": "45881",
+        "text": "Meeting No. 1 CC39 - Legislative Committee on Bill C-39"
+      },
+      "LOCATION": {
+        "id": "45881",
+        "text": "Wellington Building - 425"
+      },
+      "MEETINGSTATUS": {
+        "id": "45881",
+        "text": "-1"
+      },
+      "SCHEDULEDDURATION": {
+        "id": "45881",
+        "text": "7139"
+      },
+      "scheduledDate": {
+        "id": "45881",
+        "text": "Friday, Oct 9, 2026"
+      },
+      "scheduledTime": {
+        "id": "45881",
+        "text": "08:52 - 10:51"
+      },
+      "scheduledDuration": {
+        "id": "45881",
+        "text": "1 Hour 58 Minutes"
+      },
+      "actualDate": {
+        "id": "45881",
+        "text": "Friday, Oct 9, 2026"
+      },
+      "actualTime": {
+        "id": "45881",
+        "text": "08:52 - 10:51"
+      },
+      "actualDuration": {
+        "id": "45881",
+        "text": "1 Hour 58 Minutes"
+      },
+      "eventStatus": {
+        "id": "45881",
+        "text": "Adjourned"
+      },
+      "eventStatusClass": {
+        "id": "45881",
+        "text": "eventTableEnded"
+      }
+    },
+    "timeTags": {
+      "SCHEDULEDSTART": {
+        "id": null,
+        "timestamp": "2026-10-09T08:52:04.0000000"
+      },
+      "STARTTIME": {
+        "id": null,
+        "timestamp": "2026-10-09T08:52:04.0000000"
+      },
+      "ENDTIME": {
+        "id": null,
+        "timestamp": "2026-10-09T10:51:03.0000000"
+      },
+      "MODIFIED": {
+        "id": null,
+        "timestamp": "2026-10-09T10:55:43.0000000"
+      }
+    }
+  }
+}

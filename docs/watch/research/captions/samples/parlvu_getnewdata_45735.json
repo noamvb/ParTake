@@ -1,0 +1,85 @@
+[
+  {
+    "id": "45735",
+    "children": null,
+    "textTags": {
+      "TITLE": {
+        "id": "45735",
+        "text": "HoC Sitting No. 149"
+      },
+      "DESCRIPTION": {
+        "id": "45735",
+        "text": "Sitting No. 149 House of Commons"
+      },
+      "LOCATION": {
+        "id": "45735",
+        "text": "West Block - Chamber"
+      },
+      "MEETINGSTATUS": {
+        "id": "45735",
+        "text": "-1"
+      },
+      "SCHEDULEDDURATION": {
+        "id": "45735",
+        "text": "16200"
+      },
+      "scheduledDate": {
+        "id": "45735",
+        "text": "Friday, Oct 9, 2026"
+      },
+      "scheduledTime": {
+        "id": "45735",
+        "text": "10:00 - 14:30"
+      },
+      "scheduledDuration": {
+        "id": "45735",
+        "text": "4 Hours 30 Minutes"
+      },
+      "actualDate": {
+        "id": "45735",
+        "text": "Friday, Oct 9, 2026"
+      },
+      "actualTime": {
+        "id": "45735",
+        "text": "10:01 - 14:31"
+      },
+      "actualDuration": {
+        "id": "45735",
+        "text": "4 Hours 30 Minutes"
+      },
+      "eventStatus": {
+        "id": "45735",
+        "text": "Adjourned"
+      },
+      "eventStatusClass": {
+        "id": "45735",
+        "text": "eventTableEnded"
+      }
+    },
+    "timeTags": {
+      "SCHEDULEDSTART": {
+        "id": null,
+        "timestamp": "2026-10-09T10:00:00.0000000"
+      },
+      "STARTTIME": {
+        "id": null,
+        "timestamp": "2026-10-09T10:01:04.0000000"
+      },
+      "ENDTIME": {
+        "id": null,
+        "timestamp": "2026-10-09T14:31:27.0000000"
+      },
+      "MODIFIED": {
+        "id": null,
+        "timestamp": "2026-10-09T14:40:05.0000000"
+      }
+    }
+  },
+  [],
+  [],
+  [],
+  [],
+  false,
+  [],
+  []
+]

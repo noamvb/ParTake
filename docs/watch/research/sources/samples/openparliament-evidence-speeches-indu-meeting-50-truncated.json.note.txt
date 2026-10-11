@@ -1,0 +1,3 @@
+Committee evidence speeches truncated to first 20 speeches via limit=20 query parameter to keep payload under 200 KB.
+Follow pagination.next_url for subsequent pages.
+Original URL: https://api.openparliament.ca/speeches/?document=/committees/industry-and-technology/45-1/50/&format=json&limit=20

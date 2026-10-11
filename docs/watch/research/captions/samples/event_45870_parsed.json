@@ -1,0 +1,260 @@
+{
+  "availableStreams": [
+    {
+      "GlobalEssenceFormatId": 31,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 2,
+      "StreamFormatId": 1888,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-fl/_definst_/mp4:azrhoc02/archives/PVHD/2026/2026-10-08/45870_FINA%20Meeting%20No.%2053_10-00-19_VH.mp4/playlist.m3u8?audioindex=2",
+      "Lang": "fl",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 11970,
+      "Label": null,
+      "Description": null,
+      "IsHd": true,
+      "EnableCC": false,
+      "Id": 577747,
+      "Tag": "Floor Video"
+    },
+    {
+      "GlobalEssenceFormatId": 30,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 0,
+      "StreamFormatId": 1887,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-fr/_definst_/mp4:azrhoc02/archives/PVHD/2026/2026-10-08/45870_FINA%20Meeting%20No.%2053_10-00-19_VH.mp4/playlist.m3u8?audioindex=0&wowzalanguage=fra",
+      "Lang": "fr",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 11970,
+      "Label": null,
+      "Description": null,
+      "IsHd": true,
+      "EnableCC": true,
+      "Id": 577746,
+      "Tag": "French Video"
+    },
+    {
+      "GlobalEssenceFormatId": 29,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 1,
+      "StreamFormatId": 1886,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-en/_definst_/mp4:azrhoc02/archives/PVHD/2026/2026-10-08/45870_FINA%20Meeting%20No.%2053_10-00-19_VH.mp4/playlist.m3u8?audioindex=1&wowzalanguage=eng",
+      "Lang": "en",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 11970,
+      "Label": null,
+      "Description": null,
+      "IsHd": true,
+      "EnableCC": true,
+      "Id": 577745,
+      "Tag": "English Video"
+    },
+    {
+      "GlobalEssenceFormatId": 32,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 2,
+      "StreamFormatId": 1885,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-fl/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-08/45870_FINA%20Meeting%20No.%2053_10-00-19_VL.mp4/playlist.m3u8?audioindex=2",
+      "Lang": "fl",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 11970,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": false,
+      "Id": 577744,
+      "Tag": "Floor Video SD"
+    },
+    {
+      "GlobalEssenceFormatId": 33,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 0,
+      "StreamFormatId": 1884,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-fr/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-08/45870_FINA%20Meeting%20No.%2053_10-00-19_VL.mp4/playlist.m3u8?audioindex=0&wowzalanguage=fra",
+      "Lang": "fr",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 11970,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": true,
+      "Id": 577743,
+      "Tag": "French Video SD"
+    },
+    {
+      "GlobalEssenceFormatId": 34,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 1,
+      "StreamFormatId": 1883,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-en/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-08/45870_FINA%20Meeting%20No.%2053_10-00-19_VL.mp4/playlist.m3u8?audioindex=1&wowzalanguage=eng",
+      "Lang": "en",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 11970,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": true,
+      "Id": 577742,
+      "Tag": "English Video SD"
+    },
+    {
+      "GlobalEssenceFormatId": 25,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": true,
+      "VideoIndex": null,
+      "AudioIndex": null,
+      "StreamFormatId": 1894,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-08/45870_FINA%20Meeting%20No.%2053_10-00-19_FL.mp4/playlist.m3u8?audioindex=0",
+      "Lang": "fl",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 11970,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": false,
+      "Id": 577753,
+      "Tag": "Floor Audio"
+    },
+    {
+      "GlobalEssenceFormatId": 24,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": true,
+      "VideoIndex": null,
+      "AudioIndex": null,
+      "StreamFormatId": 1893,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-08/45870_FINA%20Meeting%20No.%2053_10-00-19_FR.mp4/playlist.m3u8?audioindex=0",
+      "Lang": "fr",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 11970,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": false,
+      "Id": 577752,
+      "Tag": "French Audio"
+    },
+    {
+      "GlobalEssenceFormatId": 23,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": true,
+      "VideoIndex": null,
+      "AudioIndex": null,
+      "StreamFormatId": 1892,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-08/45870_FINA%20Meeting%20No.%2053_10-00-19_EN.mp4/playlist.m3u8?audioindex=0",
+      "Lang": "en",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 11970,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": false,
+      "Id": 577751,
+      "Tag": "English Audio"
+    }
+  ],
+  "EventInfo": {
+    "id": "45870",
+    "children": null,
+    "textTags": {
+      "TITLE": {
+        "id": "45870",
+        "text": "FINA Meeting No. 53"
+      },
+      "DESCRIPTION": {
+        "id": "45870",
+        "text": "Meeting No. 53 FINA - Standing Committee on Finance"
+      },
+      "LOCATION": {
+        "id": "45870",
+        "text": "Wellington Building - 415"
+      },
+      "MEETINGSTATUS": {
+        "id": "45870",
+        "text": "-1"
+      },
+      "SCHEDULEDDURATION": {
+        "id": "45870",
+        "text": "11880"
+      },
+      "scheduledDate": {
+        "id": "45870",
+        "text": "Thursday, Oct 8, 2026"
+      },
+      "scheduledTime": {
+        "id": "45870",
+        "text": "10:00 - 13:18"
+      },
+      "scheduledDuration": {
+        "id": "45870",
+        "text": "3 Hours 18 Minutes"
+      },
+      "actualDate": {
+        "id": "45870",
+        "text": "Thursday, Oct 8, 2026"
+      },
+      "actualTime": {
+        "id": "45870",
+        "text": "10:00 - 13:18"
+      },
+      "actualDuration": {
+        "id": "45870",
+        "text": "3 Hours 18 Minutes"
+      },
+      "eventStatus": {
+        "id": "45870",
+        "text": "Adjourned"
+      },
+      "eventStatusClass": {
+        "id": "45870",
+        "text": "eventTableEnded"
+      }
+    },
+    "timeTags": {
+      "SCHEDULEDSTART": {
+        "id": null,
+        "timestamp": "2026-10-08T10:00:49.0000000"
+      },
+      "STARTTIME": {
+        "id": null,
+        "timestamp": "2026-10-08T10:00:49.0000000"
+      },
+      "ENDTIME": {
+        "id": null,
+        "timestamp": "2026-10-08T13:18:49.0000000"
+      },
+      "MODIFIED": {
+        "id": null,
+        "timestamp": "2026-10-08T13:25:13.0000000"
+      }
+    }
+  }
+}

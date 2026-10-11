@@ -1,0 +1,4 @@
+Original sitting 149 XML (HAN149-E.XML) was 366999 bytes (>200 KB limit).
+Truncated after the initial second-reading debate on Bill C-37 (First Nations Clean Water Act)
+and cleanly closed with </HansardBody></Hansard>.
+Original URL: https://www.ourcommons.ca/Content/House/451/Debates/149/HAN149-E.XML

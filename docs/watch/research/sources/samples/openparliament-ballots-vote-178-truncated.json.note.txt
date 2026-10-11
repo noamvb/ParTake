@@ -1,0 +1,2 @@
+Per-MP ballots truncated to first 20 ballots via limit=20 query parameter to keep payload under 200 KB.
+Original URL: https://api.openparliament.ca/votes/ballots/?vote=/votes/45-1/178/&format=json&limit=20

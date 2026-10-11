@@ -1,0 +1,130 @@
+{
+  "objects": [
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/ziad-aboultaif/",
+      "politician_membership_url": "/politicians/memberships/4208/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/sima-acan/",
+      "politician_membership_url": "/politicians/memberships/4769/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/scott-aitchison/",
+      "politician_membership_url": "/politicians/memberships/4548/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/fares-al-soud/",
+      "politician_membership_url": "/politicians/memberships/4760/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/dan-albas/",
+      "politician_membership_url": "/politicians/memberships/4841/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/shafqat-ali/",
+      "politician_membership_url": "/politicians/memberships/4730/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/dean-allison/",
+      "politician_membership_url": "/politicians/memberships/4286/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/rebecca-alty/",
+      "politician_membership_url": "/politicians/memberships/4852/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/anita-anand/",
+      "politician_membership_url": "/politicians/memberships/4768/",
+      "ballot": "Paired"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/gary-anandasangaree/",
+      "politician_membership_url": "/politicians/memberships/4779/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/scott-anderson/",
+      "politician_membership_url": "/politicians/memberships/4850/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/carol-anstey/",
+      "politician_membership_url": "/politicians/memberships/4671/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/mel-arnold/",
+      "politician_membership_url": "/politicians/memberships/4832/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/chak-au/",
+      "politician_membership_url": "/politicians/memberships/4843/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/tatiana-auguste/",
+      "politician_membership_url": "/politicians/memberships/4861/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/roman-baber/",
+      "politician_membership_url": "/politicians/memberships/4791/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/burton-bailey/",
+      "politician_membership_url": "/politicians/memberships/4822/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/parm-bains/",
+      "politician_membership_url": "/politicians/memberships/4844/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/yvan-baker/",
+      "politician_membership_url": "/politicians/memberships/4532/",
+      "ballot": "Yes"
+    },
+    {
+      "vote_url": "/votes/45-1/178/",
+      "politician_url": "/politicians/tony-baldinelli/",
+      "politician_membership_url": "/politicians/memberships/4764/",
+      "ballot": "Yes"
+    }
+  ],
+  "pagination": {
+    "offset": 0,
+    "limit": 20,
+    "next_url": "/votes/ballots/?vote=%2Fvotes%2F45-1%2F178%2F&format=json&limit=20&offset=20",
+    "previous_url": null
+  }
+}

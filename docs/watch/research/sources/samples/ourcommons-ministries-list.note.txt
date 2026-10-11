@@ -1,0 +1,4 @@
+Complete machine-readable XML list of all 38 Ministers and Secretaries of State (16685 bytes uncompressed).
+Contains PersonId, PersonOfficialFirstName, PersonOfficialLastName, PersonShortHonorific, Title (portfolio),
+OrderOfPrecedence, ProvinceTerritoryName, FromDateTime, ToDateTime.
+Original URL: https://www.ourcommons.ca/Members/en/ministries/XML
