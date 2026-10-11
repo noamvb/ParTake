@@ -1,0 +1,85 @@
+[
+  {
+    "id": "45870",
+    "children": null,
+    "textTags": {
+      "TITLE": {
+        "id": "45870",
+        "text": "FINA Meeting No. 53"
+      },
+      "DESCRIPTION": {
+        "id": "45870",
+        "text": "Meeting No. 53 FINA - Standing Committee on Finance"
+      },
+      "LOCATION": {
+        "id": "45870",
+        "text": "Wellington Building - 415"
+      },
+      "MEETINGSTATUS": {
+        "id": "45870",
+        "text": "-1"
+      },
+      "SCHEDULEDDURATION": {
+        "id": "45870",
+        "text": "11880"
+      },
+      "scheduledDate": {
+        "id": "45870",
+        "text": "Thursday, Oct 8, 2026"
+      },
+      "scheduledTime": {
+        "id": "45870",
+        "text": "10:00 - 13:18"
+      },
+      "scheduledDuration": {
+        "id": "45870",
+        "text": "3 Hours 18 Minutes"
+      },
+      "actualDate": {
+        "id": "45870",
+        "text": "Thursday, Oct 8, 2026"
+      },
+      "actualTime": {
+        "id": "45870",
+        "text": "10:00 - 13:18"
+      },
+      "actualDuration": {
+        "id": "45870",
+        "text": "3 Hours 18 Minutes"
+      },
+      "eventStatus": {
+        "id": "45870",
+        "text": "Adjourned"
+      },
+      "eventStatusClass": {
+        "id": "45870",
+        "text": "eventTableEnded"
+      }
+    },
+    "timeTags": {
+      "SCHEDULEDSTART": {
+        "id": null,
+        "timestamp": "2026-10-08T10:00:49.0000000"
+      },
+      "STARTTIME": {
+        "id": null,
+        "timestamp": "2026-10-08T10:00:49.0000000"
+      },
+      "ENDTIME": {
+        "id": null,
+        "timestamp": "2026-10-08T13:18:49.0000000"
+      },
+      "MODIFIED": {
+        "id": null,
+        "timestamp": "2026-10-08T13:25:13.0000000"
+      }
+    }
+  },
+  [],
+  [],
+  [],
+  [],
+  false,
+  [],
+  []
+]

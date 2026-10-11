@@ -98,7 +98,7 @@ def _json_body(value):
     return json.dumps({"error": value}, separators=(",", ":")).encode("utf-8")
 
 
-def make_server(root: str, host: str, port: int, upstream: str, clock=None) -> ThreadingHTTPServer:
+def make_server(root: str, host: str, port: int, upstream: str, clock=None, watch_upstream=None) -> ThreadingHTTPServer:
     """Create a configured server. ``clock`` is injectable for cache tests."""
     root_path = Path(root).resolve()
     if not root_path.is_dir():
@@ -141,13 +141,13 @@ def make_server(root: str, host: str, port: int, upstream: str, clock=None) -> T
             self._handle(head=True)
 
         def do_POST(self):
-            self._method_not_allowed()
+            self._watch_or_reject()
 
         def do_PUT(self):
-            self._method_not_allowed()
+            self._watch_or_reject()
 
         def do_DELETE(self):
-            self._method_not_allowed()
+            self._watch_or_reject()
 
         def do_PATCH(self):
             self._method_not_allowed()
@@ -157,6 +157,51 @@ def make_server(root: str, host: str, port: int, upstream: str, clock=None) -> T
 
         def do_TRACE(self):
             self._method_not_allowed()
+
+        def _watch_or_reject(self):
+            if unquote(urlsplit(self.path).path).startswith("/watch/api/"):
+                self._handle(head=False)
+            else:
+                self._method_not_allowed()
+
+        def _watch(self, parts, head):
+            raw_path = parts.path
+            path = unquote(raw_path)
+            if ("\\" in path or "//" in path or "%2f" in raw_path.lower()
+                    or any(segment in (".", "..") for segment in path.split("/"))):
+                self._json_error(404, "not allowed", head)
+                return 404
+            if watch_upstream is None:
+                self._json_error(404, "watch not configured", head)
+                return 404
+            try:
+                size = int(self.headers.get("Content-Length", "0"))
+                if size < 0:
+                    raise ValueError()
+            except ValueError:
+                self._json_error(400, "invalid content length", head)
+                return 400
+            if size > 1024 * 1024:
+                self.close_connection = True
+                self._json_error(413, "body too large", head)
+                return 413
+            body = self.rfile.read(size) if size else None
+            headers = {key: self.headers[key] for key in ("Content-Type", "Authorization") if key in self.headers}
+            target = watch_upstream.rstrip("/") + "/api/" + path[len("/watch/api/"):]
+            if parts.query:
+                target += "?" + parts.query
+            request = Request(target, data=body, headers=headers, method=self.command)
+            try:
+                with opener.open(request, timeout=20) as response:
+                    status, content_type, body = response.status, response.headers.get("Content-Type"), response.read()
+            except HTTPError as exc:
+                status, content_type, body = exc.code, exc.headers.get("Content-Type"), exc.read()
+                exc.close()
+            except (URLError, TimeoutError, OSError):
+                self._json_error(502, "watch unreachable", head)
+                return 502
+            self._send(status, body, content_type or "application/octet-stream", "no-store", head)
+            return status
 
         def _method_not_allowed(self):
             started = time.monotonic()
@@ -176,6 +221,9 @@ def make_server(root: str, host: str, port: int, upstream: str, clock=None) -> T
             raw_path = parts.path
             decoded_path = unquote(raw_path)
             try:
+                if decoded_path.startswith("/watch/api/"):
+                    status = self._watch(parts, head)
+                    return
                 if decoded_path == "/healthz":
                     status = 200
                     self._send(status, b"ok", "text/plain", head=head)
@@ -286,8 +334,9 @@ def main(argv=None):
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8790)
     parser.add_argument("--upstream", default="https://parlvu.parl.gc.ca")
+    parser.add_argument("--watch-upstream")
     args = parser.parse_args(argv)
-    server = make_server(args.root, args.host, args.port, args.upstream)
+    server = make_server(args.root, args.host, args.port, args.upstream, watch_upstream=args.watch_upstream)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

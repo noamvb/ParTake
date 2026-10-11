@@ -218,5 +218,118 @@ class PartakeServerTests(unittest.TestCase):
             self.assertEqual(headers["X-Content-Type-Options"], "nosniff", path)
 
 
+class FakeWatchHandler(BaseHTTPRequestHandler):
+    records = []
+
+    def handle_watch(self):
+        body = self.rfile.read(int(self.headers.get("Content-Length", 0)))
+        type(self).records.append((self.command, self.path, body, dict(self.headers)))
+        response = b'{ "version": 7, "follows": [] }'
+        self.send_response(409 if self.command == "PUT" else 200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(response)))
+        self.end_headers()
+        if self.command != "HEAD":
+            self.wfile.write(response)
+
+    do_GET = do_HEAD = do_PUT = do_POST = do_DELETE = handle_watch
+
+    def log_message(self, *_args):
+        pass
+
+
+class WatchProxyTests(unittest.TestCase):
+    def setUp(self):
+        FakeWatchHandler.records.clear()
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        (self.root / "index.html").write_text("index")
+        self.fake = ThreadingHTTPServer(("127.0.0.1", 0), FakeWatchHandler)
+        self.run_server(self.fake)
+        self.watch_url = "http://127.0.0.1:%d" % self.fake.server_port
+        self.server = self.build(self.watch_url)
+
+    def run_server(self, server):
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        def close():
+            server.shutdown()
+            server.server_close()
+            thread.join()
+        self.addCleanup(close)
+
+    def build(self, watch_url):
+        server = make_server(str(self.root), "127.0.0.1", 0, "http://127.0.0.1:1", watch_upstream=watch_url)
+        self.run_server(server)
+        return server
+
+    def request(self, path, method="GET", body=None, headers=None, server=None):
+        conn = http.client.HTTPConnection("127.0.0.1", (server or self.server).server_port, timeout=3)
+        conn.request(method, path, body, headers or {})
+        response = conn.getresponse()
+        result = response.status, dict(response.getheaders()), response.read()
+        conn.close()
+        return result
+
+    def test_19_watch_get(self):
+        status, headers, body = self.request("/watch/api/follows?x=1")
+        self.assertEqual((status, body), (200, b'{ "version": 7, "follows": [] }'))
+        self.assertEqual(headers["Cache-Control"], "no-store")
+        self.assertEqual(headers["Content-Type"], "application/json")
+        self.assertEqual(headers["X-Content-Type-Options"], "nosniff")
+        self.assertEqual(FakeWatchHandler.records[0][:3], ("GET", "/api/follows?x=1", b""))
+        self.request("/watch/api/follows?x=1")
+        self.assertEqual(len(FakeWatchHandler.records), 2)
+        for method in ("HEAD", "POST", "DELETE"):
+            status, _headers, body = self.request("/watch/api/follows", method)
+            self.assertEqual(status, 200)
+            self.assertEqual(body, b"" if method == "HEAD" else b'{ "version": 7, "follows": [] }')
+            self.assertEqual(FakeWatchHandler.records[-1][:2], (method, "/api/follows"))
+
+    def test_20_watch_put_verbatim(self):
+        sent = b'{ "version": 0, "follows": [] }'
+        status, _headers, body = self.request("/watch/api/follows", "PUT", sent,
+                                             {"Content-Type": "application/json", "Authorization": "Bearer t0k",
+                                              "X-Do-Not-Forward": "private"})
+        self.assertEqual((status, body), (409, b'{ "version": 7, "follows": [] }'))
+        method, path, received, headers = FakeWatchHandler.records[0]
+        self.assertEqual((method, path, received), ("PUT", "/api/follows", sent))
+        self.assertEqual(headers["Authorization"], "Bearer t0k")
+        self.assertEqual(headers["Content-Type"], "application/json")
+        self.assertNotIn("X-Do-Not-Forward", headers)
+        count = len(FakeWatchHandler.records)
+        # Announce an oversize body without sending it: the server must refuse on
+        # Content-Length alone (sending 1 MiB races its early reply into a reset).
+        conn = http.client.HTTPConnection("127.0.0.1", self.server.server_port, timeout=3)
+        conn.putrequest("PUT", "/watch/api/follows")
+        conn.putheader("Content-Length", str(1024 * 1024 + 1))
+        conn.endheaders()
+        self.assertEqual(conn.getresponse().status, 413)
+        conn.close()
+        self.assertEqual(len(FakeWatchHandler.records), count)
+
+    def test_21_watch_unsafe_paths(self):
+        for path in ("/watch/api/../x", "/watch/api/a/%2e%2e/x", "/watch/api/a%2Fb", "/watch/api//x"):
+            status, _headers, body = self.request(path)
+            self.assertEqual((status, json.loads(body)), (404, {"error": "not allowed"}))
+        self.assertEqual(FakeWatchHandler.records, [])
+
+    def test_22_watch_unreachable(self):
+        closed = ThreadingHTTPServer(("127.0.0.1", 0), FakeWatchHandler)
+        port = closed.server_port
+        closed.server_close()
+        server = self.build("http://127.0.0.1:%d" % port)
+        status, _headers, body = self.request("/watch/api/follows", server=server)
+        self.assertEqual((status, json.loads(body)), (502, {"error": "watch unreachable"}))
+
+    def test_23_watch_not_configured(self):
+        server = make_server(str(self.root), "127.0.0.1", 0, "http://127.0.0.1:1")
+        self.run_server(server)
+        status, _headers, body = self.request("/watch/api/follows", server=server)
+        self.assertEqual((status, json.loads(body)), (404, {"error": "watch not configured"}))
+        self.assertEqual(self.request("/parlvu" + EVENT, "POST", server=server)[0], 405)
+
+
 if __name__ == "__main__":
     unittest.main()

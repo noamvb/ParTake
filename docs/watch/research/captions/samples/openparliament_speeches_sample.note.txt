@@ -1,0 +1,1 @@
+Truncated to first 5 speeches from https://api.openparliament.ca/speeches/?document=/debates/2026/10/9/ (full sitting has 217 speeches) to keep sample payload under 200 KB.

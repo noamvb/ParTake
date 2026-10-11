@@ -1,0 +1,243 @@
+1
+00:00:00,033 --> 00:00:50,917
+<font face="Monospace">{\an7}day.</font>
+
+2
+00:00:50,917 --> 00:00:51,351
+<font face="Monospace">{\an7}[ Speaking French ]</font>
+
+3
+00:00:51,351 --> 00:00:51,818
+<font face="Monospace">{\an7}Government orders.</font>
+
+4
+00:00:51,818 --> 00:00:52,786
+<font face="Monospace">{\an7}Government bills commons.</font>
+
+5
+00:00:52,786 --> 00:00:53,987
+<font face="Monospace">{\an7}Consideration at second reading</font>
+
+6
+00:00:53,987 --> 00:00:57,257
+<font face="Monospace">{\an7}of Bill C-37, Firs First Nations</font>
+
+7
+00:00:57,257 --> 00:01:05,832
+<font face="Monospace">{\an7}Clean Water Act.</font>
+
+8
+00:01:05,832 --> 00:01:11,871
+<font face="Monospace">{\an7}>> The Speaker: Mrs. Valdés</font>
+
+9
+00:01:11,871 --> 00:01:16,876
+<font face="Monospace">{\an7}seconded by Mr. Knight -- by</font>
+
+10
+00:01:16,876 --> 00:01:20,814
+<font face="Monospace">{\an7}Ms. Knight -- Mrs.</font>
+
+11
+00:01:20,814 --> 00:01:25,085
+<font face="Monospace">{\an7}McKnight, my apologies.</font>
+
+12
+00:01:25,085 --> 00:01:27,087
+<font face="Monospace">{\an7}Moves that the bill now be read</font>
+
+13
+00:01:27,087 --> 00:01:29,389
+<font face="Monospace">{\an7}a second time and referred to</font>
+
+14
+00:01:29,389 --> 00:01:29,923
+<font face="Monospace">{\an7}the standing Committee on</font>
+
+15
+00:01:29,923 --> 00:01:33,660
+<font face="Monospace">{\an7}Indigenous and Northern Affairs.</font>
+
+16
+00:01:33,660 --> 00:01:34,627
+<font face="Monospace">{\an7}Debate.</font>
+
+17
+00:01:34,627 --> 00:01:35,395
+<font face="Monospace">{\an7}The Honourable Minister of</font>
+
+18
+00:01:35,395 --> 00:01:42,402
+<font face="Monospace">{\an7}indigenous Services.</font>
+
+19
+00:01:42,402 --> 00:01:43,503
+<font face="Monospace">{\an7}[ Speaking Indigenous</font>
+
+20
+00:01:43,503 --> 00:01:45,004
+<font face="Monospace">{\an7}Language ]</font>
+
+21
+00:01:45,004 --> 00:01:45,672
+<font face="Monospace">{\an7}>> Hello.</font>
+
+22
+00:01:45,672 --> 00:01:46,005
+<font face="Monospace">{\an7}Bonjour.</font>
+
+23
+00:01:46,005 --> 00:01:49,609
+<font face="Monospace">{\an7}I rise today as a proud member</font>
+
+24
+00:01:49,609 --> 00:01:52,212
+<font face="Monospace">{\an7}of my community and also as the</font>
+
+25
+00:01:52,212 --> 00:01:53,213
+<font face="Monospace">{\an7}Minister of Indigenous services</font>
+
+26
+00:01:53,213 --> 00:01:55,682
+<font face="Monospace">{\an7}to speak on Bill C-37, the First</font>
+
+27
+00:01:55,682 --> 00:01:59,252
+<font face="Monospace">{\an7}Nations clean drinking water</font>
+
+28
+00:01:59,252 --> 00:01:59,419
+<font face="Monospace">{\an7}Act.</font>
+
+29
+00:01:59,419 --> 00:02:01,888
+<font face="Monospace">{\an7}I understand firsthand the</font>
+
+30
+00:02:01,888 --> 00:02:02,989
+<font face="Monospace">{\an7}importance of the protecting</font>
+
+31
+00:02:02,989 --> 00:02:04,190
+<font face="Monospace">{\an7}water in our communities, and I</font>
+
+32
+00:02:04,190 --> 00:02:05,825
+<font face="Monospace">{\an7}understand the impact of losing</font>
+
+33
+00:02:05,825 --> 00:02:05,992
+<font face="Monospace">{\an7}it.</font>
+
+34
+00:02:05,992 --> 00:02:08,761
+<font face="Monospace">{\an7}I grew up in a Nation was water</font>
+
+35
+00:02:08,761 --> 00:02:11,931
+<font face="Monospace">{\an7}was never something to take for</font>
+
+36
+00:02:11,931 --> 00:02:12,265
+<font face="Monospace">{\an7}granted.</font>
+
+37
+00:02:12,265 --> 00:02:14,134
+<font face="Monospace">{\an7}Whenever we need fresh water, I</font>
+
+38
+00:02:14,134 --> 00:02:16,002
+<font face="Monospace">{\an7}remember being sent with a small</font>
+
+39
+00:02:16,002 --> 00:02:17,637
+<font face="Monospace">{\an7}pot to collect it and to bring</font>
+
+40
+00:02:17,637 --> 00:02:19,239
+<font face="Monospace">{\an7}it back to our camp.</font>
+
+41
+00:02:19,239 --> 00:02:21,374
+<font face="Monospace">{\an7}This was a communal</font>
+
+42
+00:02:21,374 --> 00:02:22,342
+<font face="Monospace">{\an7}responsibility in carrying water</font>
+
+43
+00:02:22,342 --> 00:02:24,644
+<font face="Monospace">{\an7}for my grandmother was simply a</font>
+
+44
+00:02:24,644 --> 00:02:26,045
+<font face="Monospace">{\an7}part of daily life.</font>
+
+45
+00:02:26,045 --> 00:02:27,580
+<font face="Monospace">{\an7}That water gave her what she</font>
+
+46
+00:02:27,580 --> 00:02:29,449
+<font face="Monospace">{\an7}needed to make sure that she was</font>
+
+47
+00:02:29,449 --> 00:02:33,853
+<font face="Monospace">{\an7}able to cook, clean, and</font>
+
+48
+00:02:33,853 --> 00:02:34,420
+<font face="Monospace">{\an7}sometimes even bathe babies.</font>
+
+49
+00:02:34,420 --> 00:02:34,854
+<font face="Monospace">{\an7}[ Speaking French ]</font>
+
+50
+00:02:34,854 --> 00:02:35,388
+<font face="Monospace">{\an7}(Voice of Interpreter):</font>
+
+51
+00:02:35,388 --> 00:02:38,758
+<font face="Monospace">{\an7}These are the moments that</font>
+
+52
+00:02:38,758 --> 00:02:41,161
+<font face="Monospace">{\an7}taught me so young that water’s</font>
+
+53
+00:02:41,161 --> 00:02:42,428
+<font face="Monospace">{\an7}far more than a resource;</font>
+
+54
+00:02:42,428 --> 00:02:44,664
+<font face="Monospace">{\an7}It is something we respect, that</font>
+
+55
+00:02:44,664 --> 00:02:46,666
+<font face="Monospace">{\an7}we protect, and that we care</font>
+
+56
+00:02:46,666 --> 00:02:51,237
+<font face="Monospace">{\an7}for.</font>
+
+57
+00:02:51,237 --> 00:02:54,807
+<font face="Monospace">{\an7}It connects us to each other and</font>
+
+58
+00:02:54,807 --> 00:02:56,476
+<font face="Monospace">{\an7}to our family and to the land.</font>
+
+59
+00:02:56,476 --> 00:02:57,410
+<font face="Monospace">{\an7}(End of Interpretation)</font>
+
+60
+00:02:57,410 --> 00:02:59,212
+<font face="Monospace">{\an7}-- to clean and safe drinking</font>
+
+61
+00:02:59,212 --> 00:03:01,381
+<font face="Monospace">{\an7}water is one of my highest</font>

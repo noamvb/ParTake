@@ -1,0 +1,260 @@
+{
+  "availableStreams": [
+    {
+      "GlobalEssenceFormatId": 31,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 2,
+      "StreamFormatId": 1792,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-fl/_definst_/mp4:azrhoc02/archives/PVHD/2026/2026-10-09/45735_HoC%20Sitting%20No.%20149_10-00-34_VH.mp4/playlist.m3u8?audioindex=2",
+      "Lang": "fl",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 16313,
+      "Label": null,
+      "Description": null,
+      "IsHd": true,
+      "EnableCC": false,
+      "Id": 575743,
+      "Tag": "Floor Video"
+    },
+    {
+      "GlobalEssenceFormatId": 30,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 0,
+      "StreamFormatId": 1791,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-fr/_definst_/mp4:azrhoc02/archives/PVHD/2026/2026-10-09/45735_HoC%20Sitting%20No.%20149_10-00-34_VH.mp4/playlist.m3u8?audioindex=0&wowzalanguage=fra",
+      "Lang": "fr",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 16313,
+      "Label": null,
+      "Description": null,
+      "IsHd": true,
+      "EnableCC": true,
+      "Id": 575742,
+      "Tag": "French Video"
+    },
+    {
+      "GlobalEssenceFormatId": 29,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 1,
+      "StreamFormatId": 1790,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-en/_definst_/mp4:azrhoc02/archives/PVHD/2026/2026-10-09/45735_HoC%20Sitting%20No.%20149_10-00-34_VH.mp4/playlist.m3u8?audioindex=1&wowzalanguage=eng",
+      "Lang": "en",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 16313,
+      "Label": null,
+      "Description": null,
+      "IsHd": true,
+      "EnableCC": true,
+      "Id": 575741,
+      "Tag": "English Video"
+    },
+    {
+      "GlobalEssenceFormatId": 32,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 2,
+      "StreamFormatId": 1789,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-fl/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-09/45735_HoC%20Sitting%20No.%20149_10-00-34_VL.mp4/playlist.m3u8?audioindex=2",
+      "Lang": "fl",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 16313,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": false,
+      "Id": 575740,
+      "Tag": "Floor Video SD"
+    },
+    {
+      "GlobalEssenceFormatId": 33,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 0,
+      "StreamFormatId": 1788,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-fr/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-09/45735_HoC%20Sitting%20No.%20149_10-00-34_VL.mp4/playlist.m3u8?audioindex=0&wowzalanguage=fra",
+      "Lang": "fr",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 16313,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": true,
+      "Id": 575739,
+      "Tag": "French Video SD"
+    },
+    {
+      "GlobalEssenceFormatId": 34,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": false,
+      "VideoIndex": null,
+      "AudioIndex": 1,
+      "StreamFormatId": 1787,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc-en/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-09/45735_HoC%20Sitting%20No.%20149_10-00-34_VL.mp4/playlist.m3u8?audioindex=1&wowzalanguage=eng",
+      "Lang": "en",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 16313,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": true,
+      "Id": 575738,
+      "Tag": "English Video SD"
+    },
+    {
+      "GlobalEssenceFormatId": 25,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": true,
+      "VideoIndex": null,
+      "AudioIndex": null,
+      "StreamFormatId": 1798,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-09/45735_HoC%20Sitting%20No.%20149_10-00-34_FL.mp4/playlist.m3u8?audioindex=0",
+      "Lang": "fl",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 16313,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": false,
+      "Id": 575749,
+      "Tag": "Floor Audio"
+    },
+    {
+      "GlobalEssenceFormatId": 24,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": true,
+      "VideoIndex": null,
+      "AudioIndex": null,
+      "StreamFormatId": 1797,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-09/45735_HoC%20Sitting%20No.%20149_10-00-34_FR.mp4/playlist.m3u8?audioindex=0",
+      "Lang": "fr",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 16313,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": false,
+      "Id": 575748,
+      "Tag": "French Audio"
+    },
+    {
+      "GlobalEssenceFormatId": 23,
+      "IsLive": false,
+      "Enabled": true,
+      "AudioOnly": true,
+      "VideoIndex": null,
+      "AudioIndex": null,
+      "StreamFormatId": 1796,
+      "Url": "https://parlvuvod01.azureedge.net/pvvodhoc/_definst_/mp4:azrhoc02/archives/PV750/2026/2026-10-09/45735_HoC%20Sitting%20No.%20149_10-00-34_EN.mp4/playlist.m3u8?audioindex=0",
+      "Lang": "en",
+      "StreamAssemblerList": null,
+      "PreRoll": 30.0,
+      "Duration": 16313,
+      "Label": null,
+      "Description": null,
+      "IsHd": false,
+      "EnableCC": false,
+      "Id": 575747,
+      "Tag": "English Audio"
+    }
+  ],
+  "EventInfo": {
+    "id": "45735",
+    "children": null,
+    "textTags": {
+      "TITLE": {
+        "id": "45735",
+        "text": "HoC Sitting No. 149"
+      },
+      "DESCRIPTION": {
+        "id": "45735",
+        "text": "Sitting No. 149 House of Commons"
+      },
+      "LOCATION": {
+        "id": "45735",
+        "text": "West Block - Chamber"
+      },
+      "MEETINGSTATUS": {
+        "id": "45735",
+        "text": "-1"
+      },
+      "SCHEDULEDDURATION": {
+        "id": "45735",
+        "text": "16200"
+      },
+      "scheduledDate": {
+        "id": "45735",
+        "text": "Friday, Oct 9, 2026"
+      },
+      "scheduledTime": {
+        "id": "45735",
+        "text": "10:00 - 14:30"
+      },
+      "scheduledDuration": {
+        "id": "45735",
+        "text": "4 Hours 30 Minutes"
+      },
+      "actualDate": {
+        "id": "45735",
+        "text": "Friday, Oct 9, 2026"
+      },
+      "actualTime": {
+        "id": "45735",
+        "text": "10:01 - 14:31"
+      },
+      "actualDuration": {
+        "id": "45735",
+        "text": "4 Hours 30 Minutes"
+      },
+      "eventStatus": {
+        "id": "45735",
+        "text": "Adjourned"
+      },
+      "eventStatusClass": {
+        "id": "45735",
+        "text": "eventTableEnded"
+      }
+    },
+    "timeTags": {
+      "SCHEDULEDSTART": {
+        "id": null,
+        "timestamp": "2026-10-09T10:00:00.0000000"
+      },
+      "STARTTIME": {
+        "id": null,
+        "timestamp": "2026-10-09T10:01:04.0000000"
+      },
+      "ENDTIME": {
+        "id": null,
+        "timestamp": "2026-10-09T14:31:27.0000000"
+      },
+      "MODIFIED": {
+        "id": null,
+        "timestamp": "2026-10-09T14:40:05.0000000"
+      }
+    }
+  }
+}

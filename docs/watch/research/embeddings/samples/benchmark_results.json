@@ -1,0 +1,3881 @@
+{
+  "metadata": {
+    "date": "2026-10-11",
+    "host": "127.0.0.1:11535",
+    "unit": "watch-embed-bench",
+    "tested_models": [
+      "all-minilm:33m",
+      "snowflake-arctic-embed:33m",
+      "snowflake-arctic-embed:110m",
+      "nomic-embed-text:latest",
+      "paraphrase-multilingual"
+    ],
+    "throughput_models": [
+      "all-minilm:33m",
+      "snowflake-arctic-embed:33m",
+      "nomic-embed-text:latest"
+    ],
+    "sample_corpus_size": 1000
+  },
+  "models": {
+    "all-minilm:33m": {
+      "dimension": 384,
+      "base_memory_mb": 23.0,
+      "loaded_memory_mb": 177.7,
+      "peak_memory_mb": 179.1,
+      "delta_memory_mb": 154.7,
+      "quality": {
+        "model": "all-minilm:33m",
+        "dimension": 384,
+        "total_correct_en": 28,
+        "accuracy_top3_en": 0.9333333333333333,
+        "total_correct_fr": 21,
+        "accuracy_top3_fr": 0.7,
+        "topics": [
+          {
+            "topic_id": "T01",
+            "title": "Housing affordability and rental costs",
+            "query_en": "housing affordability and rental costs",
+            "query_fr": "l'abordabilité du logement et le coût des loyers",
+            "short_topic": "housing affordability",
+            "relevant_ids": [
+              "P03",
+              "P02",
+              "P01"
+            ],
+            "top3_en": [
+              {
+                "id": "P02",
+                "score": 0.5575,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P01",
+                "score": 0.5574,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P03",
+                "score": 0.2557,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P03",
+                "score": 0.4376,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P06",
+                "score": 0.2544,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P15",
+                "score": 0.2298,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P01",
+                "score": 0.6289,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P02",
+                "score": 0.545,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P03",
+                "score": 0.2895,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T02",
+            "title": "Carbon pricing and industrial emissions policy",
+            "query_en": "carbon pricing and industrial emissions policy",
+            "query_fr": "la tarification du carbone et les émissions industrielles",
+            "short_topic": "carbon pricing",
+            "relevant_ids": [
+              "P06",
+              "P05",
+              "P04"
+            ],
+            "top3_en": [
+              {
+                "id": "P05",
+                "score": 0.7618,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.6253,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P06",
+                "score": 0.5285,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P06",
+                "score": 0.7003,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P05",
+                "score": 0.5166,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.4885,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P05",
+                "score": 0.7367,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.6295,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P06",
+                "score": 0.538,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T03",
+            "title": "Official languages and French immersion education support",
+            "query_en": "official languages and French immersion education support",
+            "query_fr": "les langues officielles et le soutien à l'immersion française",
+            "short_topic": "official languages",
+            "relevant_ids": [
+              "P07",
+              "P09",
+              "P08"
+            ],
+            "top3_en": [
+              {
+                "id": "P07",
+                "score": 0.7312,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P08",
+                "score": 0.4587,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P09",
+                "score": 0.4435,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P08",
+                "score": 0.4189,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P07",
+                "score": 0.3799,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P09",
+                "score": 0.3526,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P08",
+                "score": 0.4002,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P09",
+                "score": 0.376,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P07",
+                "score": 0.3405,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T04",
+            "title": "National defence procurement and NATO spending commitment",
+            "query_en": "national defence procurement and NATO spending commitment",
+            "query_fr": "l'approvisionnement de la défense nationale et les dépenses de l'OTAN",
+            "short_topic": "national defence procurement",
+            "relevant_ids": [
+              "P12",
+              "P11",
+              "P10"
+            ],
+            "top3_en": [
+              {
+                "id": "P10",
+                "score": 0.6327,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P11",
+                "score": 0.4615,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P12",
+                "score": 0.3842,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P12",
+                "score": 0.5833,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P21",
+                "score": 0.3693,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P18",
+                "score": 0.3624,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P11",
+                "score": 0.5218,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P12",
+                "score": 0.5033,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P10",
+                "score": 0.4825,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T05",
+            "title": "Healthcare transfers and emergency room wait times",
+            "query_en": "healthcare transfers and emergency room wait times",
+            "query_fr": "les transferts en santé et le temps d'attente aux urgences",
+            "short_topic": "healthcare transfers",
+            "relevant_ids": [
+              "P14",
+              "P15",
+              "P13"
+            ],
+            "top3_en": [
+              {
+                "id": "P13",
+                "score": 0.6011,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P14",
+                "score": 0.3758,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P25",
+                "score": 0.2784,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_en": 2,
+            "top3_fr": [
+              {
+                "id": "P15",
+                "score": 0.5279,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P26",
+                "score": 0.3844,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P27",
+                "score": 0.3666,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P13",
+                "score": 0.5363,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P14",
+                "score": 0.4238,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P15",
+                "score": 0.3252,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T06",
+            "title": "Reconciliation and indigenous clean drinking water advisories",
+            "query_en": "reconciliation and indigenous clean drinking water advisories",
+            "query_fr": "la réconciliation et les avis d'ébullition d'eau chez les Premières Nations",
+            "short_topic": "clean drinking water for First Nations",
+            "relevant_ids": [
+              "P16",
+              "P18",
+              "P17"
+            ],
+            "top3_en": [
+              {
+                "id": "P16",
+                "score": 0.8147,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P17",
+                "score": 0.7155,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P18",
+                "score": 0.4099,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P18",
+                "score": 0.4158,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P03",
+                "score": 0.3303,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P21",
+                "score": 0.3274,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P16",
+                "score": 0.7494,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P17",
+                "score": 0.5807,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P18",
+                "score": 0.3008,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T07",
+            "title": "Bill C-5 and criminal justice sentencing reforms",
+            "query_en": "Bill C-5 and criminal justice sentencing reforms",
+            "query_fr": "le projet de loi C-5 et la réforme des peines criminelles",
+            "short_topic": "Bill C-5",
+            "relevant_ids": [
+              "P20",
+              "P19",
+              "P21"
+            ],
+            "top3_en": [
+              {
+                "id": "P20",
+                "score": 0.7887,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P19",
+                "score": 0.7178,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P21",
+                "score": 0.4562,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P21",
+                "score": 0.4449,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P20",
+                "score": 0.3721,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P19",
+                "score": 0.3303,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P20",
+                "score": 0.4335,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P19",
+                "score": 0.3641,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P11",
+                "score": 0.261,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          },
+          {
+            "topic_id": "T08",
+            "title": "Supply management and agricultural trade negotiations",
+            "query_en": "supply management and agricultural trade negotiations",
+            "query_fr": "la gestion de l'offre et les négociations commerciales agricoles",
+            "short_topic": "supply management",
+            "relevant_ids": [
+              "P23",
+              "P24",
+              "P22"
+            ],
+            "top3_en": [
+              {
+                "id": "P22",
+                "score": 0.736,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.4881,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P23",
+                "score": 0.336,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P23",
+                "score": 0.5519,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.5424,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P22",
+                "score": 0.3603,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P22",
+                "score": 0.465,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P29",
+                "score": 0.2884,
+                "lang": "en",
+                "is_correct": false
+              },
+              {
+                "id": "P26",
+                "score": 0.2812,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 1
+          },
+          {
+            "topic_id": "T09",
+            "title": "Border security, asylum claims and immigration levels",
+            "query_en": "border security, asylum claims and immigration levels",
+            "query_fr": "la sécurité frontalière, les demandes d'asile et les cibles d'immigration",
+            "short_topic": "border security and immigration levels",
+            "relevant_ids": [
+              "P26",
+              "P25",
+              "P27"
+            ],
+            "top3_en": [
+              {
+                "id": "P25",
+                "score": 0.6368,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.4149,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P19",
+                "score": 0.2812,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_en": 2,
+            "top3_fr": [
+              {
+                "id": "P27",
+                "score": 0.5974,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P25",
+                "score": 0.4751,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P26",
+                "score": 0.4077,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P25",
+                "score": 0.5355,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.4275,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P11",
+                "score": 0.2809,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          },
+          {
+            "topic_id": "T10",
+            "title": "Critical minerals strategy and electric vehicle supply chain",
+            "query_en": "critical minerals strategy and electric vehicle supply chain",
+            "query_fr": "la stratégie sur les minéraux critiques et la chaîne de véhicules électriques",
+            "short_topic": "critical minerals strategy",
+            "relevant_ids": [
+              "P29",
+              "P30",
+              "P28"
+            ],
+            "top3_en": [
+              {
+                "id": "P29",
+                "score": 0.6844,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P28",
+                "score": 0.5592,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P30",
+                "score": 0.4309,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P30",
+                "score": 0.5786,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.4104,
+                "lang": "en",
+                "is_correct": false
+              },
+              {
+                "id": "P29",
+                "score": 0.4025,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 2,
+            "top3_short": [
+              {
+                "id": "P28",
+                "score": 0.5356,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P29",
+                "score": 0.4427,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P30",
+                "score": 0.3155,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          }
+        ]
+      },
+      "throughput": {
+        "count": 1000,
+        "elapsed_sec": 90.48,
+        "embeds_per_sec": 11.05,
+        "batch_size": 50
+      },
+      "throughput_peak_memory_mb": 193.9
+    },
+    "snowflake-arctic-embed:33m": {
+      "dimension": 384,
+      "base_memory_mb": 16.1,
+      "loaded_memory_mb": 192.0,
+      "peak_memory_mb": 193.7,
+      "delta_memory_mb": 175.9,
+      "quality": {
+        "model": "snowflake-arctic-embed:33m",
+        "dimension": 384,
+        "total_correct_en": 28,
+        "accuracy_top3_en": 0.9333333333333333,
+        "total_correct_fr": 13,
+        "accuracy_top3_fr": 0.43333333333333335,
+        "topics": [
+          {
+            "topic_id": "T01",
+            "title": "Housing affordability and rental costs",
+            "query_en": "housing affordability and rental costs",
+            "query_fr": "l'abordabilité du logement et le coût des loyers",
+            "short_topic": "housing affordability",
+            "relevant_ids": [
+              "P03",
+              "P02",
+              "P01"
+            ],
+            "top3_en": [
+              {
+                "id": "P02",
+                "score": 0.8017,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P01",
+                "score": 0.7996,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P03",
+                "score": 0.7183,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P03",
+                "score": 0.8408,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.7686,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P23",
+                "score": 0.7681,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P01",
+                "score": 0.7479,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P02",
+                "score": 0.701,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P25",
+                "score": 0.6151,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          },
+          {
+            "topic_id": "T02",
+            "title": "Carbon pricing and industrial emissions policy",
+            "query_en": "carbon pricing and industrial emissions policy",
+            "query_fr": "la tarification du carbone et les émissions industrielles",
+            "short_topic": "carbon pricing",
+            "relevant_ids": [
+              "P06",
+              "P05",
+              "P04"
+            ],
+            "top3_en": [
+              {
+                "id": "P05",
+                "score": 0.8678,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P06",
+                "score": 0.7952,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.7948,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P06",
+                "score": 0.8331,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.7619,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P05",
+                "score": 0.753,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 2,
+            "top3_short": [
+              {
+                "id": "P05",
+                "score": 0.7548,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.6729,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P06",
+                "score": 0.6412,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T03",
+            "title": "Official languages and French immersion education support",
+            "query_en": "official languages and French immersion education support",
+            "query_fr": "les langues officielles et le soutien à l'immersion française",
+            "short_topic": "official languages",
+            "relevant_ids": [
+              "P07",
+              "P09",
+              "P08"
+            ],
+            "top3_en": [
+              {
+                "id": "P07",
+                "score": 0.7812,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P09",
+                "score": 0.7795,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P08",
+                "score": 0.7557,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P08",
+                "score": 0.7952,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P09",
+                "score": 0.7937,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P12",
+                "score": 0.7561,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 2,
+            "top3_short": [
+              {
+                "id": "P08",
+                "score": 0.7232,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P09",
+                "score": 0.7084,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P15",
+                "score": 0.6565,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          },
+          {
+            "topic_id": "T04",
+            "title": "National defence procurement and NATO spending commitment",
+            "query_en": "national defence procurement and NATO spending commitment",
+            "query_fr": "l'approvisionnement de la défense nationale et les dépenses de l'OTAN",
+            "short_topic": "national defence procurement",
+            "relevant_ids": [
+              "P12",
+              "P11",
+              "P10"
+            ],
+            "top3_en": [
+              {
+                "id": "P10",
+                "score": 0.7927,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P12",
+                "score": 0.7621,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P11",
+                "score": 0.7505,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P12",
+                "score": 0.8655,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P15",
+                "score": 0.7976,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P24",
+                "score": 0.7934,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P10",
+                "score": 0.653,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P11",
+                "score": 0.6527,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P12",
+                "score": 0.6495,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T05",
+            "title": "Healthcare transfers and emergency room wait times",
+            "query_en": "healthcare transfers and emergency room wait times",
+            "query_fr": "les transferts en santé et le temps d'attente aux urgences",
+            "short_topic": "healthcare transfers",
+            "relevant_ids": [
+              "P14",
+              "P15",
+              "P13"
+            ],
+            "top3_en": [
+              {
+                "id": "P13",
+                "score": 0.7936,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P14",
+                "score": 0.728,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P15",
+                "score": 0.7053,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P15",
+                "score": 0.7912,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.7803,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P12",
+                "score": 0.7705,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P13",
+                "score": 0.6816,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P14",
+                "score": 0.6507,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P15",
+                "score": 0.6129,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T06",
+            "title": "Reconciliation and indigenous clean drinking water advisories",
+            "query_en": "reconciliation and indigenous clean drinking water advisories",
+            "query_fr": "la réconciliation et les avis d'ébullition d'eau chez les Premières Nations",
+            "short_topic": "clean drinking water for First Nations",
+            "relevant_ids": [
+              "P16",
+              "P18",
+              "P17"
+            ],
+            "top3_en": [
+              {
+                "id": "P16",
+                "score": 0.8437,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P17",
+                "score": 0.8394,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P15",
+                "score": 0.7277,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_en": 2,
+            "top3_fr": [
+              {
+                "id": "P18",
+                "score": 0.8149,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.7769,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P12",
+                "score": 0.7717,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P16",
+                "score": 0.8072,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P17",
+                "score": 0.7935,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P15",
+                "score": 0.686,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          },
+          {
+            "topic_id": "T07",
+            "title": "Bill C-5 and criminal justice sentencing reforms",
+            "query_en": "Bill C-5 and criminal justice sentencing reforms",
+            "query_fr": "le projet de loi C-5 et la réforme des peines criminelles",
+            "short_topic": "Bill C-5",
+            "relevant_ids": [
+              "P20",
+              "P19",
+              "P21"
+            ],
+            "top3_en": [
+              {
+                "id": "P20",
+                "score": 0.8831,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P19",
+                "score": 0.8497,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P21",
+                "score": 0.804,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P21",
+                "score": 0.8581,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P18",
+                "score": 0.7909,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P23",
+                "score": 0.7899,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P20",
+                "score": 0.7705,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P19",
+                "score": 0.7538,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P21",
+                "score": 0.7363,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T08",
+            "title": "Supply management and agricultural trade negotiations",
+            "query_en": "supply management and agricultural trade negotiations",
+            "query_fr": "la gestion de l'offre et les négociations commerciales agricoles",
+            "short_topic": "supply management",
+            "relevant_ids": [
+              "P23",
+              "P24",
+              "P22"
+            ],
+            "top3_en": [
+              {
+                "id": "P22",
+                "score": 0.8309,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.7661,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P23",
+                "score": 0.7165,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P24",
+                "score": 0.8208,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P23",
+                "score": 0.8107,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P12",
+                "score": 0.776,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 2,
+            "top3_short": [
+              {
+                "id": "P22",
+                "score": 0.7151,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P23",
+                "score": 0.5875,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.5832,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T09",
+            "title": "Border security, asylum claims and immigration levels",
+            "query_en": "border security, asylum claims and immigration levels",
+            "query_fr": "la sécurité frontalière, les demandes d'asile et les cibles d'immigration",
+            "short_topic": "border security and immigration levels",
+            "relevant_ids": [
+              "P26",
+              "P25",
+              "P27"
+            ],
+            "top3_en": [
+              {
+                "id": "P25",
+                "score": 0.8062,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.7736,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P15",
+                "score": 0.7453,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_en": 2,
+            "top3_fr": [
+              {
+                "id": "P26",
+                "score": 0.8087,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P12",
+                "score": 0.7942,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P03",
+                "score": 0.7819,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P25",
+                "score": 0.7838,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.7577,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P03",
+                "score": 0.7216,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          },
+          {
+            "topic_id": "T10",
+            "title": "Critical minerals strategy and electric vehicle supply chain",
+            "query_en": "critical minerals strategy and electric vehicle supply chain",
+            "query_fr": "la stratégie sur les minéraux critiques et la chaîne de véhicules électriques",
+            "short_topic": "critical minerals strategy",
+            "relevant_ids": [
+              "P29",
+              "P30",
+              "P28"
+            ],
+            "top3_en": [
+              {
+                "id": "P29",
+                "score": 0.8122,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P28",
+                "score": 0.7712,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P30",
+                "score": 0.7305,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P30",
+                "score": 0.7758,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.7727,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P12",
+                "score": 0.7618,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P28",
+                "score": 0.7481,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P29",
+                "score": 0.7319,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P10",
+                "score": 0.6621,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          }
+        ]
+      },
+      "throughput": {
+        "count": 1000,
+        "elapsed_sec": 90.2,
+        "embeds_per_sec": 11.09,
+        "batch_size": 50
+      },
+      "throughput_peak_memory_mb": 204.1
+    },
+    "snowflake-arctic-embed:110m": {
+      "dimension": 768,
+      "base_memory_mb": 16.3,
+      "loaded_memory_mb": 452.5,
+      "peak_memory_mb": 453.7,
+      "delta_memory_mb": 436.2,
+      "quality": {
+        "model": "snowflake-arctic-embed:110m",
+        "dimension": 768,
+        "total_correct_en": 27,
+        "accuracy_top3_en": 0.9,
+        "total_correct_fr": 13,
+        "accuracy_top3_fr": 0.43333333333333335,
+        "topics": [
+          {
+            "topic_id": "T01",
+            "title": "Housing affordability and rental costs",
+            "query_en": "housing affordability and rental costs",
+            "query_fr": "l'abordabilité du logement et le coût des loyers",
+            "short_topic": "housing affordability",
+            "relevant_ids": [
+              "P03",
+              "P02",
+              "P01"
+            ],
+            "top3_en": [
+              {
+                "id": "P01",
+                "score": 0.6498,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P02",
+                "score": 0.5911,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P25",
+                "score": 0.5018,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_en": 2,
+            "top3_fr": [
+              {
+                "id": "P03",
+                "score": 0.6054,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P23",
+                "score": 0.5336,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P27",
+                "score": 0.5294,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P01",
+                "score": 0.6363,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P02",
+                "score": 0.5488,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P25",
+                "score": 0.5164,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          },
+          {
+            "topic_id": "T02",
+            "title": "Carbon pricing and industrial emissions policy",
+            "query_en": "carbon pricing and industrial emissions policy",
+            "query_fr": "la tarification du carbone et les émissions industrielles",
+            "short_topic": "carbon pricing",
+            "relevant_ids": [
+              "P06",
+              "P05",
+              "P04"
+            ],
+            "top3_en": [
+              {
+                "id": "P05",
+                "score": 0.6645,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P06",
+                "score": 0.6016,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.5814,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P06",
+                "score": 0.6804,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P23",
+                "score": 0.5508,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P24",
+                "score": 0.5372,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P05",
+                "score": 0.6006,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P06",
+                "score": 0.5606,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.5568,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T03",
+            "title": "Official languages and French immersion education support",
+            "query_en": "official languages and French immersion education support",
+            "query_fr": "les langues officielles et le soutien à l'immersion française",
+            "short_topic": "official languages",
+            "relevant_ids": [
+              "P07",
+              "P09",
+              "P08"
+            ],
+            "top3_en": [
+              {
+                "id": "P09",
+                "score": 0.6661,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P07",
+                "score": 0.6562,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P08",
+                "score": 0.5918,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P09",
+                "score": 0.6691,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P08",
+                "score": 0.6297,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.5449,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 2,
+            "top3_short": [
+              {
+                "id": "P09",
+                "score": 0.537,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P08",
+                "score": 0.5296,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P25",
+                "score": 0.4588,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          },
+          {
+            "topic_id": "T04",
+            "title": "National defence procurement and NATO spending commitment",
+            "query_en": "national defence procurement and NATO spending commitment",
+            "query_fr": "l'approvisionnement de la défense nationale et les dépenses de l'OTAN",
+            "short_topic": "national defence procurement",
+            "relevant_ids": [
+              "P12",
+              "P11",
+              "P10"
+            ],
+            "top3_en": [
+              {
+                "id": "P10",
+                "score": 0.6738,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P12",
+                "score": 0.5793,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P11",
+                "score": 0.5406,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P12",
+                "score": 0.7063,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P09",
+                "score": 0.5845,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P24",
+                "score": 0.5789,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P12",
+                "score": 0.5817,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P10",
+                "score": 0.5779,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P11",
+                "score": 0.5094,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T05",
+            "title": "Healthcare transfers and emergency room wait times",
+            "query_en": "healthcare transfers and emergency room wait times",
+            "query_fr": "les transferts en santé et le temps d'attente aux urgences",
+            "short_topic": "healthcare transfers",
+            "relevant_ids": [
+              "P14",
+              "P15",
+              "P13"
+            ],
+            "top3_en": [
+              {
+                "id": "P13",
+                "score": 0.6337,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P14",
+                "score": 0.5387,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P25",
+                "score": 0.4976,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_en": 2,
+            "top3_fr": [
+              {
+                "id": "P15",
+                "score": 0.5838,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.5516,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P03",
+                "score": 0.5419,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P13",
+                "score": 0.6013,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P15",
+                "score": 0.5196,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P14",
+                "score": 0.5156,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T06",
+            "title": "Reconciliation and indigenous clean drinking water advisories",
+            "query_en": "reconciliation and indigenous clean drinking water advisories",
+            "query_fr": "la réconciliation et les avis d'ébullition d'eau chez les Premières Nations",
+            "short_topic": "clean drinking water for First Nations",
+            "relevant_ids": [
+              "P16",
+              "P18",
+              "P17"
+            ],
+            "top3_en": [
+              {
+                "id": "P16",
+                "score": 0.7189,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P17",
+                "score": 0.6845,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P18",
+                "score": 0.5765,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P18",
+                "score": 0.6573,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P06",
+                "score": 0.539,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P24",
+                "score": 0.5292,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P16",
+                "score": 0.6912,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P17",
+                "score": 0.6846,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P18",
+                "score": 0.5487,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T07",
+            "title": "Bill C-5 and criminal justice sentencing reforms",
+            "query_en": "Bill C-5 and criminal justice sentencing reforms",
+            "query_fr": "le projet de loi C-5 et la réforme des peines criminelles",
+            "short_topic": "Bill C-5",
+            "relevant_ids": [
+              "P20",
+              "P19",
+              "P21"
+            ],
+            "top3_en": [
+              {
+                "id": "P20",
+                "score": 0.7189,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P19",
+                "score": 0.6747,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P21",
+                "score": 0.5989,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P21",
+                "score": 0.6869,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P08",
+                "score": 0.6007,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P27",
+                "score": 0.5878,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P25",
+                "score": 0.5856,
+                "lang": "en",
+                "is_correct": false
+              },
+              {
+                "id": "P01",
+                "score": 0.5619,
+                "lang": "en",
+                "is_correct": false
+              },
+              {
+                "id": "P08",
+                "score": 0.5562,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 0
+          },
+          {
+            "topic_id": "T08",
+            "title": "Supply management and agricultural trade negotiations",
+            "query_en": "supply management and agricultural trade negotiations",
+            "query_fr": "la gestion de l'offre et les négociations commerciales agricoles",
+            "short_topic": "supply management",
+            "relevant_ids": [
+              "P23",
+              "P24",
+              "P22"
+            ],
+            "top3_en": [
+              {
+                "id": "P22",
+                "score": 0.5857,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.5563,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P23",
+                "score": 0.5512,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P23",
+                "score": 0.6645,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.6465,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P08",
+                "score": 0.5728,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 2,
+            "top3_short": [
+              {
+                "id": "P23",
+                "score": 0.4889,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P12",
+                "score": 0.4591,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P13",
+                "score": 0.4565,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 1
+          },
+          {
+            "topic_id": "T09",
+            "title": "Border security, asylum claims and immigration levels",
+            "query_en": "border security, asylum claims and immigration levels",
+            "query_fr": "la sécurité frontalière, les demandes d'asile et les cibles d'immigration",
+            "short_topic": "border security and immigration levels",
+            "relevant_ids": [
+              "P26",
+              "P25",
+              "P27"
+            ],
+            "top3_en": [
+              {
+                "id": "P25",
+                "score": 0.6237,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.5548,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P13",
+                "score": 0.5126,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_en": 2,
+            "top3_fr": [
+              {
+                "id": "P27",
+                "score": 0.6638,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P26",
+                "score": 0.598,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P09",
+                "score": 0.5923,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 2,
+            "top3_short": [
+              {
+                "id": "P25",
+                "score": 0.6091,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.5824,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P13",
+                "score": 0.5062,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          },
+          {
+            "topic_id": "T10",
+            "title": "Critical minerals strategy and electric vehicle supply chain",
+            "query_en": "critical minerals strategy and electric vehicle supply chain",
+            "query_fr": "la stratégie sur les minéraux critiques et la chaîne de véhicules électriques",
+            "short_topic": "critical minerals strategy",
+            "relevant_ids": [
+              "P29",
+              "P30",
+              "P28"
+            ],
+            "top3_en": [
+              {
+                "id": "P29",
+                "score": 0.6483,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P28",
+                "score": 0.6041,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P30",
+                "score": 0.5303,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P06",
+                "score": 0.5881,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P30",
+                "score": 0.578,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P23",
+                "score": 0.5291,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P28",
+                "score": 0.5653,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P29",
+                "score": 0.5465,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P12",
+                "score": 0.4826,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          }
+        ]
+      }
+    },
+    "nomic-embed-text:latest": {
+      "dimension": 768,
+      "base_memory_mb": 18.6,
+      "loaded_memory_mb": 613.2,
+      "peak_memory_mb": 614.6,
+      "delta_memory_mb": 594.6,
+      "quality": {
+        "model": "nomic-embed-text:latest",
+        "dimension": 768,
+        "total_correct_en": 26,
+        "accuracy_top3_en": 0.8666666666666667,
+        "total_correct_fr": 17,
+        "accuracy_top3_fr": 0.5666666666666667,
+        "topics": [
+          {
+            "topic_id": "T01",
+            "title": "Housing affordability and rental costs",
+            "query_en": "housing affordability and rental costs",
+            "query_fr": "l'abordabilité du logement et le coût des loyers",
+            "short_topic": "housing affordability",
+            "relevant_ids": [
+              "P03",
+              "P02",
+              "P01"
+            ],
+            "top3_en": [
+              {
+                "id": "P02",
+                "score": 0.6395,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P01",
+                "score": 0.6343,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.4989,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_en": 2,
+            "top3_fr": [
+              {
+                "id": "P03",
+                "score": 0.681,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P23",
+                "score": 0.5754,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P18",
+                "score": 0.5647,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P01",
+                "score": 0.6721,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P02",
+                "score": 0.6249,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P25",
+                "score": 0.5135,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          },
+          {
+            "topic_id": "T02",
+            "title": "Carbon pricing and industrial emissions policy",
+            "query_en": "carbon pricing and industrial emissions policy",
+            "query_fr": "la tarification du carbone et les émissions industrielles",
+            "short_topic": "carbon pricing",
+            "relevant_ids": [
+              "P06",
+              "P05",
+              "P04"
+            ],
+            "top3_en": [
+              {
+                "id": "P05",
+                "score": 0.7819,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P06",
+                "score": 0.6087,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.607,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P06",
+                "score": 0.7139,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P30",
+                "score": 0.6289,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P05",
+                "score": 0.623,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 2,
+            "top3_short": [
+              {
+                "id": "P05",
+                "score": 0.75,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.5955,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P06",
+                "score": 0.5627,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T03",
+            "title": "Official languages and French immersion education support",
+            "query_en": "official languages and French immersion education support",
+            "query_fr": "les langues officielles et le soutien à l'immersion française",
+            "short_topic": "official languages",
+            "relevant_ids": [
+              "P07",
+              "P09",
+              "P08"
+            ],
+            "top3_en": [
+              {
+                "id": "P07",
+                "score": 0.785,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P09",
+                "score": 0.7213,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P08",
+                "score": 0.657,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P09",
+                "score": 0.6968,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P07",
+                "score": 0.6939,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P08",
+                "score": 0.6834,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P08",
+                "score": 0.6157,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P07",
+                "score": 0.5983,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P09",
+                "score": 0.5827,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T04",
+            "title": "National defence procurement and NATO spending commitment",
+            "query_en": "national defence procurement and NATO spending commitment",
+            "query_fr": "l'approvisionnement de la défense nationale et les dépenses de l'OTAN",
+            "short_topic": "national defence procurement",
+            "relevant_ids": [
+              "P12",
+              "P11",
+              "P10"
+            ],
+            "top3_en": [
+              {
+                "id": "P10",
+                "score": 0.6304,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P11",
+                "score": 0.5762,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P12",
+                "score": 0.4925,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P12",
+                "score": 0.6771,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P15",
+                "score": 0.5576,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P18",
+                "score": 0.5443,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P10",
+                "score": 0.5903,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P11",
+                "score": 0.5521,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P12",
+                "score": 0.5193,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T05",
+            "title": "Healthcare transfers and emergency room wait times",
+            "query_en": "healthcare transfers and emergency room wait times",
+            "query_fr": "les transferts en santé et le temps d'attente aux urgences",
+            "short_topic": "healthcare transfers",
+            "relevant_ids": [
+              "P14",
+              "P15",
+              "P13"
+            ],
+            "top3_en": [
+              {
+                "id": "P13",
+                "score": 0.6397,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P14",
+                "score": 0.5517,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P25",
+                "score": 0.4907,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_en": 2,
+            "top3_fr": [
+              {
+                "id": "P15",
+                "score": 0.6385,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.5919,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P03",
+                "score": 0.5687,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P13",
+                "score": 0.6099,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P14",
+                "score": 0.5522,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P15",
+                "score": 0.4941,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T06",
+            "title": "Reconciliation and indigenous clean drinking water advisories",
+            "query_en": "reconciliation and indigenous clean drinking water advisories",
+            "query_fr": "la réconciliation et les avis d'ébullition d'eau chez les Premières Nations",
+            "short_topic": "clean drinking water for First Nations",
+            "relevant_ids": [
+              "P16",
+              "P18",
+              "P17"
+            ],
+            "top3_en": [
+              {
+                "id": "P16",
+                "score": 0.8184,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P17",
+                "score": 0.8069,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P18",
+                "score": 0.6365,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P18",
+                "score": 0.7297,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.6576,
+                "lang": "fr",
+                "is_correct": false
+              },
+              {
+                "id": "P06",
+                "score": 0.6241,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 1,
+            "top3_short": [
+              {
+                "id": "P16",
+                "score": 0.7429,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P17",
+                "score": 0.7065,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P18",
+                "score": 0.5596,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T07",
+            "title": "Bill C-5 and criminal justice sentencing reforms",
+            "query_en": "Bill C-5 and criminal justice sentencing reforms",
+            "query_fr": "le projet de loi C-5 et la réforme des peines criminelles",
+            "short_topic": "Bill C-5",
+            "relevant_ids": [
+              "P20",
+              "P19",
+              "P21"
+            ],
+            "top3_en": [
+              {
+                "id": "P20",
+                "score": 0.8044,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P19",
+                "score": 0.7254,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P21",
+                "score": 0.6448,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P21",
+                "score": 0.7786,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P20",
+                "score": 0.6127,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P23",
+                "score": 0.5861,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 2,
+            "top3_short": [
+              {
+                "id": "P20",
+                "score": 0.5432,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P21",
+                "score": 0.4668,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P19",
+                "score": 0.4662,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T08",
+            "title": "Supply management and agricultural trade negotiations",
+            "query_en": "supply management and agricultural trade negotiations",
+            "query_fr": "la gestion de l'offre et les négociations commerciales agricoles",
+            "short_topic": "supply management",
+            "relevant_ids": [
+              "P23",
+              "P24",
+              "P22"
+            ],
+            "top3_en": [
+              {
+                "id": "P22",
+                "score": 0.727,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.5884,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.5405,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_en": 2,
+            "top3_fr": [
+              {
+                "id": "P23",
+                "score": 0.704,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.7001,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P26",
+                "score": 0.6198,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 2,
+            "top3_short": [
+              {
+                "id": "P22",
+                "score": 0.6011,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P29",
+                "score": 0.4959,
+                "lang": "en",
+                "is_correct": false
+              },
+              {
+                "id": "P13",
+                "score": 0.4563,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 1
+          },
+          {
+            "topic_id": "T09",
+            "title": "Border security, asylum claims and immigration levels",
+            "query_en": "border security, asylum claims and immigration levels",
+            "query_fr": "la sécurité frontalière, les demandes d'asile et les cibles d'immigration",
+            "short_topic": "border security and immigration levels",
+            "relevant_ids": [
+              "P26",
+              "P25",
+              "P27"
+            ],
+            "top3_en": [
+              {
+                "id": "P25",
+                "score": 0.6501,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.5338,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P11",
+                "score": 0.5216,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_en": 2,
+            "top3_fr": [
+              {
+                "id": "P26",
+                "score": 0.6983,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.6711,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P08",
+                "score": 0.6131,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 2,
+            "top3_short": [
+              {
+                "id": "P25",
+                "score": 0.5966,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.5233,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P11",
+                "score": 0.5027,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          },
+          {
+            "topic_id": "T10",
+            "title": "Critical minerals strategy and electric vehicle supply chain",
+            "query_en": "critical minerals strategy and electric vehicle supply chain",
+            "query_fr": "la stratégie sur les minéraux critiques et la chaîne de véhicules électriques",
+            "short_topic": "critical minerals strategy",
+            "relevant_ids": [
+              "P29",
+              "P30",
+              "P28"
+            ],
+            "top3_en": [
+              {
+                "id": "P29",
+                "score": 0.7185,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P28",
+                "score": 0.6575,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P30",
+                "score": 0.584,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P30",
+                "score": 0.6854,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P29",
+                "score": 0.5884,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P06",
+                "score": 0.5633,
+                "lang": "fr",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_fr": 2,
+            "top3_short": [
+              {
+                "id": "P28",
+                "score": 0.6204,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P29",
+                "score": 0.5864,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P10",
+                "score": 0.4814,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          }
+        ]
+      },
+      "throughput": {
+        "count": 1000,
+        "elapsed_sec": 323.61,
+        "embeds_per_sec": 3.09,
+        "batch_size": 50
+      },
+      "throughput_peak_memory_mb": 624.8
+    },
+    "paraphrase-multilingual": {
+      "dimension": 768,
+      "base_memory_mb": 18.2,
+      "loaded_memory_mb": 1007.4,
+      "peak_memory_mb": 1008.5,
+      "delta_memory_mb": 989.2,
+      "quality": {
+        "model": "paraphrase-multilingual",
+        "dimension": 768,
+        "total_correct_en": 30,
+        "accuracy_top3_en": 1.0,
+        "total_correct_fr": 30,
+        "accuracy_top3_fr": 1.0,
+        "topics": [
+          {
+            "topic_id": "T01",
+            "title": "Housing affordability and rental costs",
+            "query_en": "housing affordability and rental costs",
+            "query_fr": "l'abordabilité du logement et le coût des loyers",
+            "short_topic": "housing affordability",
+            "relevant_ids": [
+              "P03",
+              "P02",
+              "P01"
+            ],
+            "top3_en": [
+              {
+                "id": "P01",
+                "score": 0.6701,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P02",
+                "score": 0.6153,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P03",
+                "score": 0.5668,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P01",
+                "score": 0.737,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P02",
+                "score": 0.6921,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P03",
+                "score": 0.6863,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P01",
+                "score": 0.7111,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P03",
+                "score": 0.5876,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P02",
+                "score": 0.5619,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T02",
+            "title": "Carbon pricing and industrial emissions policy",
+            "query_en": "carbon pricing and industrial emissions policy",
+            "query_fr": "la tarification du carbone et les émissions industrielles",
+            "short_topic": "carbon pricing",
+            "relevant_ids": [
+              "P06",
+              "P05",
+              "P04"
+            ],
+            "top3_en": [
+              {
+                "id": "P05",
+                "score": 0.7628,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P06",
+                "score": 0.7506,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.5073,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P06",
+                "score": 0.7759,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P05",
+                "score": 0.7344,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.5858,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P05",
+                "score": 0.6695,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P06",
+                "score": 0.6013,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P04",
+                "score": 0.4659,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T03",
+            "title": "Official languages and French immersion education support",
+            "query_en": "official languages and French immersion education support",
+            "query_fr": "les langues officielles et le soutien à l'immersion française",
+            "short_topic": "official languages",
+            "relevant_ids": [
+              "P07",
+              "P09",
+              "P08"
+            ],
+            "top3_en": [
+              {
+                "id": "P09",
+                "score": 0.6847,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P07",
+                "score": 0.6641,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P08",
+                "score": 0.5922,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P08",
+                "score": 0.7359,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P09",
+                "score": 0.7022,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P07",
+                "score": 0.6259,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P08",
+                "score": 0.4342,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P07",
+                "score": 0.4212,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P09",
+                "score": 0.3845,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T04",
+            "title": "National defence procurement and NATO spending commitment",
+            "query_en": "national defence procurement and NATO spending commitment",
+            "query_fr": "l'approvisionnement de la défense nationale et les dépenses de l'OTAN",
+            "short_topic": "national defence procurement",
+            "relevant_ids": [
+              "P12",
+              "P11",
+              "P10"
+            ],
+            "top3_en": [
+              {
+                "id": "P12",
+                "score": 0.6648,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P10",
+                "score": 0.6068,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P11",
+                "score": 0.5464,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P12",
+                "score": 0.6654,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P10",
+                "score": 0.6422,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P11",
+                "score": 0.5717,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P12",
+                "score": 0.6966,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P11",
+                "score": 0.5869,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P10",
+                "score": 0.5639,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T05",
+            "title": "Healthcare transfers and emergency room wait times",
+            "query_en": "healthcare transfers and emergency room wait times",
+            "query_fr": "les transferts en santé et le temps d'attente aux urgences",
+            "short_topic": "healthcare transfers",
+            "relevant_ids": [
+              "P14",
+              "P15",
+              "P13"
+            ],
+            "top3_en": [
+              {
+                "id": "P13",
+                "score": 0.6633,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P15",
+                "score": 0.545,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P14",
+                "score": 0.4479,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P13",
+                "score": 0.6936,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P15",
+                "score": 0.6216,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P14",
+                "score": 0.5674,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P15",
+                "score": 0.4466,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P14",
+                "score": 0.4434,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P13",
+                "score": 0.4052,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T06",
+            "title": "Reconciliation and indigenous clean drinking water advisories",
+            "query_en": "reconciliation and indigenous clean drinking water advisories",
+            "query_fr": "la réconciliation et les avis d'ébullition d'eau chez les Premières Nations",
+            "short_topic": "clean drinking water for First Nations",
+            "relevant_ids": [
+              "P16",
+              "P18",
+              "P17"
+            ],
+            "top3_en": [
+              {
+                "id": "P18",
+                "score": 0.8285,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P17",
+                "score": 0.7861,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P16",
+                "score": 0.7758,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P16",
+                "score": 0.7658,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P18",
+                "score": 0.7463,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P17",
+                "score": 0.6965,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P18",
+                "score": 0.7425,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P17",
+                "score": 0.6923,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P16",
+                "score": 0.6913,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T07",
+            "title": "Bill C-5 and criminal justice sentencing reforms",
+            "query_en": "Bill C-5 and criminal justice sentencing reforms",
+            "query_fr": "le projet de loi C-5 et la réforme des peines criminelles",
+            "short_topic": "Bill C-5",
+            "relevant_ids": [
+              "P20",
+              "P19",
+              "P21"
+            ],
+            "top3_en": [
+              {
+                "id": "P20",
+                "score": 0.7951,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P21",
+                "score": 0.7583,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P19",
+                "score": 0.7533,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P21",
+                "score": 0.7972,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P19",
+                "score": 0.7856,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P20",
+                "score": 0.7753,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P20",
+                "score": 0.5638,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P19",
+                "score": 0.5438,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P21",
+                "score": 0.4569,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T08",
+            "title": "Supply management and agricultural trade negotiations",
+            "query_en": "supply management and agricultural trade negotiations",
+            "query_fr": "la gestion de l'offre et les négociations commerciales agricoles",
+            "short_topic": "supply management",
+            "relevant_ids": [
+              "P23",
+              "P24",
+              "P22"
+            ],
+            "top3_en": [
+              {
+                "id": "P22",
+                "score": 0.6592,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.6149,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P23",
+                "score": 0.5615,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P22",
+                "score": 0.6583,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P24",
+                "score": 0.6526,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P23",
+                "score": 0.5941,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P22",
+                "score": 0.4425,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P23",
+                "score": 0.3561,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P29",
+                "score": 0.35,
+                "lang": "en",
+                "is_correct": false
+              }
+            ],
+            "correct_in_top3_short": 2
+          },
+          {
+            "topic_id": "T09",
+            "title": "Border security, asylum claims and immigration levels",
+            "query_en": "border security, asylum claims and immigration levels",
+            "query_fr": "la sécurité frontalière, les demandes d'asile et les cibles d'immigration",
+            "short_topic": "border security and immigration levels",
+            "relevant_ids": [
+              "P26",
+              "P25",
+              "P27"
+            ],
+            "top3_en": [
+              {
+                "id": "P26",
+                "score": 0.7272,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P25",
+                "score": 0.6751,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.6145,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P26",
+                "score": 0.7469,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P25",
+                "score": 0.6506,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.6459,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P25",
+                "score": 0.6231,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P26",
+                "score": 0.6141,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P27",
+                "score": 0.5795,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          },
+          {
+            "topic_id": "T10",
+            "title": "Critical minerals strategy and electric vehicle supply chain",
+            "query_en": "critical minerals strategy and electric vehicle supply chain",
+            "query_fr": "la stratégie sur les minéraux critiques et la chaîne de véhicules électriques",
+            "short_topic": "critical minerals strategy",
+            "relevant_ids": [
+              "P29",
+              "P30",
+              "P28"
+            ],
+            "top3_en": [
+              {
+                "id": "P29",
+                "score": 0.6519,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P30",
+                "score": 0.5873,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P28",
+                "score": 0.5309,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_en": 3,
+            "top3_fr": [
+              {
+                "id": "P29",
+                "score": 0.6635,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P30",
+                "score": 0.6297,
+                "lang": "fr",
+                "is_correct": true
+              },
+              {
+                "id": "P28",
+                "score": 0.5497,
+                "lang": "en",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_fr": 3,
+            "top3_short": [
+              {
+                "id": "P28",
+                "score": 0.5926,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P29",
+                "score": 0.5847,
+                "lang": "en",
+                "is_correct": true
+              },
+              {
+                "id": "P30",
+                "score": 0.4619,
+                "lang": "fr",
+                "is_correct": true
+              }
+            ],
+            "correct_in_top3_short": 3
+          }
+        ]
+      }
+    }
+  },
+  "compute_device_logs": [
+    "No specific compute log line found"
+  ]
+}

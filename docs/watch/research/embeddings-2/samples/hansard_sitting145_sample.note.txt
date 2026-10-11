@@ -1,0 +1,2 @@
+Truncated sample of HAN145-E.XML (House Sitting 145, 45th Parl 1st Sess, 2026-10-06).
+Original file size is 616,024 bytes. Truncated to the opening metadata, Order of Business, and first complete Subject of Business (Bill C-255, Criminal Code debate) to keep payload under 200 KB.

@@ -1,0 +1,3 @@
+Speeches list truncated to first 20 speeches via limit=20 query parameter to keep payload under 200 KB.
+Follow pagination.next_url for subsequent pages.
+Original URL: https://api.openparliament.ca/speeches/?document=/debates/2026/10/9/&format=json&limit=20

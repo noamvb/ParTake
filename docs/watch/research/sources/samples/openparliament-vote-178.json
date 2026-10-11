@@ -1,0 +1,82 @@
+{
+  "bill_url": "/bills/45-1/C-39/",
+  "session": "45-1",
+  "number": 178,
+  "date": "2026-10-08",
+  "description": {
+    "en": "2nd reading of Bill C-39, An Act respecting certain measures to strengthen the economy",
+    "fr": "2e lecture du projet de loi C-39, Loi concernant certaines mesures visant \u00e0 renforcer l'\u00e9conomie"
+  },
+  "result": "Passed",
+  "yea_total": 296,
+  "nay_total": 26,
+  "paired_total": 10,
+  "context_statement": "/debates/2026/10/8/procedural-3/",
+  "party_votes": [
+    {
+      "vote": "Yes",
+      "disagreement": 0.0,
+      "party": {
+        "name": {
+          "en": "Conservative Party of Canada"
+        },
+        "short_name": {
+          "en": "Conservative"
+        }
+      }
+    },
+    {
+      "vote": "Yes",
+      "disagreement": 0.0,
+      "party": {
+        "name": {
+          "en": "Liberal Party of Canada"
+        },
+        "short_name": {
+          "en": "Liberal"
+        }
+      }
+    },
+    {
+      "vote": "No",
+      "disagreement": 0.0,
+      "party": {
+        "name": {
+          "en": "Bloc Qu\u00e9b\u00e9cois"
+        },
+        "short_name": {
+          "en": "Bloc"
+        }
+      }
+    },
+    {
+      "vote": "No",
+      "disagreement": 0.0,
+      "party": {
+        "name": {
+          "en": "New Democratic Party"
+        },
+        "short_name": {
+          "en": "NDP"
+        }
+      }
+    },
+    {
+      "vote": "No",
+      "disagreement": 0.0,
+      "party": {
+        "name": {
+          "en": "Green Party of Canada"
+        },
+        "short_name": {
+          "en": "Green"
+        }
+      }
+    }
+  ],
+  "url": "/votes/45-1/178/",
+  "related": {
+    "ballots_url": "/votes/ballots/?vote=%2Fvotes%2F45-1%2F178%2F",
+    "votes_url": "/votes/"
+  }
+}

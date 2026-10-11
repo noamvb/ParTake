@@ -1,0 +1,14 @@
+[Unit]
+Description=ParTake Parliament watch API
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/partake
+ExecStart=/usr/bin/python3 -m watch.api --data %h/.local/share/partake-watch
+Restart=on-failure
+RestartSec=5
+MemoryMax=150M
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,138 @@
+{
+ "objects": [
+  {
+   "date": "2026-10-06",
+   "number": 51,
+   "in_camera": false,
+   "has_evidence": false,
+   "committee_url": "/committees/government-operations/",
+   "url": "/committees/government-operations/45-1/51/"
+  },
+  {
+   "date": "2026-10-06",
+   "number": 52,
+   "in_camera": false,
+   "has_evidence": false,
+   "committee_url": "/committees/finance/",
+   "url": "/committees/finance/45-1/52/"
+  },
+  {
+   "date": "2026-10-06",
+   "number": 47,
+   "in_camera": false,
+   "has_evidence": false,
+   "committee_url": "/committees/human-resources/",
+   "url": "/committees/human-resources/45-1/47/"
+  },
+  {
+   "date": "2026-10-06",
+   "number": 48,
+   "in_camera": false,
+   "has_evidence": false,
+   "committee_url": "/committees/environment/",
+   "url": "/committees/environment/45-1/48/"
+  },
+  {
+   "date": "2026-10-06",
+   "number": 46,
+   "in_camera": false,
+   "has_evidence": false,
+   "committee_url": "/committees/international-trade/",
+   "url": "/committees/international-trade/45-1/46/"
+  },
+  {
+   "date": "2026-10-06",
+   "number": 40,
+   "in_camera": false,
+   "has_evidence": false,
+   "committee_url": "/committees/house-affairs/",
+   "url": "/committees/house-affairs/45-1/40/"
+  },
+  {
+   "date": "2026-10-06",
+   "number": 45,
+   "in_camera": false,
+   "has_evidence": false,
+   "committee_url": "/committees/science-and-research/",
+   "url": "/committees/science-and-research/45-1/45/"
+  },
+  {
+   "date": "2026-10-06",
+   "number": 45,
+   "in_camera": false,
+   "has_evidence": false,
+   "committee_url": "/committees/canadian-heritage/",
+   "url": "/committees/canadian-heritage/45-1/45/"
+  },
+  {
+   "date": "2026-10-06",
+   "number": 50,
+   "in_camera": false,
+   "has_evidence": true,
+   "committee_url": "/committees/industry-and-technology/",
+   "url": "/committees/industry-and-technology/45-1/50/"
+  },
+  {
+   "date": "2026-10-06",
+   "number": 40,
+   "in_camera": true,
+   "has_evidence": false,
+   "committee_url": "/committees/immigration/",
+   "url": "/committees/immigration/45-1/40/"
+  },
+  {
+   "date": "2026-10-06",
+   "number": 44,
+   "in_camera": false,
+   "has_evidence": false,
+   "committee_url": "/committees/agriculture/",
+   "url": "/committees/agriculture/45-1/44/"
+  },
+  {
+   "date": "2026-10-05",
+   "number": 38,
+   "in_camera": false,
+   "has_evidence": false,
+   "committee_url": "/committees/justice/",
+   "url": "/committees/justice/45-1/38/"
+  },
+  {
+   "date": "2026-10-05",
+   "number": 48,
+   "in_camera": true,
+   "has_evidence": false,
+   "committee_url": "/committees/status-of-women/",
+   "url": "/committees/status-of-women/45-1/48/"
+  },
+  {
+   "date": "2026-10-05",
+   "number": 47,
+   "in_camera": false,
+   "has_evidence": false,
+   "committee_url": "/committees/fisheries/",
+   "url": "/committees/fisheries/45-1/47/"
+  },
+  {
+   "date": "2026-10-05",
+   "number": 42,
+   "in_camera": false,
+   "has_evidence": false,
+   "committee_url": "/committees/veterans-affairs/",
+   "url": "/committees/veterans-affairs/45-1/42/"
+  },
+  {
+   "date": "2026-10-05",
+   "number": 46,
+   "in_camera": false,
+   "has_evidence": false,
+   "committee_url": "/committees/natural-resources/",
+   "url": "/committees/natural-resources/45-1/46/"
+  }
+ ],
+ "pagination": {
+  "offset": 30,
+  "limit": 16,
+  "next_url": null,
+  "previous_url": null
+ }
+}

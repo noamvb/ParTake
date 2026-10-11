@@ -1,0 +1,191 @@
+{
+  "sitting": "HoC Sitting No. 149 (2026-10-09)",
+  "total_hansard_speeches": 217,
+  "total_member_transitions": 215,
+  "identified_hits": 19,
+  "hit_percentage": 8.8,
+  "sample_hits": [
+    {
+      "speaker": "Anita Vandenbeld (Ottawa West\u2014Nepean, Lib.)",
+      "formula": "Riding (Ottawa West\u2014Nepean)",
+      "window": "rape growers need our federal support more than ever. >> the speaker: the honourable member for ottawa west--nepean. >> "
+    },
+    {
+      "speaker": "Hon. Mona Fortier (Ottawa\u2014Vanier\u2014Gloucester, Lib.)",
+      "formula": "Riding (Ottawa\u2014Vanier\u2014Gloucester)",
+      "window": "ould be cutting this thanksgiving is a turkey. >> the speaker: the honourable member for ottawa--vanier--gloucester. >> "
+    },
+    {
+      "speaker": "Ryan Turnbull (Whitby, Lib.)",
+      "formula": "Riding (Whitby)",
+      "window": "big business while hard-working canadians struggle to afford food. >> the speaker: the honourable member for whitby. >> "
+    },
+    {
+      "speaker": "Garnett Genuis (Sherwood Park\u2014Fort Saskatchewan, CPC)",
+      "formula": "Riding (Sherwood Park\u2014Fort Saskatchewan)",
+      "window": "e violence has no place. >> the speaker: oral questions. the honourable member for sherwood park--fort saskatchewan. >> "
+    },
+    {
+      "speaker": "Garnett Genuis (Sherwood Park\u2014Fort Saskatchewan, CPC)",
+      "formula": "Riding (Sherwood Park\u2014Fort Saskatchewan)",
+      "window": "this is how we respond in the face of -- >> the speaker: the honourable member for sherwood park--fort saskatchewan. >> "
+    },
+    {
+      "speaker": "Jason Groleau (Beauce, CPC)",
+      "formula": "Riding (Beauce)",
+      "window": "y they elected us. >> the speaker: [voice of interpreter]: the honourable member for beauce. >> [voice of interpreter]: "
+    },
+    {
+      "speaker": "Michael Cooper (St. Albert\u2014Sturgeon River, CPC)",
+      "formula": "Riding (St. Albert\u2014Sturgeon River)",
+      "window": "oing to have clean energy, and we're going to build canada strong. >> the speaker: st. albert sunday sturgeon river. >> "
+    },
+    {
+      "speaker": "Michael Cooper (St. Albert\u2014Sturgeon River, CPC)",
+      "formula": "Riding (St. Albert\u2014Sturgeon River)",
+      "window": " some time in this house [off mic - inaudible] >> the speaker: the honourable member for st. albert--sturgeon river. >> "
+    },
+    {
+      "speaker": "Andrew Lawton (Elgin\u2014St. Thomas\u2014London South, CPC)",
+      "formula": "Riding (Elgin\u2014St. Thomas\u2014London South)",
+      "window": " canada! >> the speaker: the honourable member for elgin--st. thomas--london elgin--st. thomas--london south. order! >> "
+    },
+    {
+      "speaker": "Xavier Barsalou-Duval (Pierre-Boucher\u2014Les Patriotes\u2014Verch\u00e8res, BQ)",
+      "formula": "Riding (Pierre-Boucher\u2014Les Patriotes\u2014Verch\u00e8res)",
+      "window": " [voice of interpreter]: the honourable member for pierre-boucher--les patriotes--verch\u00e8res. >> [voice of interpreter]: "
+    },
+    {
+      "speaker": "Rhonda Kirkland (Oshawa, CPC)",
+      "formula": "Riding (Oshawa)",
+      "window": "very much for the question. we're going to continue to support qu\u00e9bec. >> the speaker: honourable member for oshawa. >> "
+    },
+    {
+      "speaker": "Ziad Aboultaif (Edmonton Manning, CPC)",
+      "formula": "Riding (Edmonton Manning)",
+      "window": "well, creating jobs and many of them will be affordable. >> the speaker: the honourable member for edmonton manning. >> "
+    },
+    {
+      "speaker": "David Bexte (Bow River, CPC)",
+      "formula": "Riding (Bow River)",
+      "window": "mportant and these are steps we're taking to support canadians. >> the speaker: the honourable member for bow river. >> "
+    },
+    {
+      "speaker": "Michael Barrett (Leeds\u2014Grenville\u2014Thousand Islands\u2014Rideau Lakes, CPC)",
+      "formula": "Riding (Leeds\u2014Grenville\u2014Thousand Islands\u2014Rideau Lakes)",
+      "window": "they're eligible for. >> the speaker: the honourable member for leeds--grenville--thousand islands and rideau lakes. >> "
+    },
+    {
+      "speaker": "Hon. Kody Blois (Parliamentary Secretary to the Prime Minister, Lib.)",
+      "formula": "Role (Parliamentary Secretary to the Prime Minister)",
+      "window": " all talk and has produced no results? >> the speaker: the honourable parliamentary secretary to the prime minister. >> "
+    }
+  ],
+  "sample_misses": [
+    {
+      "speaker": "Hon. Mandy Gull-Masty (Minister of Indigenous Services, Lib.)",
+      "riding": null,
+      "role": "Minister of Indigenous Services",
+      "located": false,
+      "preceding_window": null
+    },
+    {
+      "speaker": "Billy Morin (Edmonton Northwest, CPC)",
+      "riding": "Edmonton Northwest",
+      "role": null,
+      "located": true,
+      "preceding_window": "government includes jurisdiction to protect water in and under their lands. [ speaking french ] (voice of interpreter): "
+    },
+    {
+      "speaker": "Hon. Mandy Gull-Masty",
+      "riding": null,
+      "role": null,
+      "located": true,
+      "preceding_window": "tion bureau of canada has spent years advocating for more competition in the grocery industry to lower food prices. and "
+    },
+    {
+      "speaker": "S\u00e9bastien Lemire (Abitibi\u2014T\u00e9miscamingue, BQ)",
+      "riding": "Abitibi\u2014T\u00e9miscamingue",
+      "role": null,
+      "located": false,
+      "preceding_window": null
+    },
+    {
+      "speaker": "Hon. Mandy Gull-Masty",
+      "riding": null,
+      "role": null,
+      "located": true,
+      "preceding_window": "government includes jurisdiction to protect water in and under their lands. [ speaking french ] (voice of interpreter): "
+    },
+    {
+      "speaker": "Karim Bardeesy (Parliamentary Secretary to the Minister of Industry, Lib.)",
+      "riding": null,
+      "role": "Parliamentary Secretary to the Minister of Industry",
+      "located": true,
+      "preceding_window": "t nations along the pipeline route does not provide consent? >> the speaker: the honourable parliamentary secretary. >> "
+    },
+    {
+      "speaker": "Hon. Mandy Gull-Masty",
+      "riding": null,
+      "role": null,
+      "located": true,
+      "preceding_window": "vernment's commitment through this legislation, and it is an obligation that we will pass on to all future governments. "
+    },
+    {
+      "speaker": "Billy Morin",
+      "riding": null,
+      "role": null,
+      "located": true,
+      "preceding_window": "e violence has no place. >> the speaker: oral questions. the honourable member for sherwood park--fort saskatchewan. >> "
+    },
+    {
+      "speaker": "Hon. Mandy Gull-Masty",
+      "riding": null,
+      "role": null,
+      "located": true,
+      "preceding_window": "government includes jurisdiction to protect water in and under their lands. [ speaking french ] (voice of interpreter): "
+    },
+    {
+      "speaker": "S\u00e9bastien Lemire",
+      "riding": null,
+      "role": null,
+      "located": true,
+      "preceding_window": "government includes jurisdiction to protect water in and under their lands. [ speaking french ] (voice of interpreter): "
+    },
+    {
+      "speaker": "Hon. Mandy Gull-Masty",
+      "riding": null,
+      "role": null,
+      "located": true,
+      "preceding_window": "d ensure that drinking water standards at a minimum are the guidelines that canadian drinking water quality determines. "
+    },
+    {
+      "speaker": "Ellis Ross (Skeena\u2014Bulkley Valley, CPC)",
+      "riding": "Skeena\u2014Bulkley Valley",
+      "role": null,
+      "located": true,
+      "preceding_window": "government includes jurisdiction to protect water in and under their lands. [ speaking french ] (voice of interpreter): "
+    },
+    {
+      "speaker": "Hon. Mandy Gull-Masty",
+      "riding": null,
+      "role": null,
+      "located": true,
+      "preceding_window": "government includes jurisdiction to protect water in and under their lands. [ speaking french ] (voice of interpreter): "
+    },
+    {
+      "speaker": "Hon. Kevin Lamoureux (Parliamentary Secretary to the Leader of the Government in the House of Commons, Lib.)",
+      "riding": null,
+      "role": "Parliamentary Secretary to the Leader of the Government in the House of Commons",
+      "located": true,
+      "preceding_window": "eaker: (voice of interpreter): questions and comments. the honourable member for repentigny. >> (voice of interpreter): "
+    },
+    {
+      "speaker": "Hon. Mandy Gull-Masty",
+      "riding": null,
+      "role": null,
+      "located": true,
+      "preceding_window": "and it binds government, future government, to the duty of working with first nations to advance access to clean water. "
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+Complete machine-readable XML list of all 338 current Members of Parliament (158059 bytes uncompressed).
+Contains PersonId, PersonOfficialFirstName, PersonOfficialLastName, PersonShortHonorific,
+ConstituencyName, ConstituencyProvinceTerritoryName, CaucusShortName, FromDateTime.
+Original URL: https://www.ourcommons.ca/Members/en/search/XML

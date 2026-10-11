@@ -1,0 +1,3 @@
+Original division 178 XML contained 332 VoteParticipant records (255321 bytes, >200 KB limit).
+Truncated to first 20 VoteParticipant elements and cleanly closed with </ArrayOfVoteParticipant>.
+Original URL: https://www.ourcommons.ca/Members/en/votes/45/1/178/xml
