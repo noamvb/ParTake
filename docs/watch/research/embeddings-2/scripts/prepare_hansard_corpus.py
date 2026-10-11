@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import sys
 """Extract 600 Hansard paragraphs (300 EN, 300 FR) from sittings 145-149.
 
 Ensures:
@@ -11,6 +10,7 @@ Ensures:
 """
 
 from collections import defaultdict
+import sys
 import gzip
 import json
 import os
