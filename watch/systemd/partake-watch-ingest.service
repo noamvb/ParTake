@@ -1,0 +1,9 @@
+[Unit]
+Description=Refresh ParTake Parliament watch lookups
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/partake
+ExecStart=/usr/bin/python3 -m watch.ingest --data %h/.local/share/partake-watch
+MemoryMax=200M
