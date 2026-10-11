@@ -1,6 +1,6 @@
 """Pure bilingual transcript, speaker and legislative record parsers."""
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import json
 import re
 import unicodedata
@@ -47,7 +47,8 @@ def parse_transcript(en, fr, *, source, number, committee=None):
             intervention = owners[element]
             affiliation = intervention.find("PersonSpeaking/Affiliation")
             hour, minute = (timestamp.get("Hr"), timestamp.get("Mn")) if timestamp is not None else ("0", "0")
-            at = datetime.fromisoformat(date).replace(hour=int(hour), minute=int(minute), tzinfo=OTTAWA)
+            # Late sittings continue past midnight as Hr 24, 25, ... on the sitting's date.
+            at = (datetime.fromisoformat(date) + timedelta(hours=int(hour), minutes=int(minute))).replace(tzinfo=OTTAWA)
             paragraphs.append(dict(id=("e" if evidence else "h") + element.get("id"),
                                    document=document_id, intervention=intervention.get("id"), position=len(paragraphs),
                                    text_en=_text(element), text_fr=translations.get(element.get("id"), ""),

@@ -121,3 +121,11 @@ class RecordsTests(unittest.TestCase):
                b'<ParaText id="7">Text</ParaText></Content></Intervention></HansardBody></Hansard>')
         _document, paragraphs = records.parse_transcript(xml, xml, source="hansard", number=4)
         self.assertEqual([p["id"] for p in paragraphs], ["h7"])
+
+    def test_12_timestamp_past_midnight(self):
+        xml = (b'<Hansard><ExtractedInformation><ExtractedItem Name="MetaDateNumYear">2025</ExtractedItem>'
+               b'<ExtractedItem Name="MetaDateNumMonth">6</ExtractedItem><ExtractedItem Name="MetaDateNumDay">19</ExtractedItem>'
+               b'</ExtractedInformation><HansardBody><Timestamp Hr="24" Mn="5" /><Intervention id="1"><Content>'
+               b'<ParaText id="7">Text</ParaText></Content></Intervention></HansardBody></Hansard>')
+        _document, paragraphs = records.parse_transcript(xml, xml, source="hansard", number=4)
+        self.assertEqual(paragraphs[0]["at"], "2025-06-20T04:05:00Z")
