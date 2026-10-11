@@ -69,3 +69,10 @@ stored media sequence. It leaves archive captions intact, retries failed
 fetches three times, and stops at ENDLIST or after ten minutes without a new
 segment; an exit code of 1 lets a supervisor restart it, while 2 means the
 stream is missing.
+
+The optional `parlvu` source (`python3 -m watch.poll --sources parlvu --data "$D"`)
+loads House sittings and committee video events one Ottawa day at a time,
+backfilling from 26 May 2025 and refreshing yesterday, today and upcoming events.
+Each run loads English archived captions for up to five adjourned events,
+retains raw listings and event pages, and records its health under `parlvu`.
+Pages without captions are retried up to three times; requests pause 1 s apart.

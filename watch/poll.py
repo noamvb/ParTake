@@ -175,12 +175,15 @@ def main(argv=None):
     parser.add_argument("--max-docs", type=int)
     args = parser.parse_args(argv)
     sources = args.sources.split(",")
-    if any(source not in ("hansard", "evidence", "votes", "bills") for source in sources):
+    if any(source not in ("hansard", "evidence", "votes", "bills", "parlvu") for source in sources):
         parser.error("unknown source")
     now, outcomes = datetime.now(timezone.utc), []
     for source in sources:
         if source == "bills":
             ok = ingest_source(args.data, source, fetch=fetch, now=now)
+        elif source == "parlvu":
+            from watch.parlvu import poll_parlvu
+            ok = poll_parlvu(args.data, fetch, sleep, now)
         elif source == "votes":
             ok = poll_votes(args.data, fetch, sleep, now)
         else:

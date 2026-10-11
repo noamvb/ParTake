@@ -73,7 +73,7 @@ def fetch(url, attempts=2):
 
 
 def store_raw(data_dir, source, body, now, key=None):
-    if source not in set(URLS) | {"votes", "ballots", "hansard", "evidence", "meetings", "committees", "evidence_pages"}:
+    if source not in set(URLS) | {"votes", "ballots", "hansard", "evidence", "meetings", "committees", "evidence_pages", "parlvu", "parlvu_pages"}:
         raise ValueError("unknown source")
     digest = hashlib.sha256(body).hexdigest()
     with connect(data_dir) as db, db:
