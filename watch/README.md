@@ -60,3 +60,12 @@ still matches bills, MPs and votes and exits 1.
 minutes: poll, then embed and match. The first run is the backfill since
 26 May 2025 and takes hours; later runs skip while one is active.
 `GET /api/feed` serves the matches (see `docs/watch/api.md`).
+
+`python3 -m watch.recorder --data "$D" --event ID` records English CEA-608
+captions from the event's HLS stream (the event must already have `stream_url`).
+It commits rows when they leave the display, stores millisecond UTC times using
+recording time for VOD or a persisted live anchor, and resumes after the last
+stored media sequence. It leaves archive captions intact, retries failed
+fetches three times, and stops at ENDLIST or after ten minutes without a new
+segment; an exit code of 1 lets a supervisor restart it, while 2 means the
+stream is missing.

@@ -30,7 +30,7 @@ first, then in both.
 ```json
 {"ok": true, "version": "0.1.0", "now": "2026-10-19T14:02:00Z",
  "sitting_today": true,
- "recorders": [{"event": "45901", "title": "HoC Sitting No. 150", "since": "2026-10-19T14:00:05Z", "lines": 812}],
+ "recorders": [{"event": "45901", "title": "House of Commons, sitting 150", "since": "2026-10-19T14:00:05Z", "lines": 812}],
  "embed": {"model": "paraphrase-multilingual", "loaded": true},
  "backfill": {"done": 182340, "total": 450112},
  "sources": {"votes": {"at": "2026-10-19T14:01:00Z", "ok": true, "error": null}}}
@@ -290,7 +290,7 @@ push channel is chosen (see PLAN.md). Returns `{"ok": true}`.
 What the recorders hear right now (for the Watch tab's live strip):
 
 ```json
-[{"event": "45901", "title": "HoC Sitting No. 150", "kind": "house" | "committee",
+[{"event": "45901", "title": "House of Commons, sitting 150", "kind": "house" | "committee",
   "speaker": <speaker or null>, "last_line_at": str,
   "business": "Government Orders - Bill C-12" | null}]
 ```
