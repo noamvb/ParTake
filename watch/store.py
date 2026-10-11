@@ -59,7 +59,23 @@ CREATE TABLE IF NOT EXISTS matches (
  follow TEXT NOT NULL, item_kind TEXT NOT NULL, item_id TEXT NOT NULL,
  score REAL NOT NULL, at TEXT NOT NULL, PRIMARY KEY (follow, item_kind, item_id));
 CREATE INDEX IF NOT EXISTS matches_at ON matches (at);
+CREATE TABLE IF NOT EXISTS events (
+ id TEXT PRIMARY KEY, title TEXT NOT NULL, kind TEXT NOT NULL, committee TEXT,
+ number INTEGER NOT NULL, document TEXT NOT NULL, scheduled_start TEXT NOT NULL,
+ actual_start TEXT, actual_end TEXT, status INTEGER NOT NULL, has_archive INTEGER NOT NULL,
+ recording_start TEXT, preroll_s REAL, stream_url TEXT, captions TEXT NOT NULL DEFAULT 'none',
+ updated_at TEXT NOT NULL);
+CREATE INDEX IF NOT EXISTS events_document ON events (document);
+CREATE TABLE IF NOT EXISTS captions (
+ event TEXT NOT NULL, lang TEXT NOT NULL, source TEXT NOT NULL, seq INTEGER NOT NULL,
+ begin TEXT NOT NULL, end TEXT NOT NULL, text TEXT NOT NULL,
+ PRIMARY KEY (event, lang, source, seq));
+CREATE TABLE IF NOT EXISTS digests (
+ id TEXT PRIMARY KEY, date TEXT NOT NULL, kind TEXT NOT NULL, created_at TEXT NOT NULL,
+ replaces TEXT, body TEXT NOT NULL);
 """
+# Columns added after a table first shipped; connect() adds any that are missing.
+COLUMNS = (("paragraphs", "superseded_by", "TEXT"),)
 
 
 def iso(now):
@@ -78,6 +94,9 @@ def connect(data_dir):
     db.row_factory = sqlite3.Row
     try:
         db.executescript(SCHEMA)
+        for table, column, kind in COLUMNS:
+            if column not in {row[1] for row in db.execute("PRAGMA table_info(%s)" % table)}:
+                db.execute("ALTER TABLE %s ADD COLUMN %s %s" % (table, column, kind))
         yield db
     finally:
         db.close()
