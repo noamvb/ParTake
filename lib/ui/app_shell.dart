@@ -7,9 +7,10 @@ import 'browse_screen.dart';
 import 'following_screen.dart';
 import 'home_screen.dart';
 import 'open_request.dart';
+import 'watch_screen.dart';
 
-/// The navigation frame: Home, Browse and Following, switched by a bottom
-/// bar on narrow screens or a side rail on wide ones.
+/// The navigation frame: Home, Watch, Browse and Following, switched by a
+/// bottom bar on narrow screens or a side rail on wide ones.
 class AppShell extends StatefulWidget {
   const AppShell({
     super.key,
@@ -41,10 +42,23 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _index = 0;
 
-  static const _labels = ['Home', 'Browse', 'Following'];
-  static const _icons = [Icons.home, Icons.calendar_month, Icons.star];
+  /// The Watch tab is built on first visit so its feed is not fetched earlier.
+  bool _watchOpened = false;
+
+  static const _labels = ['Home', 'Watch', 'Browse', 'Following'];
+  static const _icons = [
+    Icons.home,
+    Icons.newspaper,
+    Icons.calendar_month,
+    Icons.star,
+  ];
 
   DateTime Function() get _now => widget.now ?? DateTime.now;
+
+  void _select(int i) => setState(() {
+    _index = i;
+    if (i == 1) _watchOpened = true;
+  });
 
   void _showAbout() {
     showDialog<void>(
@@ -79,6 +93,9 @@ class _AppShellState extends State<AppShell> {
           onOpen: widget.onOpen,
           now: _now,
         ),
+        _watchOpened
+            ? WatchScreen(watch: widget.watch, now: _now)
+            : const SizedBox.shrink(),
         BrowseScreen(
           source: widget.source,
           library: widget.library,
@@ -95,7 +112,7 @@ class _AppShellState extends State<AppShell> {
               NavigationRail(
                 selectedIndex: _index,
                 labelType: NavigationRailLabelType.all,
-                onDestinationSelected: (i) => setState(() => _index = i),
+                onDestinationSelected: _select,
                 destinations: [
                   for (var i = 0; i < _labels.length; i++)
                     NavigationRailDestination(
@@ -133,7 +150,7 @@ class _AppShellState extends State<AppShell> {
           ? null
           : NavigationBar(
               selectedIndex: _index,
-              onDestinationSelected: (i) => setState(() => _index = i),
+              onDestinationSelected: _select,
               destinations: [
                 for (var i = 0; i < _labels.length; i++)
                   NavigationDestination(

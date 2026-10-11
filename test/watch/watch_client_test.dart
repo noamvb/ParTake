@@ -81,4 +81,54 @@ void main() {
     expect(bills.single.id, '45-1/C-37');
     expect(bills.single.stageAt, isNull);
   });
+  test('3a feed repeats follow and sends kind, limit and cursor', () async {
+    late Uri url;
+    final watch = client((request) async {
+      url = request.url;
+      expect(request.method, 'GET');
+      return http.Response('{"items": [], "next": null}', 200);
+    });
+    final page = await watch.feed(
+      follows: ['f_a', 'f_b'],
+      kind: 'speech',
+      limit: 20,
+      before: 'c_x',
+    );
+    expect(url.path, '/watch/api/feed');
+    expect(url.queryParametersAll, {
+      'follow': ['f_a', 'f_b'],
+      'kind': ['speech'],
+      'limit': ['20'],
+      'before': ['c_x'],
+    });
+    expect(page.items, isEmpty);
+    expect(page.next, isNull);
+  });
+  test('3b feed omits null and empty parameters and members keeps q', () async {
+    final urls = <String>[];
+    final watch = client((request) async {
+      urls.add(request.url.toString());
+      return http.Response(
+        request.url.path.endsWith('members') ? '[]' : '{"items": []}',
+        200,
+      );
+    });
+    await watch.feed();
+    await watch.members('mor');
+    expect(urls, [
+      'http://deck.test:8797/watch/api/feed?limit=50',
+      'http://deck.test:8797/watch/api/members?q=mor',
+    ]);
+  });
+  test('3c feed bad cursor surfaces the service error message', () async {
+    await expectLater(
+      client((_) async => http.Response('{"error": "bad cursor"}', 400))
+          .feed(before: 'nope'),
+      throwsA(
+        isA<WatchHttpException>()
+            .having((e) => e.status, 'status', 400)
+            .having((e) => e.message, 'message', 'bad cursor'),
+      ),
+    );
+  });
 }

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'watch_feed.dart';
 import 'watch_models.dart';
 
 class WatchConflict implements Exception {
@@ -31,10 +32,10 @@ class WatchClient {
     String method,
     String path, {
     Object? body,
-    String? query,
+    Map<String, Object>? query,
   }) async {
     var uri = address.resolve('/watch/api/$path');
-    if (query != null) uri = uri.replace(queryParameters: {'q': query});
+    if (query != null) uri = uri.replace(queryParameters: query);
     final request = http.Request(method, uri);
     if (body != null) {
       request.headers['Authorization'] = 'Bearer $token';
@@ -87,13 +88,31 @@ class WatchClient {
         await _request('POST', 'follows/import', body: {'keys': keys}),
       );
   Future<List<WatchMember>> members(String q) async =>
-      (await _request('GET', 'members', query: q) as List)
+      (await _request('GET', 'members', query: {'q': q}) as List)
           .map((m) => WatchMember.fromJson(m))
           .toList();
   Future<List<WatchBill>> bills(String q) async =>
-      (await _request('GET', 'bills', query: q) as List)
+      (await _request('GET', 'bills', query: {'q': q}) as List)
           .map((b) => WatchBill.fromJson(b))
           .toList();
+
+  Future<WatchFeedPage> feed({
+    List<String> follows = const [],
+    String? kind,
+    int limit = 50,
+    String? before,
+  }) async => WatchFeedPage.fromJson(
+    await _request(
+      'GET',
+      'feed',
+      query: {
+        if (follows.isNotEmpty) 'follow': follows,
+        'kind': ?kind,
+        'limit': '$limit',
+        'before': ?before,
+      },
+    ),
+  );
 
   void close() => _client.close();
 }
