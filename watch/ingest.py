@@ -66,13 +66,13 @@ def fetch(url):
         return response.read()
 
 
-def store_raw(data_dir, source, body, now):
-    if source not in URLS:
+def store_raw(data_dir, source, body, now, key=None):
+    if source not in set(URLS) | {"votes", "ballots", "hansard", "evidence", "meetings", "committees", "evidence_pages"}:
         raise ValueError("unknown source")
     digest = hashlib.sha256(body).hexdigest()
     with connect(data_dir) as db, db:
         db.execute("BEGIN IMMEDIATE")
-        key = "raw:" + source
+        key = "raw:" + (source if key is None else key)
         previous = db.execute("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
         if previous and previous[0] == digest:
             return
@@ -96,6 +96,17 @@ def ingest_source(data_dir, source, fetch=fetch, now=None):
             db.execute("DELETE FROM " + source)
             marks = {"members": "?,?,?,?,?,?,?", "ministries": "?,?,?", "bills": "?,?,?,?,?"}[source]
             db.executemany("INSERT INTO " + source + " VALUES (" + marks + ")", rows)
+            if source == "bills":
+                from watch.records import parse_bill_stages
+                stages = parse_bill_stages(body)
+                db.execute("CREATE TEMP TABLE current_stages (bill TEXT, stage TEXT, chamber TEXT)")
+                for stage in stages:
+                    db.execute("INSERT INTO bill_stages(bill,stage,chamber,at) VALUES (:bill,:stage,:chamber,:at) "
+                               "ON CONFLICT(bill,stage,chamber) DO UPDATE SET at=excluded.at", stage)
+                    db.execute("INSERT INTO current_stages VALUES (:bill,:stage,:chamber)", stage)
+                db.execute("DELETE FROM bill_stages WHERE NOT EXISTS (SELECT 1 FROM current_stages c "
+                           "WHERE c.bill=bill_stages.bill AND c.stage=bill_stages.stage AND c.chamber=bill_stages.chamber)")
+                db.execute("UPDATE bills SET stage_at=(SELECT max(at) FROM bill_stages WHERE bill=bills.id)")
             set_meta(db, "source:" + source, json.dumps({"at": iso(now), "ok": True, "error": None}))
         return True
     except Exception as exc:

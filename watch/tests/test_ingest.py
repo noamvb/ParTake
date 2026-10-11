@@ -57,3 +57,26 @@ class IngestTests(unittest.TestCase):
         self.assertEqual(rows[0]["body"], "one")
         self.assertEqual(rows[0]["at"], "2026-10-12T15:00:00Z")
         self.assertNotEqual(rows[0]["sha256"], rows[1]["sha256"])
+
+    def test_11_bill_stages_stable_ids(self):
+        from watch.tests.test_records import fixture
+        from watch.ingest import ingest_source
+        def ingest():
+            return ingest_source(self.data, 'bills', fetch=lambda url: fixture('legisinfo-bills.json'), now=self.now)
+        self.assertTrue(ingest())
+        with closing(sqlite3.connect(self.data / 'watch.db')) as db:
+            before = db.execute('SELECT * FROM bill_stages ORDER BY id').fetchall()
+            self.assertEqual(len(before), 4)
+            self.assertEqual(db.execute("SELECT stage_at FROM bills WHERE id='45-1/C-37'").fetchone()[0], '2026-10-09T17:20:48Z')
+        self.assertTrue(ingest())
+        with closing(sqlite3.connect(self.data / 'watch.db')) as db:
+            self.assertEqual(db.execute('SELECT * FROM bill_stages ORDER BY id').fetchall(), before)
+
+    def test_16_raw_keys(self):
+        self.store_raw(self.data, 'hansard', b'one', self.now, key='one')
+        self.store_raw(self.data, 'hansard', b'one', self.now, key='two')
+        self.store_raw(self.data, 'hansard', b'one', self.now, key='one')
+        with gzip.open(self.data / 'raw/hansard/2026-10-12.jsonl.gz', 'rt') as raw:
+            self.assertEqual(len(raw.readlines()), 2)
+        with self.assertRaises(ValueError):
+            self.store_raw(self.data, 'nope', b'one', self.now)

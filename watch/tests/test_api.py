@@ -117,7 +117,7 @@ class WatchApiTests(unittest.TestCase):
     def test_06_bill_lookup(self):
         self.ingest("bills")
         expected = {"id": "45-1/C-37", "number": "C-37", "title": "First Nations Clean Water Act",
-                    "stage": "At consideration in committee in the House of Commons", "stage_at": None}
+                    "stage": "At consideration in committee in the House of Commons", "stage_at": "2026-10-09T17:20:48Z"}
         for query in ("c37", "C-37", "c-37"):
             self.assertEqual(self.request("/api/bills?q=" + query)[1][0], expected)
         rail = self.request("/api/bills?q=railways")[1][0]
