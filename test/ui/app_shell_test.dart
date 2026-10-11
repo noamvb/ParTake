@@ -128,4 +128,48 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets(
+    'the Digests action is on the Watch tab only and opens the list',
+    (tester) async {
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(400, 800);
+
+      SharedPreferences.setMockInitialValues({'watch.imported': true});
+      final prefs = await SharedPreferences.getInstance();
+      final server = FakeWatchServer(feedFollows());
+      final watch = WatchFollows(
+        prefs: prefs,
+        library: FakeLibrary(),
+        defaultAddress: 'http://deck.test',
+        clientFactory: server.client,
+      );
+      addTearDown(watch.dispose);
+      await watch.sync();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: AppShell(
+            source: FakeEventSource(),
+            library: FakeLibrary(),
+            watch: watch,
+            onOpen: (_) {},
+            now: _clock,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Digests'), findsNothing);
+
+      final bar = find.byType(NavigationBar);
+      await tester.tap(find.descendant(of: bar, matching: find.text('Watch')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Digests'));
+      await tester.pumpAndSettle();
+      expect(find.text('Evening digest, Mon 19 Oct'), findsOneWidget);
+      expect(find.text('Morning digest, Tue 20 Oct'), findsOneWidget);
+    },
+  );
 }

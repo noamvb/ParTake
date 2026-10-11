@@ -1,0 +1,9 @@
+[Unit]
+Description=Build the morning Parliament watch digest
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/partake
+ExecStart=/usr/bin/python3 -m watch.digest --data %h/.local/share/partake-watch --kind morning
+MemoryMax=150M

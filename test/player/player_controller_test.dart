@@ -580,6 +580,83 @@ void main() {
       await c.close();
     },
   );
+  test(
+    'a seek request opens a recorded stream 5 s before the moment',
+    () async {
+      final seekTo = detail.recordingStart.add(const Duration(minutes: 10));
+      final e = FakeEngine();
+      final c = PlayerController(
+        source: source(),
+        library: FakeLibrary(),
+        engine: e,
+      );
+      await c.open(
+        OpenRequest(
+          eventId: 45750,
+          title: row.title,
+          eventDate: date,
+          seekTo: seekTo,
+          resumeAt: const Duration(seconds: 100),
+        ),
+      );
+      expect(c.stream!.isLive, isFalse);
+      expect(
+        e.opened.single.start,
+        const Duration(minutes: 10) +
+            c.stream!.preRoll -
+            const Duration(seconds: 5),
+      );
+      await c.close();
+    },
+  );
+  test('a seek before the recording starts opens at zero', () async {
+    final e = FakeEngine();
+    final c = PlayerController(
+      source: source(),
+      library: FakeLibrary(),
+      engine: e,
+    );
+    await c.open(
+      OpenRequest(
+        eventId: 45750,
+        title: row.title,
+        eventDate: date,
+        seekTo: detail.recordingStart.subtract(const Duration(hours: 1)),
+      ),
+    );
+    expect(e.opened.single.start, Duration.zero);
+    await c.close();
+  });
+  test(
+    'a seek request on a live stream still opens at the live edge',
+    () async {
+      final liveDetail = parseEventPage(
+        File('packages/parlvu/test/fixtures/event_live_hoc143_45729.html')
+            .readAsStringSync(),
+        id: 45729,
+      );
+      final feed = FakeLiveCaptions();
+      final e = FakeEngine();
+      final c = PlayerController(
+        source: FakeEventSource(details: {45729: liveDetail}),
+        library: FakeLibrary(),
+        engine: e,
+        liveCaptions: feed,
+      );
+      await c.open(
+        OpenRequest(
+          eventId: 45729,
+          title: 'HoC Sitting No. 143',
+          eventDate: DateTime.utc(2026, 9, 24),
+          seekTo: liveDetail.recordingStart.add(const Duration(minutes: 10)),
+        ),
+      );
+      expect(c.stream!.isLive, isTrue);
+      expect(e.opened.single.start, isNull);
+      await c.close();
+      feed.dispose();
+    },
+  );
 }
 
 class _RecordingLibrary extends FakeLibrary {

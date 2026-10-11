@@ -12,8 +12,8 @@ import sys
 import unicodedata
 from urllib.parse import parse_qs, urlsplit
 
-from watch import embed
-from watch.feed import feed
+from watch import digest, embed
+from watch.feed import feed, _speaker
 
 from watch.store import (DEFAULT_DATA, StaleVersion, connect, follow_id, import_follows,
                          iso, list_follows, replace_follows)
@@ -56,6 +56,43 @@ def bills(db, query):
         if exact or q in normalized(row["title"]):
             results.append(((0 if exact else 1, row["number"]), dict(row)))
     return [item for _key, item in sorted(results, key=lambda r: r[0])[:20]]
+
+
+def _fresh(at, now):
+    return 0 <= (now - datetime.fromisoformat(at)).total_seconds() <= 180
+
+
+def live(db, now):
+    rows = []
+    for event in db.execute('SELECT * FROM events'):
+        ends = [row[0] for row in db.execute("SELECT end FROM captions WHERE event=? AND source='live'", (event['id'],))]
+        if not ends:
+            continue
+        newest = max(ends, key=datetime.fromisoformat)
+        if not _fresh(newest, now):
+            continue
+        paragraphs = db.execute("SELECT * FROM paragraphs WHERE event_id=? AND source='captions' ORDER BY position DESC,seq DESC", (event['id'],)).fetchall()
+        paragraph = max(paragraphs, key=lambda row: datetime.fromisoformat(row['at'])) if paragraphs else None
+        rows.append(dict(event=event['id'], title=event['title'], kind=event['kind'],
+                         speaker=_speaker(db, paragraph) if paragraph else None,
+                         last_line_at=newest, business=None))
+    return sorted(rows, key=lambda row: datetime.fromisoformat(row['last_line_at']), reverse=True)
+
+
+def _event_health(db, now):
+    today = now.astimezone(digest.OTTAWA).date()
+    sitting = False
+    recorders = []
+    for event in db.execute('SELECT * FROM events ORDER BY id'):
+        if event['kind'] == 'house' and datetime.fromisoformat(event['scheduled_start']).astimezone(digest.OTTAWA).date() == today:
+            sitting = True
+        meta = db.execute('SELECT value FROM meta WHERE key=?', ('recorder:' + event['id'],)).fetchone()
+        if meta is None or not _fresh(json.loads(meta[0])['at'], now):
+            continue
+        begins = [row[0] for row in db.execute("SELECT begin FROM captions WHERE event=? AND source='live'", (event['id'],))]
+        recorders.append(dict(event=event['id'], title=event['title'],
+                              since=min(begins, key=datetime.fromisoformat) if begins else None, lines=len(begins)))
+    return sitting, recorders
 
 
 def make_server(data_dir, host, port, clock=None, new_id=None, ollama=None):
@@ -127,12 +164,33 @@ def make_server(data_dir, host, port, clock=None, new_id=None, ollama=None):
                                                  kind=query.get("kind", [None])[0],
                                                  limit=int(query.get("limit", ["50"])[0]),
                                                  before=query.get("before", [None])[0]))
+                        elif path == "/api/digests":
+                            query = parse_qs(parts.query, keep_blank_values=True)
+                            limit = int(query.get("limit", ["20"])[0])
+                            if not 1 <= limit <= 100:
+                                raise ValueError("limit must be between 1 and 100")
+                            rows = []
+                            for row in db.execute('SELECT * FROM digests ORDER BY created_at DESC,id DESC LIMIT ?', (limit,)):
+                                item = {k: row[k] for k in ('id', 'date', 'kind', 'created_at', 'replaces')}
+                                item['items'] = digest.item_count(json.loads(row['body']))
+                                rows.append(item)
+                            self._send(200, rows)
+                        elif path.startswith("/api/digests/"):
+                            row = db.execute('SELECT body FROM digests WHERE id=?', (path[len('/api/digests/'):],)).fetchone()
+                            if row:
+                                self._send(200, json.loads(row[0]))
+                            else:
+                                self._error(404, "not found")
+                        elif path == "/api/live":
+                            self._send(200, live(db, clock()))
                         elif path == "/api/health":
                             sources = {row["key"][7:]: json.loads(row["value"]) for row in db.execute(
                                 "SELECT key,value FROM meta WHERE key LIKE 'source:%'")}
                             backfill = db.execute("SELECT value FROM meta WHERE key='backfill'").fetchone()
-                            self._send(200, {"ok": True, "version": "0.1.0", "now": iso(clock()),
-                                             "sitting_today": None, "recorders": [],
+                            now = clock()
+                            sitting, recorders = _event_health(db, now)
+                            self._send(200, {"ok": True, "version": "0.1.0", "now": iso(now),
+                                             "sitting_today": sitting, "recorders": recorders,
                                              "embed": {"model": embed.MODEL, "loaded": embed.loaded(ollama)},
                                              "backfill": json.loads(backfill[0]) if backfill else None, "sources": sources})
                         elif path in ("/api/members", "/api/bills"):

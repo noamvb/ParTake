@@ -1,0 +1,2 @@
+[{"id": "d_2026-10-19_morning", "date": "2026-10-19", "kind": "morning", "created_at": "2026-10-20T11:05:00Z", "replaces": "d_2026-10-19_evening", "items": 2},
+ {"id": "d_2026-10-19_evening", "date": "2026-10-19", "kind": "evening", "created_at": "2026-10-19T23:30:00Z", "replaces": null, "items": 1}]

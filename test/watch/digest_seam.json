@@ -1,0 +1,12 @@
+{"id": "d_2026-10-19_evening", "date": "2026-10-19", "kind": "evening", "replaces": null,
+ "sections": [{"follow": {"id": "f_jkl567", "label": "Bill C-37"},
+   "items": [{"id": "m_s_c45873_12", "kind": "speech", "at": "2026-10-19T15:31:12.400Z",
+     "follows": [{"id": "f_jkl567", "score": 1.0}],
+     "source": "captions", "superseded": false,
+     "title": "House of Commons, sitting 150",
+     "text": ">> Mr. Speaker, the first nations clean water act is about making sure every community has safe drinking water.",
+     "lang": "en",
+     "speaker": {"person_id": "122492", "name": "Mandy Gull-Masty", "party": "Liberal", "confidence": 0.85, "from": "caption_call"},
+     "video": {"event": "45873", "at": "2026-10-19T15:31:12.400Z", "offset_s": 1872.4},
+     "links": {"hansard": null, "legisinfo": null, "division": null},
+     "division": null, "bill_stage": null}]}]}

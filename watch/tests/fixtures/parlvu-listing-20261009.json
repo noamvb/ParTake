@@ -1,0 +1,83 @@
+{
+  "NextTime": null,
+  "PreviousTime": null,
+  "Weeks": [
+    {
+      "WeekStart": "2026-10-04T00:00:00",
+      "ContentEntityDatas": [
+        {
+          "Title": "CC39 Meeting No. 1",
+          "IconUri": "/Harmony/miniicons/icon_webcast.gif",
+          "EntityStatus": -1,
+          "EntityStatusDesc": "Adjourned",
+          "Location": "Wellington Building - 425",
+          "Description": "Meeting No. 1 CC39 - Legislative Committee on Bill C-39",
+          "ThumbnailUri": "/Harmony/thumbnails/thumbnail_webcast_e_small.jpg",
+          "ScheduledStart": "2026-10-09T08:52:04",
+          "ScheduledEnd": "2026-10-09T10:51:03",
+          "HasArchiveStream": false,
+          "ActualStart": "2026-10-09T08:52:04",
+          "ActualEnd": "2026-10-09T10:51:03",
+          "LastModifiedTime": "2026-10-09T14:55:43.437Z",
+          "CommitteeId": null,
+          "VenueId": null,
+          "AssemblyProgress": 0,
+          "AssemblyStatus": 0,
+          "ForeignKey": "13616242",
+          "Handouts": null,
+          "PublishStatus": 2,
+          "Id": 45881,
+          "Tag": null
+        },
+        {
+          "Title": "HoC Sitting No. 149",
+          "IconUri": "/Harmony/miniicons/icon_video.gif",
+          "EntityStatus": -1,
+          "EntityStatusDesc": "Adjourned",
+          "Location": "West Block - Chamber",
+          "Description": "Sitting No. 149 House of Commons",
+          "ThumbnailUri": "/Harmony/thumbnails/thumbnail_house_e_small.jpg",
+          "ScheduledStart": "2026-10-09T10:00:00",
+          "ScheduledEnd": "2026-10-09T14:30:00",
+          "HasArchiveStream": false,
+          "ActualStart": "2026-10-09T10:01:04",
+          "ActualEnd": "2026-10-09T14:31:27",
+          "LastModifiedTime": "2026-10-09T18:40:05.19Z",
+          "CommitteeId": null,
+          "VenueId": null,
+          "AssemblyProgress": 0,
+          "AssemblyStatus": 0,
+          "ForeignKey": "13597193",
+          "Handouts": null,
+          "PublishStatus": 2,
+          "Id": 45735,
+          "Tag": null
+        },
+        {
+          "Title": "Question Period for HoC Sitting No. 149",
+          "IconUri": "/Harmony/miniicons/icon_video.gif",
+          "EntityStatus": -1,
+          "EntityStatusDesc": "Adjourned",
+          "Location": "West Block - Chamber",
+          "Description": "Question Period for HoC Sitting No. 149 House of Commons",
+          "ThumbnailUri": "/Harmony/thumbnails/thumbnail_house_e_small.jpg",
+          "ScheduledStart": "2026-10-09T11:00:27",
+          "ScheduledEnd": "2026-10-09T12:08:04",
+          "HasArchiveStream": false,
+          "ActualStart": "2026-10-09T11:00:27",
+          "ActualEnd": "2026-10-09T12:08:04",
+          "LastModifiedTime": "2026-10-09T16:11:56.11Z",
+          "CommitteeId": null,
+          "VenueId": null,
+          "AssemblyProgress": 0,
+          "AssemblyStatus": 0,
+          "ForeignKey": "13631793",
+          "Handouts": null,
+          "PublishStatus": 2,
+          "Id": 45883,
+          "Tag": null
+        }
+      ]
+    }
+  ]
+}

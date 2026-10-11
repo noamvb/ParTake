@@ -1,5 +1,6 @@
 """Render matched Parliament records and stable opaque feed cursors."""
 
+from datetime import datetime, timedelta, timezone
 import base64
 import json
 import re
@@ -16,6 +17,12 @@ def _legisinfo(bill):
 
 
 def _speaker(db, row):
+    if row['source'] == 'captions':
+        if row['person_id'] is None:
+            return None
+        member = db.execute('SELECT name,party FROM members WHERE person_id=?', (row['person_id'],)).fetchone()
+        return {'person_id': row['person_id'], 'name': member['name'] if member else row['speaker'],
+                'party': member['party'] if member else None, 'confidence': row['confidence'], 'from': 'caption_call'}
     if row['speaker'] is None:
         return None
     member = db.execute('SELECT name,party FROM members WHERE person_id=?', (row['person_id'],)).fetchone()
@@ -41,7 +48,14 @@ def _item(db, kind, iid, at, matched, active):
         item.update(source=row['source'], title=row['title'], text=floor_text(row), lang=row['lang'],
                     speaker=_speaker(db, row))
         document = db.execute('SELECT url FROM documents WHERE id=?', (row['document'],)).fetchone()
-        item['links']['hansard'] = document[0] + '#Para' + iid[1:] if document else None
+        item['links']['hansard'] = document[0] + '#Para' + iid[1:] if document and row['source'] != 'captions' else None
+        if row['event_id'] is not None and row['offset_s'] is not None:
+            event = db.execute('SELECT * FROM events WHERE id=?', (row['event_id'],)).fetchone()
+            if event and event['recording_start'] is not None and event['preroll_s'] is not None:
+                at = datetime.fromisoformat(event['recording_start']) + timedelta(seconds=row['offset_s'] - event['preroll_s'])
+                item['video'] = {'event': row['event_id'],
+                                 'at': at.astimezone(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z'),
+                                 'offset_s': row['offset_s']}
     elif kind == 'division':
         row = db.execute('SELECT * FROM divisions WHERE id=?', (iid,)).fetchone()
         result = {'agreed': 'Agreed to', 'negatived': 'Negatived', 'tie': 'Tie'}.get(row['result'], row['result'])
@@ -89,6 +103,21 @@ def _decode(cursor):
         raise ValueError('malformed cursor') from exc
 
 
+def _groups(db, active):
+    active_ids = {f['id'] for f in active}
+    groups = {}
+    for row in db.execute("SELECT m.* FROM matches m WHERE m.item_kind != 'paragraph' OR EXISTS "
+                          "(SELECT 1 FROM paragraphs p WHERE p.id=m.item_id AND p.superseded_by IS NULL)"):
+        if row['follow'] in active_ids:
+            key = (row['at'], row['item_kind'], row['item_id'])
+            groups.setdefault(key, {})[row['follow']] = row['score']
+    return groups
+
+
+def _matched(scores, active):
+    return [{'id': f['id'], 'score': round(scores[f['id']], 3)} for f in active if f['id'] in scores]
+
+
 def feed(db, follows=None, kind=None, limit=50, before=None):
     if type(limit) is not int or not 1 <= limit <= 200:
         raise ValueError('limit must be between 1 and 200')
@@ -100,11 +129,7 @@ def feed(db, follows=None, kind=None, limit=50, before=None):
     if not selected <= active_ids:
         raise ValueError('unknown active follow')
     cursor = _decode(before) if before is not None else None
-    groups = {}
-    for row in db.execute('SELECT * FROM matches'):
-        if row['follow'] in active_ids:
-            key = (row['at'], row['item_kind'], row['item_id'])
-            groups.setdefault(key, {})[row['follow']] = row['score']
+    groups = _groups(db, active)
     # Descending in all three fields is a fixed tie order and keeps the SQL
     # storage kind in the cursor rather than relying on rendered item ids.
     keys = sorted((k for k, values in groups.items() if selected.intersection(values) and
@@ -112,6 +137,6 @@ def feed(db, follows=None, kind=None, limit=50, before=None):
     items = []
     for at, storage_kind, iid in keys[:limit]:
         scores = groups[(at, storage_kind, iid)]
-        matched = [{'id': f['id'], 'score': round(scores[f['id']], 3)} for f in active if f['id'] in scores]
+        matched = _matched(scores, active)
         items.append(_item(db, storage_kind, iid, at, matched, active))
     return {'items': items, 'next': _cursor(keys[limit-1]) if len(keys) > limit else None}

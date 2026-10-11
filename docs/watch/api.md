@@ -30,7 +30,7 @@ first, then in both.
 ```json
 {"ok": true, "version": "0.1.0", "now": "2026-10-19T14:02:00Z",
  "sitting_today": true,
- "recorders": [{"event": "45901", "title": "HoC Sitting No. 150", "since": "2026-10-19T14:00:05Z", "lines": 812}],
+ "recorders": [{"event": "45901", "title": "House of Commons, sitting 150", "since": "2026-10-19T14:00:05Z", "lines": 812}],
  "embed": {"model": "paraphrase-multilingual", "loaded": true},
  "backfill": {"done": 182340, "total": 450112},
  "sources": {"votes": {"at": "2026-10-19T14:01:00Z", "ok": true, "error": null}}}
@@ -126,7 +126,7 @@ Query: `follow=<id>` (optional, repeatable), `kind=speech|division|bill_stage`
    "lang": "en",
    "speaker": {"person_id": "123447", "name": "Billy Morin", "party": "Conservative",
                "confidence": 0.8, "from": "caption_call"},
-   "video": {"event": "45901", "offset_s": 1872.0},
+   "video": {"event": "45901", "at": "2026-10-19T14:31:12.400Z", "offset_s": 1872.4},
    "links": {"hansard": null, "legisinfo": null, "division": null},
    "division": null, "bill_stage": null}],
  "next": "c_…"}
@@ -186,6 +186,61 @@ Query: `follow=<id>` (optional, repeatable), `kind=speech|division|bill_stage`
 - Paging: `limit` outside 1-200, an unknown `kind` or a bad cursor is 400.
   `video` is `null` and `superseded` is `false` until Phase 2.
 
+## Phase 2 details (fixed 11 Oct 2026)
+
+Storage the service modules share (`watch/store.py` `SCHEMA`):
+
+- `events`: one row per ParlVU House sitting (`HoC Sitting No. <n>`, `kind`
+  `house`, `document` `hansard/45-1/<n>`) or committee meeting
+  (`<ACRONYM> Meeting No. <n>`, `kind` `committee`, `committee` the acronym,
+  `document` `evidence/45-1/<ACRONYM>/<n>`). Other ParlVU titles
+  (`Question Period for HoC Sitting No. 145`, `TRAN Meeting No. 30-16`) are
+  not stored. `status` is ParlVU `EntityStatus` (-1 adjourned, 0 not started,
+  1 live, 2 suspended); `has_archive` is `HasArchiveStream`. Times are UTC
+  `Z` strings; ParlVU's naive times are Ottawa local. `recording_start` is the
+  event page's `STARTTIME`, `preroll_s` the chosen stream's `PreRoll`,
+  `stream_url` the English SD video stream (`Lang` `en`, `Tag` ending ` SD`,
+  not audio-only). `captions` is `none`, `live` (the recorder wrote lines) or
+  `archive` (the event page's `ccItems` were loaded).
+- `captions`: one committed caption line per row: `event`, `lang` (`en`),
+  `source` (`archive` or `live`), `seq` (0-based per event, lang and source),
+  `begin` / `end` (UTC with milliseconds, `2026-10-09T14:00:40.190Z`), `text`
+  (stripped; empty lines are not stored). Archive lines are the `ccItems`
+  entries in order.
+- Caption paragraphs live in `paragraphs` with `source` `captions`,
+  `document` `captions/<event>`, `id` `c<event>_<position>`, `intervention`
+  `c<event>_<speech>` (a speech is the text between two `>>` markers),
+  `lang` `en`, `text_fr` `""`, `event_id`, `offset_s`, `person_id` and
+  `confidence` from the speaker guess (`speaker` the guessed member's name or
+  the presiding officer's label, else null). `title` is
+  `House of Commons, sitting <n>` or `<ACRONYM>, meeting <n>`.
+- `paragraphs.superseded_by` is the Hansard or evidence document id that
+  replaced a caption paragraph (morning fix-up), else null.
+- `offset_s` (any paragraph) is the media position in the event's recording:
+  seconds from `recording_start - preroll_s` to the moment the paragraph
+  starts.
+
+Feed changes:
+
+- `video` is `{"event": str, "at": str, "offset_s": float}` when the
+  paragraph has an `event_id` and `offset_s` and the event is known: `at` is
+  the wall-clock moment (UTC, milliseconds) = `recording_start - preroll_s +
+  offset_s`. The app seeks with its existing `EventDetail.offsetOf(at,
+  stream)`; `offset_s` is informational. Otherwise `video` is null.
+- Caption items: `source` `captions`, id `m_s_c<event>_<position>`,
+  `links.hansard` null, `speaker` `{"person_id", "name", "party",
+  "confidence": <guess>, "from": "caption_call"}` or null when there is no
+  guess.
+- Superseded caption paragraphs are left out of the feed. Feed items always
+  carry `superseded: false`; a digest keeps items as they were rendered when
+  it was built.
+- Digests: `id` is `d_<date>_<kind>` where `date` is the Ottawa date of the
+  sitting day the digest covers; `items` counts distinct items; a section's
+  items are oldest first. `replaces` is set only on a morning digest whose
+  evening digest exists.
+- `/api/live` `business` is always null in Phase 2 (ParlVU has no agenda).
+  `speaker` is the guess on the event's newest caption paragraph.
+
 ## Digests
 
 ### GET /api/digests
@@ -196,7 +251,7 @@ Query: `follow=<id>` (optional, repeatable), `kind=speech|division|bill_stage`
 ### GET /api/digests/{id}
 
 ```json
-{"id": "d_2026-10-20_morning", "date": "2026-10-19", "kind": "morning",
+{"id": "d_2026-10-19_morning", "date": "2026-10-19", "kind": "morning",
  "replaces": "d_2026-10-19_evening",
  "sections": [{"follow": {"id": "f_7k2m", "label": "Housing affordability"},
                "items": [ <feed item>, ... ]}]}
@@ -235,7 +290,7 @@ push channel is chosen (see PLAN.md). Returns `{"ok": true}`.
 What the recorders hear right now (for the Watch tab's live strip):
 
 ```json
-[{"event": "45901", "title": "HoC Sitting No. 150", "kind": "house" | "committee",
+[{"event": "45901", "title": "House of Commons, sitting 150", "kind": "house" | "committee",
   "speaker": <speaker or null>, "last_line_at": str,
   "business": "Government Orders - Bill C-12" | null}]
 ```

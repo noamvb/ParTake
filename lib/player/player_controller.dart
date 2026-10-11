@@ -125,10 +125,14 @@ class PlayerController extends ChangeNotifier {
       stream = loaded.preferredStream(language);
       if (stream == null) throw StateError('No playable stream is available.');
       language = stream!.language;
-      await engine.open(
-        stream!.url,
-        start: stream!.isLive ? null : request.resumeAt,
-      );
+      final seekTo = request.seekTo;
+      Duration? start = stream!.isLive ? null : request.resumeAt;
+      if (seekTo != null && !stream!.isLive) {
+        final moment = loaded.offsetOf(seekTo, stream!);
+        const lead = Duration(seconds: 5);
+        start = moment > lead ? moment - lead : Duration.zero;
+      }
+      await engine.open(stream!.url, start: start);
       await engine.setRate(rate);
       position = engine.position;
       duration = engine.duration;

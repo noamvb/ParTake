@@ -1,0 +1,15 @@
+[Unit]
+Description=Supervise live Parliament caption recorders
+After=network.target partake-watch-embed.service
+Wants=partake-watch-embed.service
+
+[Service]
+Type=simple
+WorkingDirectory=%h/partake
+ExecStart=/usr/bin/python3 -m watch.live --data %h/.local/share/partake-watch --ollama http://127.0.0.1:11436
+Restart=on-failure
+RestartSec=5
+MemoryMax=150M
+
+[Install]
+WantedBy=default.target

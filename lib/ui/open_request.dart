@@ -9,6 +9,7 @@ class OpenRequest {
     required this.eventDate,
     this.event,
     this.resumeAt,
+    this.seekTo,
   });
 
   final int eventId;
@@ -23,6 +24,10 @@ class OpenRequest {
   /// Where to resume, from the watch record; null plays from the start (or
   /// the live edge).
   final Duration? resumeAt;
+
+  /// The wall-clock moment to play from (a feed item's video), 5 s early.
+  /// Ignored on a live stream, which opens at the live edge.
+  final DateTime? seekTo;
 }
 
 typedef OpenEvent = void Function(OpenRequest request);
