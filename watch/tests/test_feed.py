@@ -157,3 +157,46 @@ class FeedTests(unittest.TestCase):
         health = self.http('/api/health')[1]
         self.assertEqual(health['backfill'], {'done': 32, 'total': 70})
         self.assertEqual(health['embed'], {'model': 'paraphrase-multilingual', 'loaded': False})
+
+    def test_superseded_cursor_gap(self):
+        from watch.feed import feed
+        follows(self.db)
+        for pid in ('a', 'b', 'c'):
+            paragraph(self.db, pid, source='captions')
+            self.db.execute("INSERT INTO matches VALUES ('f_ghi234','paragraph',?,1,'2026-10-09T14:00:00Z')", (pid,))
+        page = feed(self.db, limit=1)
+        self.db.execute("UPDATE paragraphs SET superseded_by='doc' WHERE id='b'")
+        self.assertEqual([i['id'] for i in feed(self.db)['items']], ['m_s_c', 'm_s_a'])
+        self.assertEqual([i['id'] for i in feed(self.db, before=page['next'])['items']], ['m_s_a'])
+
+    def test_official_video(self):
+        from watch.feed import feed
+        from watch.fixup import fixup
+        from watch.tests.test_fixup import official, NOW
+        from watch.tests.test_records import fixture
+        from watch.tests.test_segment import seed, insert_lines
+        seed(self.db)
+        insert_lines(self.db, json.loads(fixture('captions-45735-en.json.gz')))
+        follows(self.db)
+        self.db.commit()
+        official(self.data)
+        fixup(self.db, NOW)
+        pid = self.db.execute("SELECT id FROM paragraphs WHERE intervention='13631809' ORDER BY position").fetchone()[0]
+        self.db.execute("INSERT INTO matches VALUES ('f_ghi234','paragraph',?,1,'2026-10-09T15:03:00Z')", (pid,))
+        self.assertEqual(feed(self.db)['items'][0]['video'], {'event': '45735', 'at': '2026-10-09T15:03:54.281Z', 'offset_s': 3800.281})
+        self.db.execute('UPDATE events SET preroll_s=NULL')
+        self.assertIsNone(feed(self.db)['items'][0]['video'])
+
+    def test_caption_speaker_links(self):
+        from watch.feed import feed
+        from watch.tests.test_segment import seed
+        seed(self.db)
+        follows(self.db)
+        paragraph(self.db, 'c1', source='captions', document='captions/45735', person_id='123447', speaker='Billy Morin', confidence=.9, event_id='45735', offset_s=6.19)
+        self.db.execute("INSERT INTO matches VALUES ('f_ghi234','paragraph','c1',1,'2026-10-09T14:00:40Z')")
+        item = feed(self.db)['items'][0]
+        self.assertEqual(item['speaker'], {'person_id': '123447', 'name': 'Billy Morin', 'party': 'Conservative', 'confidence': .9, 'from': 'caption_call'})
+        self.assertIsNone(item['links']['hansard'])
+        self.assertEqual(item['video']['at'], '2026-10-09T14:00:40.190Z')
+        self.db.execute('UPDATE paragraphs SET person_id=NULL')
+        self.assertIsNone(feed(self.db)['items'][0]['speaker'])

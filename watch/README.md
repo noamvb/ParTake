@@ -131,3 +131,20 @@ and up to 20 errors (including missed guesses). Both official and caption
 paragraphs must already be stored. Fixture precision/recall are 87.9%/28.4%
 for House sitting 149 and 100%/16.7% for INDU meeting 50; abbreviations, missing
 calls, and distorted captions limit recall under the conservative rules.
+
+`watch.fixup.fixup(db, now)` supersedes caption paragraphs once their official
+Hansard or evidence is stored, aligns official interventions to archive captions
+(or live captions when no archive exists), and falls back to in-window official
+timestamps. Missing captions defer a fix-up for 48 hours; each document commits
+atomically and its `fixup:<document>` metadata makes repeated passes idempotent.
+The worker segments captions and runs fix-ups before matching, recording failures
+under `source:segment` and `source:fixup` without stopping matching.
+
+`python3 -m watch.digest --data "$D" --kind evening|morning [--date YYYY-MM-DD]`
+saves active-follow feed snapshots for an Ottawa calendar date. Evening defaults
+to today; morning builds missing digests for the preceding three dates with stored
+Hansard. Morning digests reference the evening digest when present; superseded
+paragraphs are excluded. Each built digest prints `id items` with distinct item
+counts. Tests can override the default Ottawa date using hidden `--today YYYY-MM-DD`;
+this does not change the digest's creation timestamp. `/api/digests` lists saved
+digests and `/api/digests/<id>` returns the snapshot.

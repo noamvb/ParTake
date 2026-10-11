@@ -201,7 +201,7 @@ class WatchApiTests(unittest.TestCase):
         self.assertEqual((health["version"], health["now"]), ("0.1.0", "2026-10-12T15:00:00Z"))
         self.assertEqual(set(health["sources"]), {"members"})
         self.assertEqual(health["sources"]["members"], {"at": "2026-10-12T15:00:00Z", "ok": True, "error": None})
-        self.assertEqual([health[k] for k in ("sitting_today", "recorders", "embed", "backfill")], [None, [], {"model": "paraphrase-multilingual", "loaded": False}, None])
+        self.assertEqual([health[k] for k in ("sitting_today", "recorders", "embed", "backfill")], [False, [], {"model": "paraphrase-multilingual", "loaded": False}, None])
 
     def test_16_token_persistence(self):
         token = (self.data / "token").read_text()
@@ -227,3 +227,58 @@ class WatchApiTests(unittest.TestCase):
         self.assertEqual((response.status, json.loads(response.read())), (413, {"error": "body too large"}))
         conn.close()
         self.assertEqual(self.request("/api/follows")[1]["version"], 0)
+
+    def test_digests_endpoints(self):
+        from watch import store
+        from watch.tests.test_digest import digest_seed
+        from watch.digest import build
+        with store.connect(self.data) as db:
+            digest_seed(db)
+            body = build(db, '2026-10-09', 'evening', NOW)
+            build(db, '2026-10-10', 'evening', NOW + timedelta(seconds=1))
+            db.commit()
+        status, rows = self.request('/api/digests')
+        self.assertEqual(status, 200)
+        self.assertEqual([r['id'] for r in rows], ['d_2026-10-10_evening', 'd_2026-10-09_evening'])
+        self.assertEqual(rows[1], dict(id=body['id'], date='2026-10-09', kind='evening', created_at='2026-10-12T15:00:00Z', replaces=None, items=2))
+        self.assertEqual(len(self.request('/api/digests?limit=1')[1]), 1)
+        for limit in ('0', '101', 'x', ''):
+            self.assertEqual(self.request('/api/digests?limit=' + limit)[0], 400)
+        self.assertEqual(self.request('/api/digests/' + body['id']), (200, body))
+        self.assertEqual(self.request('/api/digests/missing'), (404, {'error': 'not found'}))
+
+    def test_live_freshness_speaker(self):
+        from watch import store
+        from watch.tests.test_segment import seed, insert_lines
+        from watch.tests.test_feed import paragraph
+        now = datetime(2026, 10, 9, 14, 2, tzinfo=timezone.utc)
+        current = [now]
+        self.start(clock=lambda: current[0])
+        with store.connect(self.data) as db:
+            seed(db, source='live', status=1)
+            insert_lines(db, [dict(event='45735', lang='en', source='live', seq=0, begin='2026-10-09T14:01:00.000Z', end='2026-10-09T14:01:01.000Z', text='words')])
+            paragraph(db, 'old', source='captions', event_id='45735', at='2026-10-09T14:00:00Z')
+            paragraph(db, 'new', source='captions', event_id='45735', at='2026-10-09T14:01:00Z', speaker='Billy Morin', person_id='123447', confidence=.9)
+            db.commit()
+        self.assertEqual(self.request('/api/live'), (200, [dict(event='45735', title='event', kind='house', speaker=dict(person_id='123447', name='Billy Morin', party='Conservative', confidence=.9, **{'from': 'caption_call'}), last_line_at='2026-10-09T14:01:01.000Z', business=None)]))
+        current[0] = now + timedelta(seconds=122)
+        self.assertEqual(self.request('/api/live'), (200, []))
+
+    def test_health_ottawa_recorders(self):
+        from watch import store
+        from watch.tests.test_segment import seed, insert_lines
+        current = [datetime(2026, 10, 19, 20, tzinfo=timezone.utc)]
+        self.start(clock=lambda: current[0], ollama='http://127.0.0.1:0')
+        with store.connect(self.data) as db:
+            seed(db, source='live', status=1)
+            db.execute("UPDATE events SET scheduled_start='2026-10-20T03:30:00Z'")
+            insert_lines(db, [dict(event='45735', lang='en', source='live', seq=0, begin='2026-10-19T19:59:00.000Z', end='2026-10-19T19:59:01.000Z', text='words')])
+            store.set_meta(db, 'recorder:45735', json.dumps({'at': '2026-10-19T19:59:00Z'}))
+            db.commit()
+        health = self.request('/api/health')[1]
+        self.assertTrue(health['sitting_today'])
+        self.assertEqual(health['recorders'], [dict(event='45735', title='event', since='2026-10-19T19:59:00.000Z', lines=1)])
+        current[0] += timedelta(days=1)
+        health = self.request('/api/health')[1]
+        self.assertFalse(health['sitting_today'])
+        self.assertEqual(health['recorders'], [])
