@@ -4,6 +4,7 @@ from pathlib import Path
 import unittest
 import xml.etree.ElementTree as ET
 
+from watch import records
 from watch.ingest import parse_members, parse_ministries
 
 
@@ -112,3 +113,11 @@ class RecordsTests(unittest.TestCase):
                          {('First reading', 'house', '2026-06-16T14:02:58Z'), ('Second reading', 'house', '2026-10-09T17:20:48Z')})
         self.assertEqual([(r['stage'], r['chamber'], r['at']) for r in rows if r['bill'] == '45-1/S-1'],
                          [('First reading', 'senate', '2025-05-27T04:00:00Z')])
+
+    def test_11_paratext_without_id_is_skipped(self):
+        xml = (b'<Hansard><ExtractedInformation><ExtractedItem Name="MetaDateNumYear">2025</ExtractedItem>'
+               b'<ExtractedItem Name="MetaDateNumMonth">5</ExtractedItem><ExtractedItem Name="MetaDateNumDay">29</ExtractedItem>'
+               b'</ExtractedInformation><HansardBody><Intervention id="1"><Content><ParaText>\n  </ParaText>'
+               b'<ParaText id="7">Text</ParaText></Content></Intervention></HansardBody></Hansard>')
+        _document, paragraphs = records.parse_transcript(xml, xml, source="hansard", number=4)
+        self.assertEqual([p["id"] for p in paragraphs], ["h7"])

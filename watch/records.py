@@ -43,7 +43,7 @@ def parse_transcript(en, fr, *, source, number, committee=None):
             order, subject = _text(element), ""
         elif element.tag == "SubjectOfBusinessTitle":
             subject = _text(element)
-        elif element.tag == "ParaText" and element in owners:
+        elif element.tag == "ParaText" and element in owners and element.get("id"):
             intervention = owners[element]
             affiliation = intervention.find("PersonSpeaking/Affiliation")
             hour, minute = (timestamp.get("Hr"), timestamp.get("Mn")) if timestamp is not None else ("0", "0")
