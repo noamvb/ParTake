@@ -28,9 +28,35 @@ cp ~/partake/watch/systemd/partake-watch-ingest.timer ~/.config/systemd/user/
 systemctl --user daemon-reload
 systemctl --user start partake-watch-ingest.service
 systemctl --user enable --now partake-watch-api.service partake-watch-ingest.timer
+cp ~/partake/watch/systemd/partake-watch-embed.service ~/.config/systemd/user/
+cp ~/partake/watch/systemd/partake-watch-poll.service ~/.config/systemd/user/
+cp ~/partake/watch/systemd/partake-watch-poll.timer ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now partake-watch-embed.service partake-watch-poll.timer
 ```
 
 The API binds to localhost on port 8798. The timer refreshes lookups at 06:00
 local time and catches up after downtime. Data lives in
 `~/.local/share/partake-watch/`; the web server proxies the API on port 8797.
-Phase 0 includes follows and lookup endpoints only.
+
+
+## Records, embeddings and the feed (Phase 1)
+
+`python3 -m watch.poll --data "$D" [--sources hansard,evidence,votes,bills] [--max-docs N]`
+fetches new Hansard sittings, committee evidence (meetings listed by
+openparliament.ca), divisions with their ballots, and bill stages, pausing
+1 s between requests. Each source's last attempt appears under `sources` in
+`/api/health`.
+
+`python3 -m watch.worker --data "$D" [--ollama URL] [--max-batches N]` embeds
+paragraphs newest first (batches of 32) with `paraphrase-multilingual` and
+matches follows; `/api/health` shows `backfill` progress. Without Ollama it
+still matches bills, MPs and votes and exits 1.
+
+`partake-watch-embed.service` runs the separate Ollama 0.40.2 in
+`~/.local/ollama-watch` on 127.0.0.1:11436, always on; the model unloads after
+5 idle minutes (about 60 MB idle, about 1.2 GB loaded).
+`partake-watch-poll.timer` starts `partake-watch-poll.service` every 30
+minutes: poll, then embed and match. The first run is the backfill since
+26 May 2025 and takes hours; later runs skip while one is active.
+`GET /api/feed` serves the matches (see `docs/watch/api.md`).

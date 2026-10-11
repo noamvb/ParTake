@@ -148,10 +148,10 @@ Ollama (0.40.2, CPU-only libraries, in `~/.local/ollama-watch/`, so upgrading
 it never touches the main install; models in `~/.local/ollama-watch/models`,
 `paraphrase-multilingual` already pulled) on 127.0.0.1:11436 with only the embedding
 model,
-`OLLAMA_NUM_PARALLEL=1`, `OLLAMA_MAX_LOADED_MODELS=1`, a `MemoryMax`, and a
-timer that starts it at 08:30 on sitting days (ParlVU calendar) and stops it
-after the evening digest; the morning fix-up and the backfill start it on
-demand. The existing `ollama.service` (qwen3 for election-night) is left
+`OLLAMA_NUM_PARALLEL=1`, `OLLAMA_MAX_LOADED_MODELS=1` and a `MemoryMax`.
+Changed in Phase 1 (owner, 11 Oct 2026: approved): the service runs always and
+`OLLAMA_KEEP_ALIVE=5m` unloads the model when idle (measured: ~60 MB idle,
+~1.2 GB loaded), instead of a sitting-day start/stop timer. The existing `ollama.service` (qwen3 for election-night) is left
 alone, so the two never fight over memory or models.
 
 ### Pushing alerts to the phone (owner, 11 Oct 2026: Firebase)
