@@ -193,6 +193,7 @@ class WatchApiTests(unittest.TestCase):
         self.assertEqual(self.request("/api/follows")[1], expected)
 
     def test_14_health(self):
+        self.start(clock=lambda: NOW, ollama="http://127.0.0.1:0")
         self.ingest("members")
         status, health = self.request("/api/health")
         self.assertEqual(status, 200)
@@ -200,7 +201,7 @@ class WatchApiTests(unittest.TestCase):
         self.assertEqual((health["version"], health["now"]), ("0.1.0", "2026-10-12T15:00:00Z"))
         self.assertEqual(set(health["sources"]), {"members"})
         self.assertEqual(health["sources"]["members"], {"at": "2026-10-12T15:00:00Z", "ok": True, "error": None})
-        self.assertEqual([health[k] for k in ("sitting_today", "recorders", "embed", "backfill")], [None, [], None, None])
+        self.assertEqual([health[k] for k in ("sitting_today", "recorders", "embed", "backfill")], [None, [], {"model": "paraphrase-multilingual", "loaded": False}, None])
 
     def test_16_token_persistence(self):
         token = (self.data / "token").read_text()

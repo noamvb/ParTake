@@ -1,0 +1,18 @@
+[Unit]
+Description=Ollama for ParTake Parliament watch embeddings
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/ollama-watch/bin/ollama serve
+Environment=OLLAMA_HOST=127.0.0.1:11436
+Environment=OLLAMA_MODELS=%h/.local/ollama-watch/models
+Environment=OLLAMA_KEEP_ALIVE=5m
+Environment=OLLAMA_NUM_PARALLEL=1
+Environment=OLLAMA_MAX_LOADED_MODELS=1
+Restart=on-failure
+RestartSec=10
+MemoryMax=2G
+
+[Install]
+WantedBy=default.target

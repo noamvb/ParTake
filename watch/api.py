@@ -12,6 +12,9 @@ import sys
 import unicodedata
 from urllib.parse import parse_qs, urlsplit
 
+from watch import embed
+from watch.feed import feed
+
 from watch.store import (DEFAULT_DATA, StaleVersion, connect, follow_id, import_follows,
                          iso, list_follows, replace_follows)
 
@@ -55,7 +58,8 @@ def bills(db, query):
     return [item for _key, item in sorted(results, key=lambda r: r[0])[:20]]
 
 
-def make_server(data_dir, host, port, clock=None, new_id=None):
+def make_server(data_dir, host, port, clock=None, new_id=None, ollama=None):
+    ollama = ollama or embed.URL
     data_dir = Path(data_dir).expanduser()
     with connect(data_dir):
         pass
@@ -117,12 +121,20 @@ def make_server(data_dir, host, port, clock=None, new_id=None):
                     with connect(data_dir) as db:
                         if path == "/api/follows":
                             self._send(200, list_follows(db))
+                        elif path == "/api/feed":
+                            query = parse_qs(parts.query, keep_blank_values=True)
+                            self._send(200, feed(db, follows=query.get("follow"),
+                                                 kind=query.get("kind", [None])[0],
+                                                 limit=int(query.get("limit", ["50"])[0]),
+                                                 before=query.get("before", [None])[0]))
                         elif path == "/api/health":
                             sources = {row["key"][7:]: json.loads(row["value"]) for row in db.execute(
                                 "SELECT key,value FROM meta WHERE key LIKE 'source:%'")}
+                            backfill = db.execute("SELECT value FROM meta WHERE key='backfill'").fetchone()
                             self._send(200, {"ok": True, "version": "0.1.0", "now": iso(clock()),
-                                             "sitting_today": None, "recorders": [], "embed": None,
-                                             "backfill": None, "sources": sources})
+                                             "sitting_today": None, "recorders": [],
+                                             "embed": {"model": embed.MODEL, "loaded": embed.loaded(ollama)},
+                                             "backfill": json.loads(backfill[0]) if backfill else None, "sources": sources})
                         elif path in ("/api/members", "/api/bills"):
                             query = parse_qs(parts.query).get("q", [""])[0].strip()
                             if not query:
