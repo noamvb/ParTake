@@ -154,6 +154,11 @@ def _save_events(data_dir, rows, now, through=None):
             set_meta(db, "parlvu:through", through.isoformat())
 
 
+def save_events(data_dir, rows, now):
+    """Upsert discovered events while retaining stored stream and caption fields."""
+    return _save_events(data_dir, rows, now)
+
+
 def poll_parlvu(data_dir, fetch, sleep, now, max_days=60, max_pages=5):
     fetched, error = False, None
 

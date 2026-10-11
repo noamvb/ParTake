@@ -1,0 +1,14 @@
+[Unit]
+Description=Record Parliament captions for event %i
+After=network.target
+StartLimitIntervalSec=900
+StartLimitBurst=6
+
+[Service]
+Type=simple
+WorkingDirectory=%h/partake
+ExecStart=/usr/bin/python3 -m watch.recorder --data %h/.local/share/partake-watch --event %i
+Restart=on-failure
+RestartSec=15
+MemoryMax=80M
+CPUQuota=25%

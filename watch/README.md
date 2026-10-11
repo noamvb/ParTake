@@ -33,12 +33,32 @@ cp ~/partake/watch/systemd/partake-watch-poll.service ~/.config/systemd/user/
 cp ~/partake/watch/systemd/partake-watch-poll.timer ~/.config/systemd/user/
 systemctl --user daemon-reload
 systemctl --user enable --now partake-watch-embed.service partake-watch-poll.timer
+cp ~/partake/watch/systemd/partake-watch-live.service ~/.config/systemd/user/
+cp ~/partake/watch/systemd/partake-watch-recorder@.service ~/.config/systemd/user/
+cp ~/partake/watch/systemd/partake-watch-digest-*.service ~/.config/systemd/user/
+cp ~/partake/watch/systemd/partake-watch-digest-*.timer ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable --now partake-watch-live.service partake-watch-digest-evening.timer partake-watch-digest-morning.timer
 ```
 
 The API binds to localhost on port 8798. The timer refreshes lookups at 06:00
 local time and catches up after downtime. Data lives in
 `~/.local/share/partake-watch/`; the web server proxies the API on port 8797.
 
+
+The live supervisor starts recorders; do not enable individual recorder instances.
+Install the digest units once `watch.digest` is deployed with the checkout.
+
+| Unit | Purpose |
+| --- | --- |
+| `partake-watch-api.service` | Serve the local watch API. |
+| `partake-watch-ingest.service` / `.timer` | Refresh member and bill lookups daily. |
+| `partake-watch-embed.service` | Keep the separate Ollama server available. |
+| `partake-watch-poll.service` / `.timer` | Poll records and ParlVU, then embed and match every 30 minutes. |
+| `partake-watch-live.service` | Refresh upcoming events every 60 seconds, record the House and followed committees (at most three), and match captions every 120 seconds while recording. |
+| `partake-watch-recorder@.service` | Record one event; restart failures after 15 seconds, limited to six starts per 15 minutes. The supervisor resets failed units before starting still-live events again. |
+| `partake-watch-digest-evening.service` / `.timer` | Build the evening digest at 19:30 Ottawa time. |
+| `partake-watch-digest-morning.service` / `.timer` | Refresh the morning digest every 30 minutes from 06:00 through 11:00 Ottawa time; both digest timers catch up after downtime. |
 
 ## Records, embeddings and the feed (Phase 1)
 

@@ -1,0 +1,9 @@
+[Unit]
+Description=Schedule the evening Parliament watch digest
+
+[Timer]
+OnCalendar=*-*-* 19:30:00 America/Toronto
+Persistent=true
+
+[Install]
+WantedBy=timers.target
