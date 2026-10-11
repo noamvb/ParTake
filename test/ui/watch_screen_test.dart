@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
+import 'package:partake/ui/open_request.dart';
 import 'package:partake/ui/watch_screen.dart';
 import 'package:partake/watch/watch_follows.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,14 +13,22 @@ import '../fakes.dart';
 import '../watch/fake_watch_server.dart';
 
 const _listKey = ValueKey('watch-feed-list');
+const _liveStripKey = ValueKey('watch-live-strip');
 final _scrollable = find.descendant(
   of: find.byKey(_listKey),
   matching: find.byType(Scrollable),
 );
 DateTime _clock() => DateTime.utc(2026, 10, 9, 18);
 Future<bool> _noLinks(Uri uri) async => true;
+void _noOpen(OpenRequest request) {}
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
+
+/// The seam's captioned speech (from the digest literal) as a one-item feed.
+String _captionFeed() => jsonEncode({
+  'items': [jsonDecode(digestSeam)['sections'][0]['items'][0]],
+  'next': null,
+});
 
 Future<WatchFollows> _deck(FakeWatchServer server) async {
   SharedPreferences.setMockInitialValues({'watch.imported': true});
@@ -38,9 +47,35 @@ Future<void> _pumpFeed(
   WidgetTester tester,
   WatchFollows? watch, {
   Future<bool> Function(Uri uri) openLink = _noLinks,
+  OpenEvent onOpen = _noOpen,
 }) async {
   await tester.pumpWidget(
-    _wrap(WatchScreen(watch: watch, now: _clock, openLink: openLink)),
+    _wrap(
+      WatchScreen(
+        watch: watch,
+        now: _clock,
+        openLink: openLink,
+        onOpen: onOpen,
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+Future<void> _pumpDigests(
+  WidgetTester tester,
+  WatchFollows? watch, {
+  OpenEvent onOpen = _noOpen,
+}) async {
+  await tester.pumpWidget(
+    MaterialApp(
+      home: DigestsScreen(
+        watch: watch,
+        now: _clock,
+        onOpen: onOpen,
+        openLink: _noLinks,
+      ),
+    ),
   );
   await tester.pumpAndSettle();
 }
@@ -257,5 +292,292 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('boom'), findsNothing);
     expect(find.text('Vote 7: Negatived'), findsOneWidget);
+  });
+
+  Future<void> expectCaptionCard(WidgetTester tester) async {
+    await tester.pumpAndSettle();
+    expect(find.text('From live captions'), findsOneWidget);
+    expect(find.textContaining('Probably Mandy Gull-Masty'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'Watch'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  }
+
+  testWidgets(
+    'caption card shows the live label, the guessed speaker and Watch at 360x740',
+    (tester) async {
+      _useSize(tester, const Size(360, 740));
+      final server = FakeWatchServer(feedFollows());
+      server.feedAnswer = (_) async =>
+          http.Response.bytes(utf8.encode(_captionFeed()), 200);
+      final watch = await _deck(server);
+      addTearDown(watch.dispose);
+      await _pumpFeed(tester, watch);
+      await expectCaptionCard(tester);
+    },
+  );
+
+  testWidgets(
+    'caption card shows the live label, the guessed speaker and Watch at 840x760',
+    (tester) async {
+      _useSize(tester, const Size(840, 760));
+      final server = FakeWatchServer(feedFollows());
+      server.feedAnswer = (_) async =>
+          http.Response.bytes(utf8.encode(_captionFeed()), 200);
+      final watch = await _deck(server);
+      addTearDown(watch.dispose);
+      await _pumpFeed(tester, watch);
+      await expectCaptionCard(tester);
+    },
+  );
+
+  testWidgets(
+    'Watch calls onOpen once with the event and the moment to seek to',
+    (tester) async {
+      _useSize(tester, const Size(360, 740));
+      final server = FakeWatchServer(feedFollows());
+      server.feedAnswer = (_) async =>
+          http.Response.bytes(utf8.encode(_captionFeed()), 200);
+      final watch = await _deck(server);
+      addTearDown(watch.dispose);
+      final opened = <OpenRequest>[];
+      await _pumpFeed(tester, watch, onOpen: opened.add);
+
+      await tester.tap(find.widgetWithText(TextButton, 'Watch'));
+      await tester.pump();
+      expect(opened, hasLength(1));
+      expect(opened.single.eventId, 45873);
+      expect(opened.single.title, 'House of Commons, sitting 150');
+      expect(opened.single.eventDate, DateTime.utc(2026, 10, 19));
+      expect(opened.single.seekTo, DateTime.utc(2026, 10, 19, 15, 31, 12, 400));
+    },
+  );
+
+  Future<void> expectDigestRows(WidgetTester tester) async {
+    expect(find.text('Morning digest, Tue 20 Oct'), findsOneWidget);
+    expect(find.text('Evening digest, Mon 19 Oct'), findsOneWidget);
+    expect(find.text('2 items'), findsOneWidget);
+    expect(find.text('1 items'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.widgetWithText(ListTile, 'Morning digest, Tue 20 Oct'),
+        matching: find.text('Updated with the official record'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Updated with the official record'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  }
+
+  testWidgets(
+    'digests list shows the rows and the morning update line at 360x740',
+    (tester) async {
+      _useSize(tester, const Size(360, 740));
+      final watch = await _deck(FakeWatchServer(feedFollows()));
+      addTearDown(watch.dispose);
+      await _pumpDigests(tester, watch);
+      await expectDigestRows(tester);
+    },
+  );
+
+  testWidgets(
+    'digests list shows the rows and the morning update line at 840x760',
+    (tester) async {
+      _useSize(tester, const Size(840, 760));
+      final watch = await _deck(FakeWatchServer(feedFollows()));
+      addTearDown(watch.dispose);
+      await _pumpDigests(tester, watch);
+      await expectDigestRows(tester);
+    },
+  );
+
+  testWidgets('tapping the evening digest opens it with its section and item', (
+    tester,
+  ) async {
+    _useSize(tester, const Size(360, 740));
+    final server = FakeWatchServer(feedFollows());
+    final watch = await _deck(server);
+    addTearDown(watch.dispose);
+    await _pumpDigests(tester, watch);
+
+    await tester.tap(find.text('Evening digest, Mon 19 Oct'));
+    await tester.pumpAndSettle();
+    expect(find.text('Bill C-37'), findsOneWidget);
+    expect(find.text('House of Commons, sitting 150'), findsOneWidget);
+    expect(find.widgetWithText(TextButton, 'Watch'), findsOneWidget);
+    expect(find.text('From live captions'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  Future<void> expectEmptyDigests(WidgetTester tester) async {
+    expect(
+      find.text(
+        'No digests yet. The first one arrives the evening after a sitting.',
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+  }
+
+  testWidgets(
+    'an empty digests list says the first one is still to come at 360x740',
+    (tester) async {
+      _useSize(tester, const Size(360, 740));
+      final server = FakeWatchServer(feedFollows());
+      server.digestsAnswer = (_) async => http.Response('[]', 200);
+      final watch = await _deck(server);
+      addTearDown(watch.dispose);
+      await _pumpDigests(tester, watch);
+      await expectEmptyDigests(tester);
+    },
+  );
+
+  testWidgets(
+    'an empty digests list says the first one is still to come at 840x760',
+    (tester) async {
+      _useSize(tester, const Size(840, 760));
+      final server = FakeWatchServer(feedFollows());
+      server.digestsAnswer = (_) async => http.Response('[]', 200);
+      final watch = await _deck(server);
+      addTearDown(watch.dispose);
+      await _pumpDigests(tester, watch);
+      await expectEmptyDigests(tester);
+    },
+  );
+
+  testWidgets(
+    'the live strip shows LIVE, the title and the guessed speaker, and opens the event',
+    (tester) async {
+      _useSize(tester, const Size(360, 740));
+      final server = FakeWatchServer(feedFollows());
+      server.liveAnswer = (_) async =>
+          http.Response.bytes(utf8.encode(liveSeam), 200);
+      final watch = await _deck(server);
+      addTearDown(watch.dispose);
+      final opened = <OpenRequest>[];
+      await _pumpFeed(tester, watch, onOpen: opened.add);
+
+      final strip = find.byKey(_liveStripKey);
+      expect(strip, findsOneWidget);
+      expect(
+        find.descendant(of: strip, matching: find.text('LIVE')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: strip,
+          matching: find.text('House of Commons, sitting 150'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: strip,
+          matching: find.text('Now: Probably Mandy Gull-Masty'),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(strip);
+      await tester.pump();
+      expect(opened, hasLength(1));
+      expect(opened.single.eventId, 45873);
+      expect(opened.single.title, 'House of Commons, sitting 150');
+      expect(opened.single.eventDate, DateTime.utc(2026, 10, 9));
+      expect(opened.single.seekTo, isNull);
+    },
+  );
+
+  testWidgets('no live rows means no live strip', (tester) async {
+    _useSize(tester, const Size(360, 740));
+    final watch = await _deck(FakeWatchServer(feedFollows()));
+    addTearDown(watch.dispose);
+    await _pumpFeed(tester, watch);
+    expect(find.byKey(_liveStripKey), findsNothing);
+    expect(find.text('LIVE'), findsNothing);
+  });
+
+  testWidgets('a failing live request hides the strip without an error', (
+    tester,
+  ) async {
+    _useSize(tester, const Size(360, 740));
+    final server = FakeWatchServer(feedFollows());
+    server.liveAnswer = (_) async => http.Response('{"error": "boom"}', 500);
+    final watch = await _deck(server);
+    addTearDown(watch.dispose);
+    await _pumpFeed(tester, watch);
+    expect(find.byKey(_liveStripKey), findsNothing);
+    expect(find.text('boom'), findsNothing);
+    expect(find.text('Vote 7: Negatived'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'the live strip asks again 60 seconds later while the tab is shown',
+    (tester) async {
+      _useSize(tester, const Size(360, 740));
+      final server = FakeWatchServer(feedFollows());
+      final watch = await _deck(server);
+      addTearDown(watch.dispose);
+      await _pumpFeed(tester, watch);
+      expect(server.liveRequests, hasLength(1));
+
+      await tester.pump(const Duration(seconds: 60));
+      expect(server.liveRequests, hasLength(2));
+    },
+  );
+
+  testWidgets(
+    'the live strip stops asking while the tab is hidden and resumes when shown',
+    (tester) async {
+      _useSize(tester, const Size(360, 740));
+      final server = FakeWatchServer(feedFollows());
+      final watch = await _deck(server);
+      addTearDown(watch.dispose);
+      Widget tab({required bool shown}) => _wrap(
+        TickerMode(
+          enabled: shown,
+          child: WatchScreen(
+            watch: watch,
+            now: _clock,
+            openLink: _noLinks,
+            onOpen: _noOpen,
+          ),
+        ),
+      );
+      await tester.pumpWidget(tab(shown: true));
+      await tester.pumpAndSettle();
+      expect(server.liveRequests, hasLength(1));
+
+      await tester.pumpWidget(tab(shown: false));
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(seconds: 120));
+      expect(server.liveRequests, hasLength(1));
+
+      await tester.pumpWidget(tab(shown: true));
+      await tester.pumpAndSettle();
+      expect(server.liveRequests, hasLength(2));
+    },
+  );
+
+  testWidgets('a failing refresh hides the strip that was showing', (
+    tester,
+  ) async {
+    _useSize(tester, const Size(360, 740));
+    final server = FakeWatchServer(feedFollows());
+    var failing = false;
+    server.liveAnswer = (_) async => failing
+        ? http.Response('{"error": "boom"}', 500)
+        : http.Response.bytes(utf8.encode(liveSeam), 200);
+    final watch = await _deck(server);
+    addTearDown(watch.dispose);
+    await _pumpFeed(tester, watch);
+    expect(find.byKey(_liveStripKey), findsOneWidget);
+
+    failing = true;
+    await tester.pump(const Duration(seconds: 60));
+    await tester.pumpAndSettle();
+    expect(find.byKey(_liveStripKey), findsNothing);
+    expect(find.text('boom'), findsNothing);
+    expect(tester.takeException(), isNull);
   });
 }

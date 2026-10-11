@@ -9,6 +9,11 @@ import 'package:partake/watch/watch_models.dart';
 /// The feed literal the service returns (`test/watch/feed_seam.json`).
 final feedSeam = File('test/watch/feed_seam.json').readAsStringSync();
 
+/// Phase 2 literals: digest list, one digest and the live strip.
+final digestsSeam = File('test/watch/digests_seam.json').readAsStringSync();
+final digestSeam = File('test/watch/digest_seam.json').readAsStringSync();
+final liveSeam = File('test/watch/live_seam.json').readAsStringSync();
+
 /// The four follows that the seam feed refers to by id.
 List<WatchFollow> feedFollows() => [
   WatchFollow(
@@ -102,6 +107,16 @@ class FakeWatchServer {
   /// Answers `GET /watch/api/feed`; defaults to the seam page.
   Future<http.Response> Function(Uri url)? feedAnswer;
 
+  /// Answers `GET /watch/api/live`; defaults to nothing being recorded.
+  Future<http.Response> Function(Uri url)? liveAnswer;
+  final liveRequests = <Uri>[];
+
+  /// Answers `GET /watch/api/digests`; defaults to the seam list.
+  Future<http.Response> Function(Uri url)? digestsAnswer;
+
+  /// Answers `GET /watch/api/digests/<id>`; defaults to the seam digest.
+  Future<http.Response> Function(Uri url)? digestAnswer;
+
   WatchClient client(Uri address, String token) => WatchClient(
     address: address,
     token: token,
@@ -113,6 +128,25 @@ class FakeWatchServer {
         final answer = feedAnswer;
         return answer == null
             ? http.Response.bytes(utf8.encode(feedSeam), 200)
+            : answer(request.url);
+      }
+      if (request.url.path == '/watch/api/live') {
+        liveRequests.add(request.url);
+        final answer = liveAnswer;
+        return answer == null
+            ? http.Response.bytes(utf8.encode('[]'), 200)
+            : answer(request.url);
+      }
+      if (request.url.path == '/watch/api/digests') {
+        final answer = digestsAnswer;
+        return answer == null
+            ? http.Response.bytes(utf8.encode(digestsSeam), 200)
+            : answer(request.url);
+      }
+      if (request.url.path.startsWith('/watch/api/digests/')) {
+        final answer = digestAnswer;
+        return answer == null
+            ? http.Response.bytes(utf8.encode(digestSeam), 200)
             : answer(request.url);
       }
       if (request.method == 'POST') {

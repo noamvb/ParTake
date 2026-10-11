@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'watch_digests.dart';
 import 'watch_feed.dart';
 import 'watch_models.dart';
 
@@ -113,6 +114,17 @@ class WatchClient {
       },
     ),
   );
+
+  Future<List<WatchDigestSummary>> digests() async =>
+      (await _request('GET', 'digests') as List)
+          .map((d) => WatchDigestSummary.fromJson(d))
+          .toList();
+  Future<WatchDigest> digest(String id) async =>
+      WatchDigest.fromJson(await _request('GET', 'digests/$id'));
+  Future<List<WatchLive>> live() async =>
+      (await _request('GET', 'live') as List)
+          .map((l) => WatchLive.fromJson(l))
+          .toList();
 
   void close() => _client.close();
 }

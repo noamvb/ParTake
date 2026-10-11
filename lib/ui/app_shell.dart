@@ -60,6 +60,18 @@ class _AppShellState extends State<AppShell> {
     if (i == 1) _watchOpened = true;
   });
 
+  void _showDigests() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => DigestsScreen(
+          watch: widget.watch,
+          onOpen: widget.onOpen,
+          now: _now,
+        ),
+      ),
+    );
+  }
+
   void _showAbout() {
     showDialog<void>(
       context: context,
@@ -94,7 +106,7 @@ class _AppShellState extends State<AppShell> {
           now: _now,
         ),
         _watchOpened
-            ? WatchScreen(watch: widget.watch, now: _now)
+            ? WatchScreen(watch: widget.watch, onOpen: widget.onOpen, now: _now)
             : const SizedBox.shrink(),
         BrowseScreen(
           source: widget.source,
@@ -131,6 +143,12 @@ class _AppShellState extends State<AppShell> {
       appBar: AppBar(
         title: const Text('ParTake'),
         actions: [
+          if (_index == 1)
+            IconButton(
+              tooltip: 'Digests',
+              icon: const Icon(Icons.summarize_outlined),
+              onPressed: _showDigests,
+            ),
           IconButton(
             tooltip: 'About',
             icon: const Icon(Icons.info_outline),

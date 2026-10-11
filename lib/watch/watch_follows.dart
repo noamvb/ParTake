@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../core/library.dart';
 import 'watch_client.dart';
+import 'watch_digests.dart';
 import 'watch_feed.dart';
 import 'watch_models.dart';
 
@@ -65,6 +66,9 @@ class WatchFollows extends ChangeNotifier {
 
   Future<List<WatchMember>> members(String q) => _api.members(q);
   Future<List<WatchBill>> bills(String q) => _api.bills(q);
+  Future<List<WatchDigestSummary>> digests() => _api.digests();
+  Future<WatchDigest> digest(String id) => _api.digest(id);
+  Future<List<WatchLive>> live() => _api.live();
   Future<WatchFeedPage> feed({
     List<String> follows = const [],
     String? kind,

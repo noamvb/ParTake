@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:partake/watch/watch_client.dart';
 
+import 'fake_watch_server.dart' show digestSeam, digestsSeam, liveSeam;
 import 'watch_models_test.dart' show seam, seamList;
 
 void main() {
@@ -131,4 +132,38 @@ void main() {
       ),
     );
   });
+  test(
+    '8 digests, digest and live request the exact paths and parse',
+    () async {
+      final urls = <String>[];
+      final watch = client((request) async {
+        expect(request.method, 'GET');
+        urls.add(request.url.toString());
+        return http.Response.bytes(
+          utf8.encode(
+            request.url.path.endsWith('/digests')
+                ? digestsSeam
+                : request.url.path.endsWith('/live')
+                ? liveSeam
+                : digestSeam,
+          ),
+          200,
+        );
+      });
+      final rows = await watch.digests();
+      final digest = await watch.digest('d_2026-10-19_evening');
+      final live = await watch.live();
+      expect(urls, [
+        'http://deck.test:8797/watch/api/digests',
+        'http://deck.test:8797/watch/api/digests/d_2026-10-19_evening',
+        'http://deck.test:8797/watch/api/live',
+      ]);
+      expect(rows.map((row) => row.id), [
+        'd_2026-10-19_morning',
+        'd_2026-10-19_evening',
+      ]);
+      expect(digest.sections.single.label, 'Bill C-37');
+      expect(live.single.event, '45873');
+    },
+  );
 }

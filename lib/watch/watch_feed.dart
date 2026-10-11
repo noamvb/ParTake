@@ -59,8 +59,8 @@ class WatchFeedItem {
   final String lang;
   final WatchSpeaker? speaker;
 
-  /// Always null until Phase 2; kept raw so the shape can arrive unchanged.
-  final Map<String, Object?>? video;
+  /// The ParlVU moment to play; null when no recording is known.
+  final WatchVideo? video;
   final WatchFeedLinks links;
   final WatchDivision? division;
   final WatchBillStage? billStage;
@@ -81,7 +81,7 @@ class WatchFeedItem {
     speaker: json['speaker'] == null
         ? null
         : WatchSpeaker.fromJson(json['speaker']),
-    video: json['video'] as Map<String, Object?>?,
+    video: json['video'] == null ? null : WatchVideo.fromJson(json['video']),
     links: WatchFeedLinks.fromJson(json['links']),
     division: json['division'] == null
         ? null
@@ -89,6 +89,30 @@ class WatchFeedItem {
     billStage: json['bill_stage'] == null
         ? null
         : WatchBillStage.fromJson(json['bill_stage']),
+  );
+}
+
+@immutable
+class WatchVideo {
+  const WatchVideo({
+    required this.event,
+    required this.at,
+    required this.offsetS,
+  });
+
+  /// ParlVU event id, as text.
+  final String event;
+
+  /// Wall-clock moment (UTC) the paragraph starts.
+  final DateTime at;
+
+  /// Informational; the app seeks with [at].
+  final double offsetS;
+
+  factory WatchVideo.fromJson(Map<String, dynamic> json) => WatchVideo(
+    event: json['event'] as String,
+    at: DateTime.parse(json['at'] as String),
+    offsetS: (json['offset_s'] as num).toDouble(),
   );
 }
 
