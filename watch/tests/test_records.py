@@ -129,3 +129,11 @@ class RecordsTests(unittest.TestCase):
                b'<ParaText id="7">Text</ParaText></Content></Intervention></HansardBody></Hansard>')
         _document, paragraphs = records.parse_transcript(xml, xml, source="hansard", number=4)
         self.assertEqual(paragraphs[0]["at"], "2025-06-20T04:05:00Z")
+
+    def test_13_timestamp_without_minute(self):
+        xml = (b'<Hansard><ExtractedInformation><ExtractedItem Name="MetaDateNumYear">2025</ExtractedItem>'
+               b'<ExtractedItem Name="MetaDateNumMonth">6</ExtractedItem><ExtractedItem Name="MetaDateNumDay">19</ExtractedItem>'
+               b'</ExtractedInformation><HansardBody><Timestamp Hr="18" /><Intervention id="1"><Content>'
+               b'<ParaText id="7">Text</ParaText></Content></Intervention></HansardBody></Hansard>')
+        _document, paragraphs = records.parse_transcript(xml, xml, source="hansard", number=4)
+        self.assertEqual(paragraphs[0]["at"], "2025-06-19T22:00:00Z")

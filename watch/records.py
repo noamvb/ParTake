@@ -46,7 +46,7 @@ def parse_transcript(en, fr, *, source, number, committee=None):
         elif element.tag == "ParaText" and element in owners and element.get("id"):
             intervention = owners[element]
             affiliation = intervention.find("PersonSpeaking/Affiliation")
-            hour, minute = (timestamp.get("Hr"), timestamp.get("Mn")) if timestamp is not None else ("0", "0")
+            hour, minute = (timestamp.get("Hr") or "0", timestamp.get("Mn") or "0") if timestamp is not None else ("0", "0")
             # Late sittings continue past midnight as Hr 24, 25, ... on the sitting's date.
             at = (datetime.fromisoformat(date) + timedelta(hours=int(hour), minutes=int(minute))).replace(tzinfo=OTTAWA)
             paragraphs.append(dict(id=("e" if evidence else "h") + element.get("id"),
