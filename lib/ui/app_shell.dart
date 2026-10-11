@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../watch/watch_follows.dart';
+
 import '../core/library.dart';
 import 'browse_screen.dart';
 import 'following_screen.dart';
@@ -13,6 +15,7 @@ class AppShell extends StatefulWidget {
     super.key,
     required this.source,
     required this.library,
+    this.watch,
     required this.onOpen,
     this.now,
     this.overlay,
@@ -21,6 +24,7 @@ class AppShell extends StatefulWidget {
 
   final EventSource source;
   final Library library;
+  final WatchFollows? watch;
   final OpenEvent onOpen;
   final Widget? overlay;
   final bool fullscreenOverlay;
@@ -81,7 +85,7 @@ class _AppShellState extends State<AppShell> {
           onOpen: widget.onOpen,
           now: _now,
         ),
-        FollowingScreen(library: widget.library),
+        FollowingScreen(library: widget.library, watch: widget.watch),
       ],
     );
 

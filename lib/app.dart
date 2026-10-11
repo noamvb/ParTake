@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import 'watch/watch_follows.dart';
+
 import 'core/library.dart';
 import 'platform/background_audio.dart';
 import 'platform/pip.dart';
@@ -19,6 +21,7 @@ class PartakeApp extends StatefulWidget {
     super.key,
     required this.source,
     required this.library,
+    this.watch,
     this.playerBuilder,
     this.sessionFactory,
     this.now,
@@ -28,6 +31,7 @@ class PartakeApp extends StatefulWidget {
 
   final EventSource source;
   final Library library;
+  final WatchFollows? watch;
   final PlayerBuilder? playerBuilder;
   final PlayerSession Function(OpenRequest request)? sessionFactory;
   final DateTime Function()? now;
@@ -157,6 +161,7 @@ class _PartakeAppState extends State<PartakeApp> {
     home: AppShell(
       source: widget.source,
       library: widget.library,
+      watch: widget.watch,
       onOpen: _open,
       now: widget.now,
       overlay: _session?.minimized == true

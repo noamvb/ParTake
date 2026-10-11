@@ -12,12 +12,19 @@ import 'platform/background_audio.dart';
 import 'services/parlvu_event_source.dart';
 import 'services/prefs_library.dart';
 import 'ui/open_request.dart';
+import 'watch/watch_follows.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
 
   final prefs = await SharedPreferences.getInstance();
+  final library = PrefsLibrary(prefs);
+  final watch = WatchFollows(
+    prefs: prefs,
+    library: library,
+    defaultAddress: kIsWeb ? Uri.base.origin : 'http://100.98.120.41:8797',
+  );
   final source = ParlVuEventSource(
     // In the browser ParlVU is only reachable through the home server's
     // same-origin proxy (ParlVU sends no CORS headers); see server/.
@@ -39,7 +46,8 @@ Future<void> main() async {
   runApp(
     PartakeApp(
       source: source,
-      library: PrefsLibrary(prefs),
+      library: library,
+      watch: watch,
       openRequests: opens.stream,
       audioHandler: audioHandler,
     ),
@@ -47,6 +55,7 @@ Future<void> main() async {
 
   // After the first frame so the navigator exists; no-ops off Android.
   WidgetsBinding.instance.addPostFrameCallback((_) async {
+    unawaited(watch.sync());
     final launched = await AlertRuntime.launchEventId();
     if (launched != null) opens.add(fromAlert(launched));
     await AlertRuntime.requestPermission();
