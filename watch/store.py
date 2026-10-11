@@ -24,6 +24,41 @@ CREATE TABLE IF NOT EXISTS bills (
 CREATE TABLE IF NOT EXISTS follows (
  seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE NOT NULL,
  created_at TEXT NOT NULL, body TEXT NOT NULL, removed_at TEXT);
+CREATE TABLE IF NOT EXISTS bill_stages (
+ id INTEGER PRIMARY KEY, bill TEXT NOT NULL, stage TEXT NOT NULL,
+ chamber TEXT NOT NULL, at TEXT NOT NULL, UNIQUE (bill, stage, chamber));
+CREATE TABLE IF NOT EXISTS divisions (
+ id TEXT PRIMARY KEY, number INTEGER NOT NULL, at TEXT NOT NULL, bill TEXT,
+ description TEXT NOT NULL, result TEXT NOT NULL,
+ yeas INTEGER NOT NULL, nays INTEGER NOT NULL, paired INTEGER NOT NULL,
+ ballots_loaded INTEGER NOT NULL DEFAULT 0);
+CREATE TABLE IF NOT EXISTS ballots (
+ division TEXT NOT NULL, person_id TEXT NOT NULL, party TEXT NOT NULL,
+ vote TEXT NOT NULL, PRIMARY KEY (division, person_id));
+CREATE TABLE IF NOT EXISTS committees (slug TEXT PRIMARY KEY, acronym TEXT);
+CREATE TABLE IF NOT EXISTS affiliations (db_id TEXT PRIMARY KEY, person_id TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS documents (
+ id TEXT PRIMARY KEY, source TEXT NOT NULL, session TEXT NOT NULL,
+ number INTEGER NOT NULL, committee TEXT, date TEXT NOT NULL,
+ url TEXT NOT NULL, fetched_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS paragraphs (
+ seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT UNIQUE NOT NULL,
+ document TEXT NOT NULL, intervention TEXT NOT NULL, position INTEGER NOT NULL,
+ at TEXT NOT NULL, title TEXT NOT NULL, lang TEXT NOT NULL,
+ text_en TEXT NOT NULL, text_fr TEXT NOT NULL,
+ speaker TEXT, person_id TEXT, source TEXT NOT NULL,
+ event_id TEXT, offset_s REAL, confidence REAL);
+CREATE INDEX IF NOT EXISTS paragraphs_at ON paragraphs (at);
+CREATE INDEX IF NOT EXISTS paragraphs_person ON paragraphs (person_id);
+CREATE TABLE IF NOT EXISTS vectors (
+ paragraph TEXT PRIMARY KEY, model TEXT NOT NULL, vec BLOB NOT NULL);
+CREATE TABLE IF NOT EXISTS follow_vectors (
+ follow TEXT NOT NULL, lang TEXT NOT NULL, phrase TEXT NOT NULL,
+ model TEXT NOT NULL, vec BLOB NOT NULL, PRIMARY KEY (follow, lang));
+CREATE TABLE IF NOT EXISTS matches (
+ follow TEXT NOT NULL, item_kind TEXT NOT NULL, item_id TEXT NOT NULL,
+ score REAL NOT NULL, at TEXT NOT NULL, PRIMARY KEY (follow, item_kind, item_id));
+CREATE INDEX IF NOT EXISTS matches_at ON matches (at);
 """
 
 

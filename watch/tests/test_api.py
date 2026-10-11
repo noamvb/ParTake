@@ -215,5 +215,14 @@ class WatchApiTests(unittest.TestCase):
         self.assertEqual(self.request("/api/nope")[0], 404)
         self.assertEqual(self.request("/api/follows", "PUT", raw=b"{not json")[0], 400)
         self.assertEqual(self.request("/api/follows", "PUT", raw=b"null")[0], 400)
-        self.assertEqual(self.request("/api/follows", "PUT", raw=b"x" * (1024 * 1024 + 1))[0], 413)
+        # Declare the size only: the server answers 413 before reading, so a
+        # real 1 MiB body races the response and can end in a broken pipe.
+        conn = http.client.HTTPConnection("127.0.0.1", self.server.server_port, timeout=3)
+        conn.putrequest("PUT", "/api/follows")
+        conn.putheader("Authorization", "Bearer " + (self.data / "token").read_text())
+        conn.putheader("Content-Length", str(1024 * 1024 + 1))
+        conn.endheaders()
+        response = conn.getresponse()
+        self.assertEqual((response.status, json.loads(response.read())), (413, {"error": "body too large"}))
+        conn.close()
         self.assertEqual(self.request("/api/follows")[1]["version"], 0)

@@ -142,13 +142,49 @@ Query: `follow=<id>` (optional, repeatable), `kind=speech|division|bill_stage`
   its player at `offset_s`.
 - For `kind: "division"`: `division` is
   `{"id": "45-1/178", "number": 178, "bill": "45-1/C-37" | null,
-    "description": str, "result": "agreed" | "negatived",
+    "description": str, "result": "agreed" | "negatived" | "tie",
     "yeas": int, "nays": int, "paired": int,
     "parties": [{"party": "Conservative", "yea": int, "nay": int, "split": bool}],
     "mps": [{"person_id": str, "vote": "yea" | "nay" | "paired"}]}`
   where `mps` lists only followed MPs.
 - For `kind: "bill_stage"`: `bill_stage` is
   `{"bill": "45-1/C-37", "number": "C-37", "stage": str, "chamber": "house" | "senate", "at": str}`.
+
+### Feed details (fixed 11 Oct 2026 for Phase 1)
+
+- `source` is `captions`, `hansard` or `evidence` for speeches, `votes` for
+  divisions, `legisinfo` for bill stages.
+- `result` is `agreed`, `negatived` or `tie` (ourcommons `DecisionResultName`
+  `Agreed To` / `Negatived` / `Tie`); clients show any other value as is.
+- `speaker` for a transcript paragraph: `person_id` is `null` for a speaker
+  who is not an MP (a committee witness); `name` is then the printed name
+  without its parenthesised role. `party` is `null` when `person_id` is.
+  `from` may also be `evidence`.
+- Item ids: speech `m_s_<paragraph id>` (paragraph ids are `h<ParaText id>`
+  for Hansard, `e<ParaText id>` for committee evidence), division
+  `m_d_<division id with / replaced by ->`, bill stage `m_b_<stage row id>`.
+- `title` / `text`: speech - Hansard `<OrderOfBusinessTitle> - <SubjectOfBusinessTitle>`
+  (or just the first when there is no subject), evidence `<ACRONYM>, meeting <n>`;
+  `text` is the paragraph in the language it was spoken (`lang`). Division -
+  `Vote <n>: Agreed to|Negatived|Tie`, `text` = description. Bill stage -
+  `<number>: <stage> (House of Commons|Senate)`, `text` = bill title.
+- `links.hansard`: `https://www.ourcommons.ca/DocumentViewer/en/<session>/house/sitting-<n>/hansard#Para<ParaText id>`
+  or `.../<session>/<ACRONYM>/meeting-<n>/evidence#Para<ParaText id>`.
+  `links.legisinfo`: `https://www.parl.ca/legisinfo/en/bill/<session>/<number lower-case>`
+  for a division or stage tied to a bill. `links.division`:
+  `https://www.ourcommons.ca/Members/en/votes/<parl>/<session no>/<n>`.
+- `follows` lists the active follows that matched the item, in follows-list
+  order; `score` is rounded to 3 decimals (1.0 for non-topic matches).
+  `parties` is sorted by party name, `mps` by `person_id`.
+- What matches in Phase 1: `topic` - paragraphs by cosine >= threshold
+  (either phrase) or a keyword (whole word, case-insensitive); `bill` -
+  paragraphs naming the number, divisions on the bill, its stages; `mp` - the
+  first paragraph of each of the MP's interventions, divisions they voted
+  in; `votes` - every division (`all`) or those with a split party
+  (`party_split`). `committee`, `house` and `pm-qp` follows add nothing to
+  the feed yet.
+- Paging: `limit` outside 1-200, an unknown `kind` or a bad cursor is 400.
+  `video` is `null` and `superseded` is `false` until Phase 2.
 
 ## Digests
 
