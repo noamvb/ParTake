@@ -31,7 +31,7 @@ first, then in both.
 {"ok": true, "version": "0.1.0", "now": "2026-10-19T14:02:00Z",
  "sitting_today": true,
  "recorders": [{"event": "45901", "title": "HoC Sitting No. 150", "since": "2026-10-19T14:00:05Z", "lines": 812}],
- "embed": {"model": "embeddinggemma-2:270m", "loaded": true},
+ "embed": {"model": "paraphrase-multilingual", "loaded": true},
  "backfill": {"done": 182340, "total": 450112},
  "sources": {"votes": {"at": "2026-10-19T14:01:00Z", "ok": true, "error": null}}}
 ```

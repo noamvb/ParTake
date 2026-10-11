@@ -348,16 +348,6 @@ def main():
             results = {}
 
     for model in target_models:
-        if model == "embeddinggemma-2:270m":
-            # Record exact pull error as documented
-            results[model] = {
-                "model": model,
-                "status": "pull_failed",
-                "error": "Error: pull model manifest: 412: The model you are attempting to pull requires a newer version of Ollama. Please download the latest version at: https://ollama.com/download (installed Ollama server version: 0.35.1)",
-                "note": "Documented per task instructions: If a pull fails, record the exact error and continue with the rest.",
-            }
-            continue
-
         res = evaluate_model(args.host, model, corpus_data)
         results[model] = res
 

@@ -1,6 +1,7 @@
 # Parliament watch: plan
 
-Status: **approved by the owner, 11 Oct 2026** (embedding model still to pick from embeddings-2). Decisions taken in
+Status: **approved by the owner, 11 Oct 2026**; embedding model picked the
+same day (`paraphrase-multilingual`, see Decisions 5). Decisions taken in
 the grilling session are in [KICKOFF.md](KICKOFF.md); this file turns them into
 a build plan. Facts come from the research reports under
 [research/](research/) (captions, sources, embeddings, embeddings-2). Anything
@@ -22,7 +23,7 @@ http://100.98.120.41:7717/checklists/partake-watch).
 | Bills | LEGISinfo JSON (`parl.ca/legisinfo/en/bill/45-1/c-37/json`), stage timestamps, 191 bills in 45-1. | research/sources Q4 |
 | MP identity | ourcommons `PersonId` is the key. openparliament's `parl_mp_id` maps to it and its `parl_affil_id` list maps Hansard `Affiliation DbId` to the person. Member XML (ridings) and ministries XML (portfolios) give the spoken name forms. | research/sources Q5 |
 | Backfill start | 45th Parliament opened Mon 26 May 2025 (HAN001 XML). | research/sources Q4 |
-| Embedding model | **Pending** the bilingual benchmark (research/embeddings-2). Owner leans to `embeddinggemma-2:270m` (378 MB download). The first run's pick, `all-minilm:33m`, is English-only and is the fallback if memory forces it. Ollama on the Deck runs on CPU (the iGPU is dropped unless `OLLAMA_IGPU_ENABLE=1`). | research/embeddings, embeddings-2 |
+| Embedding model | `paraphrase-multilingual` (768 dims). Best on 600 real Hansard paragraphs: precision@10 0.76 EN->EN, 0.73 EN->FR, 0.69 FR->FR; 0.71 GB loaded (0.87 GB peak) on Ollama 0.40.2, ~9 paragraphs/s on CPU. `embeddinggemma-2` cannot run here: every tag needs Ollama's MLX runtime, which the Linux build does not include (tried on Ollama 0.40.2, 11 Oct 2026). `embeddinggemma:300m` is close (0.75 / 0.71 / 0.65) but slower; `all-minilm:33m` is English-only (FR->FR 0.41). Ollama on the Deck runs on CPU. | research/embeddings, embeddings-2 |
 
 ## Shape
 
@@ -57,8 +58,11 @@ loses data; analysis is pure functions over recorded data, so it can be rerun
   `partake-watch-worker`, templated `partake-watch-recorder@`, and
   `partake-watch-embed` (Ollama, see below). Each has `MemoryMax`. One-off
   jobs (backfill) run with `systemd-run --user --slice=aiorch-agents.slice`.
-- **Memory target:** under 1 GB total while the House sits: recorders ~110 MB
-  for three, API + poller + worker ~150 MB, embedding model per embeddings-2.
+- **Memory target:** about 1.2 GB total while the House sits: recorders
+  ~110 MB for three, API + poller + worker ~150 MB, embedding service
+  ~0.9 GB (`paraphrase-multilingual` on Ollama 0.40.2: 0.71 GB loaded,
+  0.87 GB peak). Off sitting days only the
+  API (~15 MB) and the web server (~15 MB) run.
 - **Port:** 8798 for the watch API (localhost only); 8797 for ParTake's web
   server on the Deck. 7717, 7718, 8765, 8790, 8796 are taken. deck-hub gets a
   "ParTake" card at `http://100.98.120.41:8797/`.
@@ -140,7 +144,10 @@ Templated text, no LLM (the chat model stays off).
 ### Ollama on the Deck (owner, 11 Oct 2026: approved)
 
 A separate `partake-watch-embed.service` running its own
-Ollama on 127.0.0.1:11436 with only the embedding model,
+Ollama (0.40.2, CPU-only libraries, in `~/.local/ollama-watch/`, so upgrading
+it never touches the main install; models in `~/.local/ollama-watch/models`,
+`paraphrase-multilingual` already pulled) on 127.0.0.1:11436 with only the embedding
+model,
 `OLLAMA_NUM_PARALLEL=1`, `OLLAMA_MAX_LOADED_MODELS=1`, a `MemoryMax`, and a
 timer that starts it at 08:30 on sitting days (ParlVU calendar) and stops it
 after the evening digest; the morning fix-up and the backfill start it on
@@ -195,8 +202,10 @@ should be live by mid-November to get four sitting weeks of testing.
    placing its key on the Deck is a credential step the orchestrator does
    with the owner, never a delegate.
 4. Web: serve from the Deck on 8797; retire the Pixelbook copy once proven.
-5. Embedding model: picked from the embeddings-2 benchmark; owner leans to
-   `embeddinggemma-2:270m`.
+5. Embedding model: `paraphrase-multilingual`. The owner wanted
+   `embeddinggemma-2:270m` if it scored close to the best; a newer Ollama
+   (0.40.2) was installed for it, but the model only runs on Ollama's MLX
+   runtime, which the Linux build lacks, so the agreed fallback applies.
 
 ## Not in scope
 

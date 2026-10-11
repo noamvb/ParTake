@@ -1287,7 +1287,8 @@
           "correct_fr": 1
         }
       }
-    ]
+    ],
+    "ollama_version": "0.35.1"
   },
   "all-minilm:33m": {
     "model": "all-minilm:33m",
@@ -1718,5 +1719,450 @@
         }
       }
     ]
+  },
+  "paraphrase-multilingual:latest @ ollama 0.40.2": {
+    "model": "paraphrase-multilingual:latest",
+    "status": "success",
+    "memory": {
+      "unloaded_mb": 18.7,
+      "loaded_mb": 712.5,
+      "peak_mb": 874.0
+    },
+    "throughput": {
+      "paragraphs_total": 1000,
+      "elapsed_seconds": 109.03,
+      "paragraphs_per_sec": 9.17
+    },
+    "quality_summary": {
+      "en_en_p10": 0.76,
+      "en_en_r10": 0.2533,
+      "en_fr_p10": 0.73,
+      "en_fr_r10": 0.2433,
+      "fr_en_p10": 0.67,
+      "fr_en_r10": 0.2233,
+      "fr_fr_p10": 0.69,
+      "fr_fr_r10": 0.23,
+      "global_en_p10": 0.86,
+      "global_en_r10": 0.1433,
+      "global_fr_p10": 0.78,
+      "global_fr_r10": 0.13
+    },
+    "topic_eval_results": [
+      {
+        "topic_id": "T01",
+        "name_en": "Building Canada Strong Act (Bill C-69)",
+        "query_en": "Building Canada Strong",
+        "query_fr": "bâtir un Canada fort",
+        "en_en": {
+          "p10": 0.3,
+          "r10": 0.1,
+          "correct": 3
+        },
+        "en_fr": {
+          "p10": 0.9,
+          "r10": 0.3,
+          "correct": 9
+        },
+        "fr_en": {
+          "p10": 0.3,
+          "r10": 0.1,
+          "correct": 3
+        },
+        "fr_fr": {
+          "p10": 0.9,
+          "r10": 0.3,
+          "correct": 9
+        },
+        "global_en": {
+          "p10": 1.0,
+          "r10": 0.16666666666666666,
+          "correct_total": 10,
+          "correct_en": 1,
+          "correct_fr": 9
+        },
+        "global_fr": {
+          "p10": 0.9,
+          "r10": 0.15,
+          "correct_total": 9,
+          "correct_en": 1,
+          "correct_fr": 8
+        }
+      },
+      {
+        "topic_id": "T02",
+        "name_en": "First Nations Clean Water Act (Bill C-61)",
+        "query_en": "First Nations clean water",
+        "query_fr": "eau propre des Premières Nations",
+        "en_en": {
+          "p10": 1.0,
+          "r10": 0.3333333333333333,
+          "correct": 10
+        },
+        "en_fr": {
+          "p10": 1.0,
+          "r10": 0.3333333333333333,
+          "correct": 10
+        },
+        "fr_en": {
+          "p10": 1.0,
+          "r10": 0.3333333333333333,
+          "correct": 10
+        },
+        "fr_fr": {
+          "p10": 1.0,
+          "r10": 0.3333333333333333,
+          "correct": 10
+        },
+        "global_en": {
+          "p10": 1.0,
+          "r10": 0.16666666666666666,
+          "correct_total": 10,
+          "correct_en": 9,
+          "correct_fr": 1
+        },
+        "global_fr": {
+          "p10": 1.0,
+          "r10": 0.16666666666666666,
+          "correct_total": 10,
+          "correct_en": 8,
+          "correct_fr": 2
+        }
+      },
+      {
+        "topic_id": "T03",
+        "name_en": "Youth Criminal Justice Act (Bill C-395)",
+        "query_en": "youth criminal justice",
+        "query_fr": "justice pénale pour les adolescents",
+        "en_en": {
+          "p10": 1.0,
+          "r10": 0.3333333333333333,
+          "correct": 10
+        },
+        "en_fr": {
+          "p10": 0.6,
+          "r10": 0.2,
+          "correct": 6
+        },
+        "fr_en": {
+          "p10": 1.0,
+          "r10": 0.3333333333333333,
+          "correct": 10
+        },
+        "fr_fr": {
+          "p10": 0.8,
+          "r10": 0.26666666666666666,
+          "correct": 8
+        },
+        "global_en": {
+          "p10": 0.9,
+          "r10": 0.15,
+          "correct_total": 9,
+          "correct_en": 5,
+          "correct_fr": 4
+        },
+        "global_fr": {
+          "p10": 0.9,
+          "r10": 0.15,
+          "correct_total": 9,
+          "correct_en": 5,
+          "correct_fr": 4
+        }
+      },
+      {
+        "topic_id": "T04",
+        "name_en": "Flood and Drought Forecasting Act (Bill C-351)",
+        "query_en": "flood and drought forecasting",
+        "query_fr": "prévision des inondations et des sécheresses",
+        "en_en": {
+          "p10": 1.0,
+          "r10": 0.3333333333333333,
+          "correct": 10
+        },
+        "en_fr": {
+          "p10": 0.7,
+          "r10": 0.23333333333333334,
+          "correct": 7
+        },
+        "fr_en": {
+          "p10": 0.9,
+          "r10": 0.3,
+          "correct": 9
+        },
+        "fr_fr": {
+          "p10": 0.6,
+          "r10": 0.2,
+          "correct": 6
+        },
+        "global_en": {
+          "p10": 1.0,
+          "r10": 0.16666666666666666,
+          "correct_total": 10,
+          "correct_en": 8,
+          "correct_fr": 2
+        },
+        "global_fr": {
+          "p10": 1.0,
+          "r10": 0.16666666666666666,
+          "correct_total": 10,
+          "correct_en": 7,
+          "correct_fr": 3
+        }
+      },
+      {
+        "topic_id": "T05",
+        "name_en": "Ukrainian Heritage Month Act (Bill C-411)",
+        "query_en": "Ukrainian Heritage Month",
+        "query_fr": "Mois du patrimoine ukrainien",
+        "en_en": {
+          "p10": 1.0,
+          "r10": 0.3333333333333333,
+          "correct": 10
+        },
+        "en_fr": {
+          "p10": 1.0,
+          "r10": 0.3333333333333333,
+          "correct": 10
+        },
+        "fr_en": {
+          "p10": 1.0,
+          "r10": 0.3333333333333333,
+          "correct": 10
+        },
+        "fr_fr": {
+          "p10": 1.0,
+          "r10": 0.3333333333333333,
+          "correct": 10
+        },
+        "global_en": {
+          "p10": 1.0,
+          "r10": 0.16666666666666666,
+          "correct_total": 10,
+          "correct_en": 6,
+          "correct_fr": 4
+        },
+        "global_fr": {
+          "p10": 1.0,
+          "r10": 0.16666666666666666,
+          "correct_total": 10,
+          "correct_en": 3,
+          "correct_fr": 7
+        }
+      },
+      {
+        "topic_id": "T06",
+        "name_en": "Sergei Magnitsky Act (Bill S-222)",
+        "query_en": "Magnitsky sanctions",
+        "query_fr": "sanctions Magnitski",
+        "en_en": {
+          "p10": 0.9,
+          "r10": 0.3,
+          "correct": 9
+        },
+        "en_fr": {
+          "p10": 0.8,
+          "r10": 0.26666666666666666,
+          "correct": 8
+        },
+        "fr_en": {
+          "p10": 0.9,
+          "r10": 0.3,
+          "correct": 9
+        },
+        "fr_fr": {
+          "p10": 0.8,
+          "r10": 0.26666666666666666,
+          "correct": 8
+        },
+        "global_en": {
+          "p10": 1.0,
+          "r10": 0.16666666666666666,
+          "correct_total": 10,
+          "correct_en": 6,
+          "correct_fr": 4
+        },
+        "global_fr": {
+          "p10": 1.0,
+          "r10": 0.16666666666666666,
+          "correct_total": 10,
+          "correct_en": 6,
+          "correct_fr": 4
+        }
+      },
+      {
+        "topic_id": "T07",
+        "name_en": "Criminal Code: Places of Worship (Bill C-255)",
+        "query_en": "places of worship",
+        "query_fr": "lieux de culte",
+        "en_en": {
+          "p10": 0.9,
+          "r10": 0.3,
+          "correct": 9
+        },
+        "en_fr": {
+          "p10": 0.4,
+          "r10": 0.13333333333333333,
+          "correct": 4
+        },
+        "fr_en": {
+          "p10": 0.8,
+          "r10": 0.26666666666666666,
+          "correct": 8
+        },
+        "fr_fr": {
+          "p10": 0.5,
+          "r10": 0.16666666666666666,
+          "correct": 5
+        },
+        "global_en": {
+          "p10": 0.8,
+          "r10": 0.13333333333333333,
+          "correct_total": 8,
+          "correct_en": 7,
+          "correct_fr": 1
+        },
+        "global_fr": {
+          "p10": 0.9,
+          "r10": 0.15,
+          "correct_total": 9,
+          "correct_en": 7,
+          "correct_fr": 2
+        }
+      },
+      {
+        "topic_id": "T08",
+        "name_en": "Diesel Fuel Prices (Opposition Motion)",
+        "query_en": "diesel prices",
+        "query_fr": "prix du diesel",
+        "en_en": {
+          "p10": 0.5,
+          "r10": 0.16666666666666666,
+          "correct": 5
+        },
+        "en_fr": {
+          "p10": 0.6,
+          "r10": 0.2,
+          "correct": 6
+        },
+        "fr_en": {
+          "p10": 0.5,
+          "r10": 0.16666666666666666,
+          "correct": 5
+        },
+        "fr_fr": {
+          "p10": 0.6,
+          "r10": 0.2,
+          "correct": 6
+        },
+        "global_en": {
+          "p10": 0.6,
+          "r10": 0.1,
+          "correct_total": 6,
+          "correct_en": 5,
+          "correct_fr": 1
+        },
+        "global_fr": {
+          "p10": 0.5,
+          "r10": 0.08333333333333333,
+          "correct_total": 5,
+          "correct_en": 2,
+          "correct_fr": 3
+        }
+      },
+      {
+        "topic_id": "T09",
+        "name_en": "Taxation and Tax Relief",
+        "query_en": "taxation",
+        "query_fr": "fiscalité",
+        "en_en": {
+          "p10": 0.3,
+          "r10": 0.1,
+          "correct": 3
+        },
+        "en_fr": {
+          "p10": 0.6,
+          "r10": 0.2,
+          "correct": 6
+        },
+        "fr_en": {
+          "p10": 0.3,
+          "r10": 0.1,
+          "correct": 3
+        },
+        "fr_fr": {
+          "p10": 0.6,
+          "r10": 0.2,
+          "correct": 6
+        },
+        "global_en": {
+          "p10": 0.5,
+          "r10": 0.08333333333333333,
+          "correct_total": 5,
+          "correct_en": 1,
+          "correct_fr": 4
+        },
+        "global_fr": {
+          "p10": 0.5,
+          "r10": 0.08333333333333333,
+          "correct_total": 5,
+          "correct_en": 0,
+          "correct_fr": 5
+        }
+      },
+      {
+        "topic_id": "T10",
+        "name_en": "Public Services and Procurement",
+        "query_en": "government procurement",
+        "query_fr": "approvisionnement public",
+        "en_en": {
+          "p10": 0.7,
+          "r10": 0.23333333333333334,
+          "correct": 7
+        },
+        "en_fr": {
+          "p10": 0.7,
+          "r10": 0.23333333333333334,
+          "correct": 7
+        },
+        "fr_en": {
+          "p10": 0.0,
+          "r10": 0.0,
+          "correct": 0
+        },
+        "fr_fr": {
+          "p10": 0.1,
+          "r10": 0.03333333333333333,
+          "correct": 1
+        },
+        "global_en": {
+          "p10": 0.8,
+          "r10": 0.13333333333333333,
+          "correct_total": 8,
+          "correct_en": 5,
+          "correct_fr": 3
+        },
+        "global_fr": {
+          "p10": 0.1,
+          "r10": 0.016666666666666666,
+          "correct_total": 1,
+          "correct_en": 0,
+          "correct_fr": 1
+        }
+      }
+    ],
+    "ollama_version": "0.40.2",
+    "run_date": "2026-10-11"
+  },
+  "embeddinggemma-2:270m": {
+    "model": "embeddinggemma-2:270m",
+    "status": "pull_failed",
+    "errors": {
+      "0.35.1": "Error: pull model manifest: 412: The model you are attempting to pull requires a newer version of Ollama. Please download the latest version at: https://ollama.com/download (installed Ollama server version: 0.35.1)",
+      "0.40.2": "Error: this model requires MLX support, but the MLX runtime is not available"
+    },
+    "tags_tried_on_0.40.2": [
+      "embeddinggemma-2:270m",
+      "embeddinggemma-2:270m-bf16-text"
+    ],
+    "note": "The Linux amd64 tarball of Ollama 0.40.2 ships no MLX libraries (only MLX_LICENSE files); every embeddinggemma-2 tag is an MLX format (bf16, mxfp8, nvfp4)."
   }
 }

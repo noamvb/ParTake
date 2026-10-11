@@ -176,7 +176,7 @@ On the Steam Deck, true bilingual Parliament Watch retrieval requires a model fo
 
 ## Unknowns
 
-1. **`embeddinggemma-2:270m` Retrieval Quality:** Because Ollama 0.35.1 returned HTTP 412 on manifest pull, this specific model could not be loaded or measured on the current system daemon without upgrading Ollama.
+1. **`embeddinggemma-2:270m` Retrieval Quality:** Because Ollama 0.35.1 returned HTTP 412 on manifest pull, this specific model could not be loaded or measured on the current system daemon without upgrading Ollama. The follow-up below tried Ollama 0.40.2: the model needs the MLX runtime, which the Linux build lacks, so its quality on this machine stays unmeasured.
 2. **iGPU / Vulkan Acceleration Stability:** All models ran on CPU using `libggml-cpu-haswell.so` because Ollama explicitly drops the Steam Deck's Van Gogh RDNA 2 APU (`pci_id=0000:04:00.0`). Whether enabling Vulkan via `OLLAMA_IGPU_ENABLE=1` would lower CPU load or increase memory contention remains unmeasured.
 
 ---
@@ -215,3 +215,30 @@ $ ls -la ~/.cache/watch-embed-bench2
 ls: cannot access '/home/deck/.cache/watch-embed-bench2': No such file or directory
 ```
 The persistent user unit `ollama.service` remains `inactive (dead)` and unmanaged **[fact]**.
+
+---
+
+## Follow-up, 11 Oct 2026 (orchestrator): Ollama 0.40.2
+
+Run by hand after the owner chose to try `embeddinggemma-2` on a newer
+Ollama kept apart from the main install.
+
+- **Install:** `ollama-linux-amd64.tar.zst` v0.40.2 extracted to
+  `~/.local/ollama-watch/` without the `cuda_*`, `rocm*`, `vulkan` and `mlx*`
+  library folders (61 MB on disk). The tarball has no MLX libraries in any
+  case, only `MLX_LICENSE` and `MLX_C_LICENSE` **[fact]**.
+- **`embeddinggemma-2`:** the library lists only MLX-format tags (`bf16`,
+  `mxfp8`, `nvfp4`, in 270m/440m/570m/740m sizes). Pulling
+  `embeddinggemma-2:270m` and `embeddinggemma-2:270m-bf16-text` both fail with
+  `Error: this model requires MLX support, but the MLX runtime is not available`
+  **[fact]**. It cannot run on this Deck.
+- **`paraphrase-multilingual:latest` re-run** with the same script, corpus and
+  server settings (port 11536, MemoryMax 2500M, context 512, batches of 32):
+  identical quality (P@10 0.76 / 0.73 / 0.67 / 0.69 for EN->EN, EN->FR,
+  FR->EN, FR->FR), 9.17 paragraphs/s, and much less memory: **712.5 MB
+  loaded, 874.0 MB peak**, against 1,144.7 / 1,272.5 MB on 0.35.1 **[fact]**.
+  Both runs are in `samples/benchmark_results.json` (the new one under
+  `paraphrase-multilingual:latest @ ollama 0.40.2`).
+- **Decision:** `paraphrase-multilingual` on Ollama 0.40.2 (see
+  `docs/watch/PLAN.md`, Decisions 5). The pulled model was kept in
+  `~/.local/ollama-watch/models` for the watch embedding service.
