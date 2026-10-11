@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS paragraphs (
  event_id TEXT, offset_s REAL, confidence REAL);
 CREATE INDEX IF NOT EXISTS paragraphs_at ON paragraphs (at);
 CREATE INDEX IF NOT EXISTS paragraphs_person ON paragraphs (person_id);
+CREATE INDEX IF NOT EXISTS paragraphs_document ON paragraphs (document, position);
+CREATE INDEX IF NOT EXISTS paragraphs_event ON paragraphs (event_id);
 CREATE TABLE IF NOT EXISTS vectors (
  paragraph TEXT PRIMARY KEY, model TEXT NOT NULL, vec BLOB NOT NULL);
 CREATE TABLE IF NOT EXISTS follow_vectors (
