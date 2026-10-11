@@ -57,11 +57,11 @@ Exactly one of the kind objects is non-null, matching `kind`:
 |---|---|
 | `topic` | `{"phrases": {"en": str, "fr": str}, "keywords": [str], "threshold": float}` - `fr` may be `""`; the service then fills it from the `en` phrase's nearest bilingual match **verify** or leaves English only |
 | `bill` | `{"id": "45-1/C-37", "number": "C-37", "title": str}` |
-| `mp` | `{"person_id": "123447", "name": "Billy Morin", "party": "CPC", "riding": "Edmonton Northwest"}` |
+| `mp` | `{"person_id": "123447", "name": "Billy Morin", "party": "Conservative", "riding": "Edmonton Northwest"}` (`party` is the member XML `CaucusShortName`) |
 | `votes` | `{"filter": "all" \| "party_split"}` |
 | `committee` | `{"code": "ETHI"}` (existing ParTake follow key) |
-| `house` | `{}` |
-| `pm-qp` | `{}` |
+| `house` | `{}` (local key `HOC`) |
+| `pm-qp` | `{}` (local key `PM-QP`) |
 
 ### GET /api/follows
 
@@ -81,9 +81,26 @@ in the database but hides them from the feed.
 
 ### POST /api/follows/import
 
-First-connection migration. Body `{"keys": ["ETHI", "PM-QP", "HOUSE"]}` (the
-app's existing local follow keys). Adds the ones not present; returns the list
+First-connection migration. Body `{"keys": ["ETHI", "PM-QP", "HOC"]}` (the
+app's existing local follow keys, verbatim: a committee code, `HOC` for the
+chamber, `PM-QP`). Adds the ones not present; returns the list
 like GET. Idempotent.
+
+### Follow rules (both sides rely on these)
+
+- Follow ids match `^f_[a-z2-7]{6}$` and are made by the service.
+- `version` starts at 0 on an empty database and goes up by exactly 1 on
+  every PUT or import that changes the list; an import that adds nothing
+  leaves it alone.
+- Every follow in a response carries all five kind keys (`topic`, `bill`,
+  `mp`, `votes`, `committee`); `house` and `pm-qp` have all five `null`. In a
+  request a missing kind key means `null`.
+- Import labels: `HOC` -> kind `house`, label `House of Commons (chamber)`;
+  `PM-QP` -> kind `pm-qp`, label `Prime Minister at Question Period`; any
+  other key -> kind `committee`, label = the code. At most one `house` and one
+  `pm-qp` follow, and one `committee` follow per code.
+- Missing or wrong token on a write: 401 `{"error": "unauthorized"}`, nothing
+  changes.
 
 ## Lookups for the follow editor
 
@@ -107,7 +124,7 @@ Query: `follow=<id>` (optional, repeatable), `kind=speech|division|bill_stage`
    "title": "Government Orders - Bill C-12",
    "text": "…the paragraph that matched…",
    "lang": "en",
-   "speaker": {"person_id": "123447", "name": "Billy Morin", "party": "CPC",
+   "speaker": {"person_id": "123447", "name": "Billy Morin", "party": "Conservative",
                "confidence": 0.8, "from": "caption_call"},
    "video": {"event": "45901", "offset_s": 1872.0},
    "links": {"hansard": null, "legisinfo": null, "division": null},
@@ -127,7 +144,7 @@ Query: `follow=<id>` (optional, repeatable), `kind=speech|division|bill_stage`
   `{"id": "45-1/178", "number": 178, "bill": "45-1/C-37" | null,
     "description": str, "result": "agreed" | "negatived",
     "yeas": int, "nays": int, "paired": int,
-    "parties": [{"party": "CPC", "yea": int, "nay": int, "split": bool}],
+    "parties": [{"party": "Conservative", "yea": int, "nay": int, "split": bool}],
     "mps": [{"person_id": str, "vote": "yea" | "nay" | "paired"}]}`
   where `mps` lists only followed MPs.
 - For `kind: "bill_stage"`: `bill_stage` is
