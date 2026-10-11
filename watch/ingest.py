@@ -61,9 +61,15 @@ def parse_bills(body):
              b["NumberCode"], b["ShortTitleEn"] or b["LongTitleEn"], b["StatusNameEn"], None) for b in values]
 
 
-def fetch(url):
-    with urlopen(Request(url, headers={"User-Agent": USER_AGENT}), timeout=30) as response:
-        return response.read()
+def fetch(url, attempts=2):
+    # ourcommons evidence pages sometimes stall; one retry before failing the poller.
+    for attempt in range(attempts):
+        try:
+            with urlopen(Request(url, headers={"User-Agent": USER_AGENT}), timeout=30) as response:
+                return response.read()
+        except TimeoutError:
+            if attempt == attempts - 1:
+                raise
 
 
 def store_raw(data_dir, source, body, now, key=None):
