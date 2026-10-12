@@ -179,12 +179,12 @@ After a 338Canada fetch succeeds, `poll_opinion` reruns `watch.opinion.projectio
 April 2025 to today (Ottawa) it averages each region's polls (`average.py`: each
 firm's latest poll in the last 60 days, weighted by sqrt(sample) x 0.5^(age/14) x
 the independent fraction, rescaled to 100, PPC counted as OTH), projects every
-2025 riding by regional proportional swing with the multiplier capped at 3
+2025 riding by regional mixed swing: losses proportional, gains in points
 (`swing.py`; territories use the national average), and writes `projections`
 (averages, seats per region, `polls_used`) and `riding_projections`. The 2021
 back-test (`python3 -m watch.opinion.backtest`, `backtest.py`) projects the 2021
-campaign polls on the 2019 result: 301 of 338 ridings right, LPC 150 (actual 160),
-CPC 115 (119). `GET /api/polls/summary` (latest day, `?history=0` to drop the
+campaign polls on the 2019 result: 308 of 338 ridings right, LPC 152 (actual 160),
+CPC 121 (119). `GET /api/polls/summary` (latest day, `?history=0` to drop the
 series), `GET /api/polls/ridings` (sorted by name; `?mp=<PersonId>` for one MP's
 riding; `status` is safe, likely, at_risk or projected_loss) and
 `GET /api/polls/ridings/<id>` serve it. MPs link to ridings by riding name, then
