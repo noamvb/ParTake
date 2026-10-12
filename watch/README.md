@@ -189,3 +189,37 @@ series), `GET /api/polls/ridings` (sorted by name; `?mp=<PersonId>` for one MP's
 riding; `status` is safe, likely, at_risk or projected_loss) and
 `GET /api/polls/ridings/<id>` serve it. MPs link to ridings by riding name, then
 by the 2025 winner's family name, through `riding_winners`.
+
+## Polls: odds, notes, comparison (P3)
+
+`recompute` simulates the latest day only (`simulate.py`: 10,000 runs, seeded by
+the date, about 11 s on the Deck). Each run adds a national (2.0), regional (3.0)
+and riding (5.0 points) normal error to every party with a share above zero,
+clips at zero, and gives the riding to the top share. `projections.body.sim`
+holds `runs`, `seats` (median, 10th and 90th percentile), `majority` (P(172+)),
+`minority` (P(most seats and under 172)); `riding_projections.probs` holds each
+riding's P(win). Earlier days keep their stored `sim` and `probs`. Riding status
+is safe at P(holder) >= 0.9, likely >= 0.7, else at_risk, and projected_loss when
+the holder is not the projected winner.
+
+`notes.py` writes `opinion_notes`, one row per complete Monday-Sunday week (keyed by
+the Monday) that has projections for its Sunday and the Sunday before. The text is
+fixed rules, no LLM: movers of at least 0.5 points in the CAN average, the top two
+parties by seats with their change, the top party's majority odds when both weeks
+have a simulation, and the new CAN polls first seen that week. The backfill day (the
+earliest `first_seen`) never counts. `opinion_polls.first_seen` is set on insert only.
+
+`comparison.py` reads 338Canada's seat projection from its front page each run
+(`opinion:338_seats`, raw under `raw/opinion_338seats/`). A failure is written to
+stderr and leaves the stored value; it does not fail the poll run.
+
+The evening digest gains an `opinion` item when a CAN poll was first seen that
+day: the count, and the parties with 10+ projected seats with their change from the
+day before. An evening digest with only that item is built with `sections: []`.
+
+`GET /api/polls/summary` carries `seats` from the simulation, `majority`, `minority`,
+`comparison` and `note`; `GET /api/polls/ridings` and `/ridings/<id>` carry
+`win_prob` and (for the detail) `probs`.
+
+The 2021 back-test also simulates (2,000 runs, seed 2021): `sim_range` and
+`in_range` for LPC, CPC, NDP and BQ.

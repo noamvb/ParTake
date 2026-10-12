@@ -6,8 +6,10 @@ import json
 import sys
 from zoneinfo import ZoneInfo
 
+from watch.opinion import notes
 from watch.opinion.average import PARTIES, average
 from watch.opinion.results import results_from_db
+from watch.opinion.simulate import simulate
 from watch.opinion.swing import project, seats
 from watch.store import DEFAULT_DATA, connect, iso, set_meta
 
@@ -27,14 +29,18 @@ def _polls_by_region(db):
 
 
 def recompute(data_dir, now):
-    """Rewrite the projection for every day from the first day with polls to today (Ottawa); returns days written."""
+    """Rewrite the projection for every day from the first day with polls to today (Ottawa); simulate the last day; returns days written."""
     with connect(data_dir) as db:
         results = results_from_db(db)
         if not results:
             return 0
         polls = _polls_by_region(db)
+        # Stored simulations of earlier days are kept as they are.
+        stored_sims = {row["date"]: json.loads(row["body"]).get("sim")
+                       for row in db.execute("SELECT date, body FROM projections")}
     today = now.astimezone(OTTAWA).date()
     projections, ridings = [], []
+    latest = None
     day = FIRST_DAY
     while day <= today:
         as_of = day.isoformat()
@@ -48,16 +54,30 @@ def recompute(data_dir, now):
             projection = project(results, shares)
             counts = seats(projection, results)
             body = dict(average=shares, polls_used=averages["CAN"]["polls_used"], seats=counts)
-            projections.append((as_of, json.dumps(body)))
+            if stored_sims.get(as_of) is not None:
+                body["sim"] = stored_sims[as_of]
+            projections.append((as_of, body))
             ridings.extend((riding, as_of, json.dumps(won["shares"]), won["winner"], won["margin"])
                            for riding, won in projection.items())
+            latest = (as_of, body, projection)
         day += timedelta(days=1)
+    probs = {}
+    if latest is not None:
+        as_of, body, projection = latest
+        found = simulate(projection, results, seed=int(as_of.replace("-", "")))
+        body["sim"] = {key: found[key] for key in ("runs", "seats", "majority", "minority")}
+        probs = found["ridings"]
     with connect(data_dir) as db, db:
         db.execute("BEGIN IMMEDIATE")
         db.executemany("INSERT INTO projections VALUES (?,?) ON CONFLICT(date) DO UPDATE SET body=excluded.body",
-                       projections)
-        db.executemany("INSERT INTO riding_projections VALUES (?,?,?,?,?) ON CONFLICT(riding, date) DO UPDATE SET "
+                       [(as_of, json.dumps(body)) for as_of, body in projections])
+        db.executemany("INSERT INTO riding_projections (riding,date,shares,winner,margin) VALUES (?,?,?,?,?) "
+                       "ON CONFLICT(riding, date) DO UPDATE SET "
                        "shares=excluded.shares, winner=excluded.winner, margin=excluded.margin", ridings)
+        if latest is not None:
+            db.executemany("UPDATE riding_projections SET probs=? WHERE riding=? AND date=?",
+                           [(json.dumps(win), riding, latest[0]) for riding, win in probs.items()])
+        notes.write_notes(db, today)
         set_meta(db, "opinion:projected_at", iso(now))
     return len(projections)
 

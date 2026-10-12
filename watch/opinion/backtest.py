@@ -6,6 +6,7 @@ from pathlib import Path
 
 from watch.opinion.average import average
 from watch.opinion.results import parse_table12
+from watch.opinion.simulate import simulate
 from watch.opinion.sources import parse_338
 from watch.opinion.swing import PARTIES, project, region_totals, seats, shares
 
@@ -13,6 +14,7 @@ from watch.opinion.swing import PARTIES, project, region_totals, seats, shares
 FIXTURES = Path(__file__).resolve().parents[1] / "tests" / "fixtures"
 CAMPAIGN_START, CAMPAIGN_END = "2021-08-15", "2021-09-19"
 REGIONS = ("CAN", "ATL", "QC", "ON", "PR", "AB", "BC")
+SIM_PARTIES = ("LPC", "CPC", "NDP", "BQ")
 
 
 def backtest_2021(polls2_html, table12_2019, table12_2021):
@@ -31,9 +33,13 @@ def backtest_2021(polls2_html, table12_2019, table12_2021):
         actual[winner] += 1
     hits = sum(1 for riding, won in projection.items() if won["winner"] == actual_winner[riding])
     national = region_totals(table12_2021)["CAN"]
+    found = simulate(projection, table12_2019, runs=2000, seed=2021)
+    sim_range = {party: [found["seats"][party]["low"], found["seats"][party]["high"]] for party in SIM_PARTIES}
     return {"projected": projected, "actual": actual, "ridings": len(projection), "hits": hits,
             "hit_rate": hits / len(projection),
-            "national_error": {party: averages["CAN"][party] - national[party] for party in PARTIES}}
+            "national_error": {party: averages["CAN"][party] - national[party] for party in PARTIES},
+            "sim_range": sim_range,
+            "in_range": {party: sim_range[party][0] <= actual[party] <= sim_range[party][1] for party in SIM_PARTIES}}
 
 
 def main(argv=None):

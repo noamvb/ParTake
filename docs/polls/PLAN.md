@@ -35,7 +35,7 @@ its store, API process, digest and members index.
 | Data | Source | Notes |
 |---|---|---|
 | Voting intention, national + 6 regions | `https://338canada.com/polls.htm`, inline `window.demopoll_TABLE_DATA` | `demos` keys `National`, `ATL`, `QC`, `ON`, `PR` (MB/SK), `AB`, `BC`; 149-231 rows each, 2025-04-28 (the election row, `generalelx` set) to now. Row: `firm`, `date` (last field date), `sample` ("1,020"), `isRolling` (`<sup>(1/4)</sup>` = independent fraction), `poll_link`, `leader` ("L +21"), `cells` (5 labels, fixed order **LPC, CPC, NDP, GPC, BQ**; Others = 100 - sum). Party is by position: text colours change with the leader. Check each row: the `leader` margin equals the top two cells' difference. Three rows sum over 101 (source typos, e.g. QC Synopsis Recherche 2026-06-07 = 107); the average rescales each poll to 100. Mod_Security answers 406 to a bare `Mozilla/5.0` agent; watch's `USER_AGENT` gets 200. |
-| 338Canada's own seat projection | same site, `window.demopoll_DATA` / projection pages | For the comparison only. Exact field **verify** in P2. |
+| 338Canada's own seat projection | `https://338canada.com/federal.htm`, inline `window.indexseats_DATA` (`projDates` + `parties[].values`, last value = latest) | For the comparison only (checked 12 Oct: LPC 239, CPC 71, sums to 343). |
 | Leader + approval polls | Wikipedia `Opinion_polling_for_the_46th_Canadian_federal_election`, sections "Leadership polls" and "Government approval polls", MediaWiki `action=parse` HTML | CC BY-SA 4.0: show the source link and licence on the chart. Needs a `User-Agent` (403 without). |
 | 2025 riding results | Elections Canada `pollresults_resultatsbureauCanada.zip` (Format 2, long) under `elections.ca/res/rep/off/ovrGE45/62/data_donnees/` | 343 ridings; the map has not changed since. Sum polls to riding level once; keep the zip in `raw/`. |
 | Current MP per riding | watch `members` table | One seat changed in a by-election (Chicoutimi—Le Fjord, CPC to LPC, 31 Aug 2026). Baseline votes stay the 2025 general; the holder comes from `members`. |
@@ -101,8 +101,8 @@ lib/ui/polls_screen.dart    the Polls tab; riding page; charts
 |---|---|---|
 | P1. Data (done 12 Oct) | `sources.py`, `results.py`, tables, daily fetch, backfill, `GET /api/polls/list`, `/api/polls/leaders` | `curl` shows every poll since April 2025 with regions |
 | P2. Projection (done 12 Oct) | `average.py`, `swing.py`, `backtest.py`, `/api/polls/summary`, `/api/polls/ridings` (no odds yet) | Seat counts per party; back-test numbers in this file |
-| P3. Odds + notes | `simulate.py`, `notes.py`, odds in the API, digest line | Majority odds; first weekly note |
-| P4. App (tab, riding pages, charts done 12 Oct; MP status in Following to do) | Polls tab, riding page, charts, MP safe/at-risk in Watch follows | The tab on the phone, both screens |
+| P3. Odds + notes (done 12 Oct) | `simulate.py`, `notes.py`, odds in the API, digest line | Majority odds; first weekly note |
+| P4. App (done 12 Oct, with a How it works page) | Polls tab, riding page, charts, MP safe/at-risk in Watch follows | The tab on the phone, both screens |
 | P5. Release | Fold checks, codebook page, tag (with or without watch Phase 3, decided then) | New ParTake version |
 
 P4 can start once api.md is fixed, alongside P2-P3, against fixtures.
@@ -121,7 +121,10 @@ of 15 Aug-19 Sep 2021 (`python3 -m watch.opinion.backtest`, pinned in
 
 301 of 338 ridings right (89%). Average error vs the national result: NDP
 +1.9, OTH +1.6, GPC +1.3, LPC -1.5, CPC -2.6 points (polls overstated NDP,
-as in 2021 coverage). PPC counts as Others throughout, including in
+as in 2021 coverage). Simulated 80% ranges (2,000 runs) held the
+actual LPC, CPC and BQ counts; NDP (25) fell below its 33-50 range.
+The weekly note counts polls by field end date; the digest line counts
+polls first seen that day (the backfill day never counts). PPC counts as Others throughout, including in
 `/api/polls/list`.
 
 ## Not in scope

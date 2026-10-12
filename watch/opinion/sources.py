@@ -4,14 +4,17 @@ from datetime import datetime
 from html.parser import HTMLParser
 import json
 import re
+import sys
 
 from watch.ingest import store_raw
+from watch.opinion.comparison import parse_338_seats
 from watch.opinion.projection import recompute
 from watch.opinion.results import load_results
 from watch.store import connect, iso, set_meta
 
 
 URL_338 = "https://338canada.com/polls.htm"
+URL_338_FRONT = "https://338canada.com/federal.htm"
 WIKI_API = "https://en.wikipedia.org/w/api.php?action=parse&page=Opinion_polling_for_the_46th_Canadian_federal_election"
 WIKI_PAGE = "https://en.wikipedia.org/wiki/Opinion_polling_for_the_46th_Canadian_federal_election"
 # Section numbers used when the sections list cannot be read.
@@ -22,8 +25,10 @@ LEADER = re.compile(r"^[A-Z]+ \+(\d+)$")
 ROLLING = re.compile(r"\((\d+)/(\d+)\)")
 NOT_LEADERS = {"Polling firm", "Last date of polling", "Link", "Margin of error", "Sample size",
                "Polling method", "Lead"}  # plus any header starting with "Unsure"
-UPSERT_POLL = ("INSERT INTO opinion_polls VALUES (:id,:region,:firm,:end_date,:sample,:rolling,:link,"
-               ":lpc,:cpc,:ndp,:gpc,:bq,:oth,:fetched_at) "
+# first_seen is set on insert only: the day a poll first appeared in the table.
+UPSERT_POLL = ("INSERT INTO opinion_polls (id,region,firm,end_date,sample,rolling,link,lpc,cpc,ndp,gpc,bq,oth,"
+               "fetched_at,first_seen) VALUES (:id,:region,:firm,:end_date,:sample,:rolling,:link,"
+               ":lpc,:cpc,:ndp,:gpc,:bq,:oth,:fetched_at,:first_seen) "
                "ON CONFLICT(id, region) DO UPDATE SET firm=excluded.firm, end_date=excluded.end_date, "
                "sample=excluded.sample, rolling=excluded.rolling, link=excluded.link, lpc=excluded.lpc, "
                "cpc=excluded.cpc, ndp=excluded.ndp, gpc=excluded.gpc, bq=excluded.bq, oth=excluded.oth, "
@@ -235,10 +240,20 @@ def _poll_338(data_dir, fetch, now):
     fetched_at = iso(now)
     with connect(data_dir) as db, db:
         db.execute("BEGIN IMMEDIATE")
-        db.executemany(UPSERT_POLL, [dict(poll, fetched_at=fetched_at, **_stored(poll["shares"]))
-                                     for poll in parsed["polls"]])
+        db.executemany(UPSERT_POLL, [dict(poll, fetched_at=fetched_at, first_seen=fetched_at,
+                                          **_stored(poll["shares"])) for poll in parsed["polls"]])
         set_meta(db, "opinion:fetched_at", fetched_at)
         set_meta(db, "opinion:skipped", str(parsed["skipped"]))
+
+
+def _seats_338(data_dir, fetch, now):
+    page = fetch(URL_338_FRONT)
+    store_raw(data_dir, "opinion_338seats", page, now)
+    result = parse_338_seats(page)
+    if result is None:
+        raise ValueError("seat projection not found on the federal page")
+    with connect(data_dir) as db, db:
+        set_meta(db, "opinion:338_seats", json.dumps(result))
 
 
 def _poll_wiki(data_dir, fetch, now):
@@ -276,6 +291,11 @@ def poll_opinion(data_dir, fetch, now):
         polls_ok = True
     except Exception as exc:
         errors.append("338Canada: " + (str(exc) or type(exc).__name__))
+    try:
+        _seats_338(data_dir, fetch, now)
+    except Exception as exc:
+        # Comparison only: a failure is logged and never fails the poll run.
+        sys.stderr.write("338Canada seats: %s\n" % (str(exc) or type(exc).__name__))
     errors.extend(_poll_wiki(data_dir, fetch, now))
     if polls_ok:
         try:

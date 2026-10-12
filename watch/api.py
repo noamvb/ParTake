@@ -158,11 +158,17 @@ def _link_members(db):
     return linked
 
 
-def _status(holder, projection):
-    if projection is None:
-        return None
+def _probs(row):
+    return None if row is None or row["probs"] is None else json.loads(row["probs"])
+
+
+def _status(holder, projection, probs):
+    """The holder's view: projected_loss if another party wins; with odds, by the holder's P(win); else by the margin."""
     if projection["winner"] != holder:
         return "projected_loss"
+    if probs is not None:
+        chance = probs.get(holder, 0.0)
+        return "safe" if chance >= 0.9 else "likely" if chance >= 0.7 else "at_risk"
     margin = projection["margin"]
     return "safe" if margin > 10 else "likely" if margin > 5 else "at_risk"
 
@@ -179,11 +185,13 @@ def polls_ridings(db, mp=None):
         member = linked.get(riding["id"])
         party = MP_PARTIES.get(member["party"], "OTH") if member else None
         projection = latest.get(riding["id"])
+        probs = _probs(projection)
         items.append(dict(id=riding["id"], name=riding["name_en"].replace("--", "\u2014"), province=riding["province"], region=riding["region"],
                           mp=None if member is None else dict(person_id=member["person_id"], name=member["name"],
                                                                party=party),
                           won_2025=won.get(riding["id"]), projected=projection["winner"] if projection else None,
-                          win_prob=None, status=_status(party or won.get(riding["id"]), projection)))
+                          win_prob=None if probs is None else round(probs.get(projection["winner"], 0.0), 2),
+                          status=None if projection is None else _status(party or won.get(riding["id"]), projection, probs)))
     if mp is not None:
         items = [item for item in items if item["mp"] and item["mp"]["person_id"] == mp]
         return {"ridings": items} if items else None
@@ -196,11 +204,22 @@ def polls_riding(db, riding_id):
     if item is None:
         return None
     votes = results_from_db(db).get(riding_id)
-    history = db.execute("SELECT date, shares FROM riding_projections WHERE riding=? ORDER BY date", (riding_id,)).fetchall()
+    history = db.execute("SELECT date, shares, probs FROM riding_projections WHERE riding=? ORDER BY date",
+                         (riding_id,)).fetchall()
+    probs = _probs(history[-1]) if history else None
     item.update(results_2025=_rounded(shares(votes["votes"])) if votes else None,
                 projection=_rounded(json.loads(history[-1]["shares"])) if history else None,
+                probs=None if probs is None else {party: round(value, 2) for party, value in probs.items()},
                 history=[dict(date=row["date"], shares=_rounded(json.loads(row["shares"]))) for row in history])
     return item
+
+
+def _comparison(db):
+    stored = _meta(db, "opinion:338_seats")
+    if stored is None:
+        return None
+    found = json.loads(stored)
+    return dict(name="338Canada", seats=found["seats"], as_of=found["as_of"])
 
 
 def polls_summary(db, history=True):
@@ -209,11 +228,21 @@ def polls_summary(db, history=True):
         return None
     entries = [(row["date"], json.loads(row["body"])) for row in rows]
     as_of, body = entries[-1]
+    sim = body.get("sim")
+    if sim is None:
+        seats_range = {party: dict(median=count, low=count, high=count) for party, count in body["seats"]["CAN"].items()}
+        majority = minority = None
+    else:
+        seats_range = sim["seats"]
+        majority = {party: round(value, 2) for party, value in sim["majority"].items()}
+        minority = {party: round(value, 2) for party, value in sim["minority"].items()}
+    note = db.execute("SELECT week_of, text FROM opinion_notes ORDER BY week_of DESC LIMIT 1").fetchone()
     return dict(as_of=as_of, polls_used=body["polls_used"],
                 average={region: _rounded(values) for region, values in body["average"].items()},
-                seats={party: dict(median=count, low=count, high=count) for party, count in body["seats"]["CAN"].items()},
-                majority=None, minority=None, seats_total=SEATS_TOTAL, majority_line=MAJORITY_LINE,
-                comparison=None, note=None,
+                seats=seats_range, majority=majority, minority=minority,
+                seats_total=SEATS_TOTAL, majority_line=MAJORITY_LINE,
+                comparison=_comparison(db),
+                note=None if note is None else dict(week_of=note["week_of"], text=note["text"]),
                 history=[dict(date=day, average=_rounded(past["average"]["CAN"]), seats=past["seats"]["CAN"])
                          for day, past in entries] if history else [])
 

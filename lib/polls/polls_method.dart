@@ -92,6 +92,9 @@ const pollsMethod = <PollsMethodSection>[
     PollsMethodBlock.paragraph(
       "Tested on the 2021 election: starting from the 2019 results and using only the polls from the 2021 campaign, the method picked the right winner in 301 of 338 ridings (89%). It gave the Liberals 150 seats (actual 160) and the Conservatives 115 (actual 119).",
     ),
+    PollsMethodBlock.paragraph(
+      "The actual Liberal, Conservative and Bloc seat counts fell inside the simulated 80% ranges. The NDP won 25 seats, below its range of 33 to 50, because the 2021 polls overstated NDP support.",
+    ),
   ]),
   PollsMethodSection("9. What it leaves out", [
     PollsMethodBlock.paragraph(

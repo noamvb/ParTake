@@ -90,17 +90,19 @@ class OpinionPollsApiTests(PollsDataTests):
         self.assertEqual(set(body), {"as_of", "polls_used", "average", "seats", "majority", "minority", "seats_total",
                                      "majority_line", "comparison", "note", "history"})
         self.assertEqual(body["as_of"], "2026-10-12")
-        self.assertIsNone(body["majority"])
-        self.assertIsNone(body["minority"])
+        # P3 fills the odds from the simulation of the latest day.
+        self.assertIsInstance(body["majority"], dict)
+        self.assertIsInstance(body["minority"], dict)
         self.assertEqual(body["seats_total"], 343)
         self.assertEqual(body["majority_line"], 172)
         self.assertIn("CAN", body["average"])
         self.assertLessEqual(set(body["average"]), REGIONS)
         self.assertEqual(set(body["seats"]), set(PARTIES))
+        # Simulated ranges: medians need not sum to the 3 fixture ridings.
         for counts in body["seats"].values():
-            self.assertEqual(counts["low"], counts["median"])
-            self.assertEqual(counts["high"], counts["median"])
-        self.assertEqual(sum(counts["median"] for counts in body["seats"].values()), 3)
+            self.assertLessEqual(counts["low"], counts["median"])
+            self.assertLessEqual(counts["median"], counts["high"])
+            self.assertLessEqual(counts["high"], 3)
         dates = [entry["date"] for entry in body["history"]]
         self.assertEqual(dates, sorted(dates))
         self.assertEqual(dates[-1], "2026-10-12")
@@ -142,7 +144,7 @@ class OpinionPollsApiTests(PollsDataTests):
 
         def set_projection(winner, margin):
             with connect(self.data) as db, db:
-                db.execute("UPDATE riding_projections SET winner=?, margin=? WHERE riding='10001' AND date='2026-10-12'",
+                db.execute("UPDATE riding_projections SET winner=?, margin=?, probs=NULL WHERE riding='10001' AND date='2026-10-12'",
                            (winner, margin))
 
         for margin, status_name in ((12, "safe"), (7, "likely"), (2, "at_risk")):

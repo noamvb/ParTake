@@ -92,9 +92,13 @@ CREATE TABLE IF NOT EXISTS projections (date TEXT PRIMARY KEY, body TEXT NOT NUL
 CREATE TABLE IF NOT EXISTS riding_projections (
  riding TEXT, date TEXT, shares TEXT NOT NULL, winner TEXT NOT NULL, margin REAL NOT NULL,
  PRIMARY KEY (riding, date));
+CREATE TABLE IF NOT EXISTS opinion_notes (
+ week_of TEXT PRIMARY KEY, text TEXT NOT NULL, created_at TEXT NOT NULL);
 """
 # Columns added after a table first shipped; connect() adds any that are missing.
-COLUMNS = (("paragraphs", "superseded_by", "TEXT"),)
+COLUMNS = (("paragraphs", "superseded_by", "TEXT"),
+           ("opinion_polls", "first_seen", "TEXT"),
+           ("riding_projections", "probs", "TEXT"))
 
 
 def iso(now):
@@ -116,6 +120,10 @@ def connect(data_dir):
         for table, column, kind in COLUMNS:
             if column not in {row[1] for row in db.execute("PRAGMA table_info(%s)" % table)}:
                 db.execute("ALTER TABLE %s ADD COLUMN %s %s" % (table, column, kind))
+                if (table, column) == ("opinion_polls", "first_seen"):
+                    # Polls already stored were first seen when they were fetched.
+                    db.execute("UPDATE opinion_polls SET first_seen=fetched_at")
+                    db.commit()
         yield db
     finally:
         db.close()
