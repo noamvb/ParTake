@@ -48,7 +48,7 @@ const pollsMethod = <PollsMethodSection>[
   ]),
   PollsMethodSection("3. From the polls to each riding", [
     PollsMethodBlock.paragraph(
-      "Each riding starts from its 2025 election result. If a party has gained a fifth of its support in the region since the election, its share in each of that region's ridings grows by a fifth too (proportional swing), and the riding's shares are scaled back to 100%. A party's share can at most triple. The three territories follow the national change. The People's Party and independents count as Others.",
+      "Each riding starts from its 2025 election result. If a party has lost a fifth of its support in the region since the election, its share in each of that region's ridings shrinks by a fifth too. If it has gained 2 points in the region, it gains 2 points in each riding. Gains are added rather than multiplied so a small party's strongest ridings do not balloon: a party going from 1.5% to 3% would otherwise double a 34% local share. The riding's shares are then scaled back to 100%. The three territories follow the national change. The People's Party and independents count as Others.",
     ),
   ]),
   PollsMethodSection("4. Seats", [
@@ -90,10 +90,10 @@ const pollsMethod = <PollsMethodSection>[
   ]),
   PollsMethodSection("8. How well it works", [
     PollsMethodBlock.paragraph(
-      "Tested on the 2021 election: starting from the 2019 results and using only the polls from the 2021 campaign, the method picked the right winner in 301 of 338 ridings (89%). It gave the Liberals 150 seats (actual 160) and the Conservatives 115 (actual 119).",
+      "Tested on the 2021 election: starting from the 2019 results and using only the polls from the 2021 campaign, the method picked the right winner in 308 of 338 ridings (91%). It gave the Liberals 152 seats (actual 160) and the Conservatives 121 (actual 119).",
     ),
     PollsMethodBlock.paragraph(
-      "The actual Liberal, Conservative and Bloc seat counts fell inside the simulated 80% ranges. The NDP won 25 seats, below its range of 33 to 50, because the 2021 polls overstated NDP support.",
+      "The actual Liberal, Conservative and Bloc seat counts fell inside the simulated 80% ranges. The NDP won 25 seats, below its range of 29 to 47, because the 2021 polls overstated NDP support.",
     ),
   ]),
   PollsMethodSection("9. What it leaves out", [

@@ -19,7 +19,7 @@ its store, API process, digest and members index.
 |---|---|
 | Which polls | Federal opinion polls only (voting intention), plus leader and government approval polls |
 | Goal | Seat projection; a proven simple method, not a modelling project |
-| Model | Regional proportional swing first; simulations for ranges and odds second |
+| Model | Regional mixed swing (losses proportional, gains in points; changed 12 Oct from proportional, which tripled Green strongholds) first; simulations for ranges and odds second |
 | Where | New Polls tab in the bottom bar |
 | Top of the tab | Seats per party with a range, majority/minority odds; then the polling-average chart, the leader chart, the latest polls |
 | Ridings | Every riding has a page (2025 result, projected winner, odds); MPs followed in Watch show safe / at risk |
@@ -74,7 +74,7 @@ watch/opinion/              Python stdlib, same rules as watch/
   sources.py                fetch + parse 338 polls page, Wikipedia leader tables
   results.py                Elections Canada 2025 zip -> riding baseline (+ 2021 transposed for the back-test)
   average.py                polling average per region per day
-  swing.py                  proportional swing, seat counts
+  swing.py                  mixed swing, seat counts
   simulate.py               simulations, odds (P3)
   notes.py                  weekly what-changed note + digest line (P3)
   backtest.py               2025 back-test (P2)
@@ -116,13 +116,13 @@ of 15 Aug-19 Sep 2021 (`python3 -m watch.opinion.backtest`, pinned in
 
 | | LPC | CPC | NDP | BQ | GPC | OTH |
 |---|---|---|---|---|---|---|
-| Projected | 150 | 115 | 39 | 29 | 1 | 4 |
+| Projected | 152 | 121 | 33 | 30 | 1 | 1 |
 | Actual | 160 | 119 | 25 | 32 | 2 | 0 |
 
-301 of 338 ridings right (89%). Average error vs the national result: NDP
+308 of 338 ridings right (91%; proportional swing got 301). Average error vs the national result: NDP
 +1.9, OTH +1.6, GPC +1.3, LPC -1.5, CPC -2.6 points (polls overstated NDP,
 as in 2021 coverage). Simulated 80% ranges (2,000 runs) held the
-actual LPC, CPC and BQ counts; NDP (25) fell below its 33-50 range.
+actual LPC, CPC and BQ counts; NDP (25) fell below its 29-47 range.
 The weekly note counts polls by field end date; the digest line counts
 polls first seen that day (the backfill day never counts). PPC counts as Others throughout, including in
 `/api/polls/list`.

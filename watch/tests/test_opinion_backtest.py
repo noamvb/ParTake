@@ -25,11 +25,11 @@ class OpinionBacktestTests(unittest.TestCase):
         self.assertEqual(sum(result["projected"].values()), 338)
         self.assertEqual(sum(result["actual"].values()), 338)
         self.assertGreaterEqual(result["hit_rate"], 0.80)
-        # Pinned from the 12 Oct 2026 run; the model is not tuned to the result.
-        self.assertEqual(result["projected"], {"LPC": 150, "CPC": 115, "NDP": 39, "GPC": 1, "BQ": 29, "OTH": 4})
+        # Pinned from the 12 Oct 2026 run (mixed swing); the model is not tuned to the result.
+        self.assertEqual(result["projected"], {"LPC": 152, "CPC": 121, "NDP": 33, "GPC": 1, "BQ": 30, "OTH": 1})
         self.assertEqual(result["actual"], {"LPC": 160, "CPC": 119, "NDP": 25, "GPC": 2, "BQ": 32, "OTH": 0})
-        self.assertEqual(result["hits"], 301)
-        self.assertAlmostEqual(result["hit_rate"], 301 / 338, places=12)
+        self.assertEqual(result["hits"], 308)
+        self.assertAlmostEqual(result["hit_rate"], 308 / 338, places=12)
 
     def test_11_liberal_and_conservative_within_25_seats(self):
         result = backtest_2021(fixture("338-polls2-2026-10-12.html.gz"),

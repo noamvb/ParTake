@@ -1,4 +1,10 @@
-"""Proportional swing per riding: 2025 shares scaled by each region's change in the polling average, then seats."""
+"""Mixed swing per riding: 2025 shares moved by each region's change in the polling average, then seats.
+
+A party that has lost support loses the same fraction of its share in every riding (proportional);
+a party that has gained support gains the same number of points in every riding (uniform). Multiplying
+gains would blow up small parties in their few strong ridings (a party doubling from 1.5% to 3% would
+double a 34% local share).
+"""
 
 
 PARTIES = ("LPC", "CPC", "NDP", "GPC", "BQ", "OTH")
@@ -33,14 +39,21 @@ def _average_key(region, averages):
     return region if region != "TERR" and region in averages else "CAN"
 
 
-def project(results, averages, cap=3.0):
+def _moved(base, average, region):
+    if region <= 0:
+        return base
+    if average < region:
+        return base * average / region
+    return base + average - region
+
+
+def project(results, averages):
     totals = region_totals(results)
     projection = {}
     for riding_id, riding in results.items():
         key = _average_key(riding["region"], averages)
         base, average, region = shares(riding["votes"]), averages[key], totals[key]
-        scaled = {party: base[party] * min(cap, average[party] / region[party]) if region[party] > 0 else base[party]
-                  for party in PARTIES}
+        scaled = {party: _moved(base[party], average[party], region[party]) for party in PARTIES}
         total = sum(scaled.values())
         if total:
             scaled = {party: 100.0 * value / total for party, value in scaled.items()}

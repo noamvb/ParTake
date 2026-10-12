@@ -51,23 +51,33 @@ class OpinionModelTests(unittest.TestCase):
         self.assertIsNone(average([poll("Future", "2026-10-13", 99, 1)], "2026-10-12"))
         self.assertIsNone(average([], "2026-10-12"))
 
-    def test_04_proportional_swing_and_rescale(self):
+    def test_04_losses_scale_gains_add_then_rescale(self):
         results = {"1": dict(region="QC", votes={"LPC": 50, "CPC": 50}),
                    "2": dict(region="QC", votes={"LPC": 30, "CPC": 70})}
         averages = {"QC": shares(LPC=50, CPC=50)}
         won = project(results, averages)["1"]
-        self.assertAlmostEqual(won["shares"]["LPC"], 60, places=9)
-        self.assertAlmostEqual(won["shares"]["CPC"], 40, places=9)
+        # Region was LPC 40, CPC 60: LPC gains 10 points, CPC keeps 50/60 of its share.
+        lpc, cpc = 50 + 10, 50 * 50 / 60
+        self.assertAlmostEqual(won["shares"]["LPC"], 100 * lpc / (lpc + cpc), places=9)
+        self.assertAlmostEqual(won["shares"]["CPC"], 100 * cpc / (lpc + cpc), places=9)
         self.assertEqual(won["winner"], "LPC")
-        self.assertAlmostEqual(won["margin"], 20, places=9)
+        self.assertAlmostEqual(won["margin"], 100 * (lpc - cpc) / (lpc + cpc), places=9)
 
-    def test_05_multiplier_is_capped(self):
+    def test_05_gains_are_points_not_multiples(self):
         results = {"1": dict(region="QC", votes={"LPC": 99, "GPC": 1}),
                    "2": dict(region="QC", votes={"LPC": 99, "GPC": 1})}
         won = project(results, {"QC": shares(LPC=90, GPC=10)})["1"]
-        # GPC multiplier is min(3, 10 / 1) = 3, LPC is 90 / 99; uncapped GPC would be 10 and the riding 10 / 100.
-        self.assertAlmostEqual(won["shares"]["GPC"], 300 / 93, places=9)
-        self.assertAlmostEqual(won["shares"]["LPC"], 100 - 300 / 93, places=9)
+        # GPC gains 9 points (1 -> 10), LPC keeps 90/99 of 99; together exactly 100.
+        self.assertAlmostEqual(won["shares"]["GPC"], 10, places=9)
+        self.assertAlmostEqual(won["shares"]["LPC"], 90, places=9)
+        # A local stronghold gets the regional gain in points: the region goes 2% -> 4%, so 34% becomes 36%
+        # before rescaling (multiplying would have made it 68%).
+        results = {"1": dict(region="ON", votes={"GPC": 34, "CPC": 66}),
+                   "2": dict(region="ON", votes={"GPC": 0, "CPC": 1600})}
+        moved = project(results, {"ON": shares(GPC=4, CPC=96)})["1"]
+        gpc, cpc = 34 + 2, 66 * 96 / 98
+        self.assertAlmostEqual(moved["shares"]["GPC"], 100 * gpc / (gpc + cpc), places=9)
+        self.assertEqual(moved["winner"], "CPC")
 
     def test_06_territories_use_national_average_and_base(self):
         results = {"1": dict(region="TERR", votes={"LPC": 60, "CPC": 40}),
