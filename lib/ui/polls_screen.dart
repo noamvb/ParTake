@@ -267,6 +267,13 @@ class _PollsScreenState extends State<PollsScreen> {
         values: history.map((h) => h.average).toList(),
       ),
       ShareLegend(shares: latest),
+      Padding(
+        padding: const EdgeInsets.only(top: 12, bottom: 4),
+        child: Text(
+          'By region, latest average',
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+      ),
       Wrap(
         spacing: 6,
         children: [
