@@ -6,6 +6,7 @@ import json
 import re
 
 from watch.ingest import store_raw
+from watch.opinion.projection import recompute
 from watch.opinion.results import load_results
 from watch.store import connect, iso, set_meta
 
@@ -48,10 +49,12 @@ def _rolling(markup):
 
 
 def _shares(cells):
-    if len(cells) != 5:
-        raise ValueError("expected 5 cells")
+    # polls2.htm adds a PPC cell after the five parties; polls.htm has none.
+    if len(cells) not in (5, 6):
+        raise ValueError("expected 5 or 6 cells")
+    names = PARTIES if len(cells) == 5 else PARTIES + ("PPC",)
     values = [int(cell["label"]) if cell["label"] else 0 for cell in cells]
-    shares = dict(zip(PARTIES, values))
+    shares = dict(zip(names, values))
     shares["OTH"] = max(0, 100 - sum(values))
     return shares
 
@@ -60,8 +63,15 @@ def _leader_ok(leader, shares):
     match = LEADER.match(leader or "")
     if match is None:
         return True
-    top, second = sorted((shares[p] for p in PARTIES), reverse=True)[:2]
+    top, second = sorted((value for party, value in shares.items() if party != "OTH"), reverse=True)[:2]
     return int(match.group(1)) == top - second
+
+
+def _stored(shares):
+    # The table has no PPC column: PPC is Others in the model, so it is stored as Others.
+    stored = {party.lower(): value for party, value in shares.items() if party != "PPC"}
+    stored["oth"] += shares.get("PPC", 0)
+    return stored
 
 
 def parse_338(html):
@@ -225,7 +235,7 @@ def _poll_338(data_dir, fetch, now):
     fetched_at = iso(now)
     with connect(data_dir) as db, db:
         db.execute("BEGIN IMMEDIATE")
-        db.executemany(UPSERT_POLL, [dict(poll, fetched_at=fetched_at, **{k.lower(): v for k, v in poll["shares"].items()})
+        db.executemany(UPSERT_POLL, [dict(poll, fetched_at=fetched_at, **_stored(poll["shares"]))
                                      for poll in parsed["polls"]])
         set_meta(db, "opinion:fetched_at", fetched_at)
         set_meta(db, "opinion:skipped", str(parsed["skipped"]))
@@ -260,11 +270,18 @@ def _body(kind, row):
 def poll_opinion(data_dir, fetch, now):
     load_results(data_dir, fetch, now)
     errors = []
+    polls_ok = False
     try:
         _poll_338(data_dir, fetch, now)
+        polls_ok = True
     except Exception as exc:
         errors.append("338Canada: " + (str(exc) or type(exc).__name__))
     errors.extend(_poll_wiki(data_dir, fetch, now))
+    if polls_ok:
+        try:
+            recompute(data_dir, now)
+        except Exception as exc:
+            errors.append("projection: " + (str(exc) or type(exc).__name__))
     error = "; ".join(errors) or None
     with connect(data_dir) as db, db:
         set_meta(db, "source:opinion", json.dumps(dict(at=iso(now), ok=error is None, error=error)))

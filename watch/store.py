@@ -86,6 +86,12 @@ CREATE TABLE IF NOT EXISTS ridings (
 CREATE TABLE IF NOT EXISTS riding_results (
  riding TEXT, election TEXT, party TEXT, votes INTEGER, elected INTEGER,
  PRIMARY KEY (riding, election, party));
+CREATE TABLE IF NOT EXISTS riding_winners (
+ riding TEXT, election TEXT, family TEXT, first TEXT, PRIMARY KEY (riding, election));
+CREATE TABLE IF NOT EXISTS projections (date TEXT PRIMARY KEY, body TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS riding_projections (
+ riding TEXT, date TEXT, shares TEXT NOT NULL, winner TEXT NOT NULL, margin REAL NOT NULL,
+ PRIMARY KEY (riding, date));
 """
 # Columns added after a table first shipped; connect() adds any that are missing.
 COLUMNS = (("paragraphs", "superseded_by", "TEXT"),)

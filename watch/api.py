@@ -7,6 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import os
 from pathlib import Path
+import re
 import secrets
 import sys
 import unicodedata
@@ -14,6 +15,8 @@ from urllib.parse import parse_qs, urlsplit
 
 from watch import digest, embed
 from watch.feed import feed, _speaker
+from watch.opinion.results import ELECTION, results_from_db
+from watch.opinion.swing import PARTIES, shares
 
 from watch.store import (DEFAULT_DATA, StaleVersion, connect, follow_id, import_follows,
                          iso, list_follows, replace_follows)
@@ -109,6 +112,110 @@ def polls_leaders(db):
     return {"best_pm": best, "approval": approval,
             "source": {"name": "Wikipedia", "url": WIKI_URL, "licence": "CC BY-SA 4.0",
                        "fetched_at": _meta(db, "opinion_wiki:fetched_at")}}
+
+
+SEATS_TOTAL, MAJORITY_LINE = 343, 172
+MP_PARTIES = {"Liberal": "LPC", "Conservative": "CPC", "Bloc Québécois": "BQ", "NDP": "NDP", "Green Party": "GPC"}
+MP_PROVINCES = {"Newfoundland and Labrador": "NL", "Prince Edward Island": "PE", "Nova Scotia": "NS",
+                "New Brunswick": "NB", "Quebec": "QC", "Ontario": "ON", "Manitoba": "MB", "Saskatchewan": "SK",
+                "Alberta": "AB", "British Columbia": "BC", "Yukon": "YT", "Northwest Territories": "NT", "Nunavut": "NU"}
+
+
+def _name_key(value):
+    return " ".join(re.sub(r"[\W_]+", " ", normalized(value or "")).split())
+
+
+def _rounded(shares):
+    return {party: round(value, 1) for party, value in shares.items()}
+
+
+def _model_party(party):
+    return party if party in PARTIES else "OTH"
+
+
+def _link_members(db):
+    """riding id -> members row of the sitting MP: same riding name in the province, else the 2025 winner's family name."""
+    winners = {row["riding"]: row for row in db.execute("SELECT * FROM riding_winners WHERE election=?", (ELECTION,))}
+    ridings = [dict(id=row["id"], province=row["province"], name=_name_key(row["name_en"]),
+                    family=_name_key(winners[row["id"]]["family"]) if row["id"] in winners else None,
+                    first=_name_key(winners[row["id"]]["first"]) if row["id"] in winners else None)
+               for row in db.execute("SELECT * FROM ridings ORDER BY id")]
+    linked, pending = {}, []
+    for member in db.execute("SELECT * FROM members ORDER BY person_id"):
+        province = MP_PROVINCES.get(member["province"])
+        named = [r["id"] for r in ridings if r["province"] == province and r["name"] == _name_key(member["riding"])]
+        if len(named) == 1 and named[0] not in linked:
+            linked[named[0]] = member
+        else:
+            pending.append(member)
+    for member in pending:
+        province, last = MP_PROVINCES.get(member["province"]), _name_key(member["last_name"])
+        family = [r for r in ridings if r["province"] == province and r["id"] not in linked and r["family"] == last]
+        if len(family) > 1:
+            family = [r for r in family if r["first"] == _name_key(member["first_name"])]
+        if len(family) == 1:
+            linked[family[0]["id"]] = member
+    return linked
+
+
+def _status(holder, projection):
+    if projection is None:
+        return None
+    if projection["winner"] != holder:
+        return "projected_loss"
+    margin = projection["margin"]
+    return "safe" if margin > 10 else "likely" if margin > 5 else "at_risk"
+
+
+def polls_ridings(db, mp=None):
+    """All ridings by name, or only the riding of the MP with PersonId mp; None when that MP holds none."""
+    linked = _link_members(db)
+    won = {row["riding"]: _model_party(row["party"]) for row in db.execute(
+        "SELECT riding, party FROM riding_results WHERE election=? AND elected=1", (ELECTION,))}
+    latest = {row["riding"]: row for row in db.execute(
+        "SELECT * FROM riding_projections rp WHERE date = (SELECT max(date) FROM riding_projections WHERE riding = rp.riding)")}
+    items = []
+    for riding in db.execute("SELECT * FROM ridings ORDER BY name_en"):
+        member = linked.get(riding["id"])
+        party = MP_PARTIES.get(member["party"], "OTH") if member else None
+        projection = latest.get(riding["id"])
+        items.append(dict(id=riding["id"], name=riding["name_en"], province=riding["province"], region=riding["region"],
+                          mp=None if member is None else dict(person_id=member["person_id"], name=member["name"],
+                                                               party=party),
+                          won_2025=won.get(riding["id"]), projected=projection["winner"] if projection else None,
+                          win_prob=None, status=_status(party or won.get(riding["id"]), projection)))
+    if mp is not None:
+        items = [item for item in items if item["mp"] and item["mp"]["person_id"] == mp]
+        return {"ridings": items} if items else None
+    return {"ridings": items}
+
+
+def polls_riding(db, riding_id):
+    listed = polls_ridings(db)["ridings"]
+    item = next((item for item in listed if item["id"] == riding_id), None)
+    if item is None:
+        return None
+    votes = results_from_db(db).get(riding_id)
+    history = db.execute("SELECT date, shares FROM riding_projections WHERE riding=? ORDER BY date", (riding_id,)).fetchall()
+    item.update(results_2025=_rounded(shares(votes["votes"])) if votes else None,
+                projection=_rounded(json.loads(history[-1]["shares"])) if history else None,
+                history=[dict(date=row["date"], shares=_rounded(json.loads(row["shares"]))) for row in history])
+    return item
+
+
+def polls_summary(db, history=True):
+    rows = db.execute("SELECT date, body FROM projections ORDER BY date").fetchall()
+    if not rows:
+        return None
+    entries = [(row["date"], json.loads(row["body"])) for row in rows]
+    as_of, body = entries[-1]
+    return dict(as_of=as_of, polls_used=body["polls_used"],
+                average={region: _rounded(values) for region, values in body["average"].items()},
+                seats={party: dict(median=count, low=count, high=count) for party, count in body["seats"]["CAN"].items()},
+                majority=None, minority=None, seats_total=SEATS_TOTAL, majority_line=MAJORITY_LINE,
+                comparison=None, note=None,
+                history=[dict(date=day, average=_rounded(past["average"]["CAN"]), seats=past["seats"]["CAN"])
+                         for day, past in entries] if history else [])
 
 
 def _fresh(at, now):
@@ -243,6 +350,26 @@ def make_server(data_dir, host, port, clock=None, new_id=None, ollama=None):
                                                        query.get("before", [None])[0]))
                         elif path == "/api/polls/leaders":
                             self._send(200, polls_leaders(db))
+                        elif path == "/api/polls/summary":
+                            query = parse_qs(parts.query, keep_blank_values=True)
+                            summary = polls_summary(db, history=query.get("history", ["1"])[0] != "0")
+                            if summary is None:
+                                self._error(404, "no projection yet")
+                            else:
+                                self._send(200, summary)
+                        elif path == "/api/polls/ridings":
+                            query = parse_qs(parts.query, keep_blank_values=True)
+                            listed = polls_ridings(db, mp=query.get("mp", [None])[0])
+                            if listed is None:
+                                self._error(404, "not found")
+                            else:
+                                self._send(200, listed)
+                        elif path.startswith("/api/polls/ridings/"):
+                            riding = polls_riding(db, path[len("/api/polls/ridings/"):])
+                            if riding is None:
+                                self._error(404, "not found")
+                            else:
+                                self._send(200, riding)
                         elif path == "/api/health":
                             sources = {row["key"][7:]: json.loads(row["value"]) for row in db.execute(
                                 "SELECT key,value FROM meta WHERE key LIKE 'source:%'")}
