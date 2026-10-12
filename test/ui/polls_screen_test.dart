@@ -213,6 +213,7 @@ void main() {
     await _show(tester, PollsScreen(polls: client));
     expect(find.byKey(const ValueKey('majority-line')), findsOneWidget);
     expect(find.text('Majority: LPC 91%'), findsOneWidget);
+    expect(find.text('Minority: LPC 8%, CPC 1%'), findsOneWidget);
     final p2 = _client(summary: p2SummarySeam());
     addTearDown(p2.close);
     await _show(tester, PollsScreen(key: const ValueKey('p2'), polls: p2));

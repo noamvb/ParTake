@@ -226,10 +226,7 @@ class _PollsScreenState extends State<PollsScreen> {
         Text(
           'Majority: ${parties.first.code} ${((s.majority![parties.first.code] ?? 0) * 100).round()}%',
         ),
-      if (s.minority != null)
-        Text(
-          'Minority: ${Party.values.where((p) => s.minority!.containsKey(p.code)).map((p) => '${p.code} ${(s.minority![p.code]! * 100).round()}%').join(', ')}',
-        ),
+      if (s.minority != null) Text(_minorityLine(s.minority!)),
       if (comparison != null)
         Padding(
           padding: const EdgeInsets.only(top: 8),
@@ -439,4 +436,14 @@ class _SeatsPainter extends CustomPainter {
   @override
   bool shouldRepaint(_SeatsPainter oldDelegate) =>
       oldDelegate.summary != summary || oldDelegate.tickColor != tickColor;
+}
+
+/// Parties that round to under 1% are left out; with none left, says so.
+String _minorityLine(Map<String, double> minority) {
+  final shown = [
+    for (final p in Party.values)
+      if (((minority[p.code] ?? 0) * 100).round() >= 1)
+        '${p.code} ${(minority[p.code]! * 100).round()}%',
+  ];
+  return 'Minority: ${shown.isEmpty ? 'under 1% for every party' : shown.join(', ')}';
 }
