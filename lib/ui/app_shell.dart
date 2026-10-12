@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 
-import '../watch/watch_follows.dart';
-
 import '../core/library.dart';
+import '../polls/polls_client.dart';
+import '../watch/watch_follows.dart';
 import 'browse_screen.dart';
 import 'following_screen.dart';
 import 'home_screen.dart';
 import 'open_request.dart';
+import 'polls_screen.dart';
 import 'watch_screen.dart';
 
-/// The navigation frame: Home, Watch, Browse and Following, switched by a
+/// The navigation frame: Home, Watch, Polls, Browse and Following, switched by a
 /// bottom bar on narrow screens or a side rail on wide ones.
 class AppShell extends StatefulWidget {
   const AppShell({
@@ -17,6 +18,7 @@ class AppShell extends StatefulWidget {
     required this.source,
     required this.library,
     this.watch,
+    this.polls,
     required this.onOpen,
     this.now,
     this.overlay,
@@ -26,6 +28,7 @@ class AppShell extends StatefulWidget {
   final EventSource source;
   final Library library;
   final WatchFollows? watch;
+  final PollsClient? polls;
   final OpenEvent onOpen;
   final Widget? overlay;
   final bool fullscreenOverlay;
@@ -44,11 +47,14 @@ class _AppShellState extends State<AppShell> {
 
   /// The Watch tab is built on first visit so its feed is not fetched earlier.
   bool _watchOpened = false;
+  bool _pollsOpened = false;
+  PollsClient? _ownedPolls;
 
-  static const _labels = ['Home', 'Watch', 'Browse', 'Following'];
+  static const _labels = ['Home', 'Watch', 'Polls', 'Browse', 'Following'];
   static const _icons = [
     Icons.home,
     Icons.newspaper,
+    Icons.bar_chart,
     Icons.calendar_month,
     Icons.star,
   ];
@@ -58,7 +64,66 @@ class _AppShellState extends State<AppShell> {
   void _select(int i) => setState(() {
     _index = i;
     if (i == 1) _watchOpened = true;
+    if (i == 2) {
+      _pollsOpened = true;
+      _pollsClient();
+    }
   });
+
+  @override
+  void initState() {
+    super.initState();
+    widget.watch?.addListener(_watchChanged);
+  }
+
+  @override
+  void didUpdateWidget(AppShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.watch != widget.watch) {
+      oldWidget.watch?.removeListener(_watchChanged);
+      widget.watch?.addListener(_watchChanged);
+    }
+  }
+
+  void _watchChanged() => setState(() {});
+
+  PollsClient? _pollsClient() {
+    if (widget.polls != null) return widget.polls;
+    final address = widget.watch?.address ?? '';
+    if (_ownedPolls != null && _ownedPolls!.address.toString() != address) {
+      _ownedPolls!.close();
+      _ownedPolls = null;
+    }
+    if (_ownedPolls == null && address.isNotEmpty) {
+      _ownedPolls = PollsClient(address: Uri.parse(address));
+    }
+    return _ownedPolls;
+  }
+
+  @override
+  void dispose() {
+    widget.watch?.removeListener(_watchChanged);
+    _ownedPolls?.close();
+    super.dispose();
+  }
+
+  Widget _pollsTab() {
+    if (!_pollsOpened) return const SizedBox.shrink();
+    final client = _pollsClient();
+    if (client == null ||
+        (widget.polls == null && (widget.watch?.address ?? '').isEmpty)) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text(
+            'Set the Deck address in the Watch tab first.',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+    return PollsScreen(key: ValueKey(client), polls: client);
+  }
 
   void _showDigests() {
     Navigator.of(context).push(
@@ -108,13 +173,18 @@ class _AppShellState extends State<AppShell> {
         _watchOpened
             ? WatchScreen(watch: widget.watch, onOpen: widget.onOpen, now: _now)
             : const SizedBox.shrink(),
+        _pollsTab(),
         BrowseScreen(
           source: widget.source,
           library: widget.library,
           onOpen: widget.onOpen,
           now: _now,
         ),
-        FollowingScreen(library: widget.library, watch: widget.watch),
+        FollowingScreen(
+          library: widget.library,
+          watch: widget.watch,
+          polls: _pollsClient(),
+        ),
       ],
     );
 
@@ -166,16 +236,23 @@ class _AppShellState extends State<AppShell> {
       ),
       bottomNavigationBar: wide
           ? null
-          : NavigationBar(
-              selectedIndex: _index,
-              onDestinationSelected: _select,
-              destinations: [
-                for (var i = 0; i < _labels.length; i++)
-                  NavigationDestination(
-                    icon: Icon(_icons[i]),
-                    label: _labels[i],
-                  ),
-              ],
+          : NavigationBarTheme(
+              data: NavigationBarThemeData(
+                labelTextStyle: WidgetStatePropertyAll(
+                  Theme.of(context).textTheme.labelSmall,
+                ),
+              ),
+              child: NavigationBar(
+                selectedIndex: _index,
+                onDestinationSelected: _select,
+                destinations: [
+                  for (var i = 0; i < _labels.length; i++)
+                    NavigationDestination(
+                      icon: Icon(_icons[i]),
+                      label: _labels[i],
+                    ),
+                ],
+              ),
             ),
     );
     // Keep the selected tab and browsing state while Android shrinks the

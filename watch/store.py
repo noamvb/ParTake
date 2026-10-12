@@ -75,9 +75,30 @@ CREATE TABLE IF NOT EXISTS captions (
 CREATE TABLE IF NOT EXISTS digests (
  id TEXT PRIMARY KEY, date TEXT NOT NULL, kind TEXT NOT NULL, created_at TEXT NOT NULL,
  replaces TEXT, body TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS opinion_polls (
+ id TEXT, region TEXT, firm TEXT, end_date TEXT, sample INTEGER, rolling REAL, link TEXT,
+ lpc REAL, cpc REAL, ndp REAL, gpc REAL, bq REAL, oth REAL, fetched_at TEXT,
+ PRIMARY KEY (id, region));
+CREATE TABLE IF NOT EXISTS leader_polls (
+ kind TEXT, firm TEXT, end_date TEXT, body TEXT, PRIMARY KEY (kind, firm, end_date));
+CREATE TABLE IF NOT EXISTS ridings (
+ id TEXT PRIMARY KEY, name_en TEXT, name_fr TEXT, province TEXT, region TEXT);
+CREATE TABLE IF NOT EXISTS riding_results (
+ riding TEXT, election TEXT, party TEXT, votes INTEGER, elected INTEGER,
+ PRIMARY KEY (riding, election, party));
+CREATE TABLE IF NOT EXISTS riding_winners (
+ riding TEXT, election TEXT, family TEXT, first TEXT, PRIMARY KEY (riding, election));
+CREATE TABLE IF NOT EXISTS projections (date TEXT PRIMARY KEY, body TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS riding_projections (
+ riding TEXT, date TEXT, shares TEXT NOT NULL, winner TEXT NOT NULL, margin REAL NOT NULL,
+ PRIMARY KEY (riding, date));
+CREATE TABLE IF NOT EXISTS opinion_notes (
+ week_of TEXT PRIMARY KEY, text TEXT NOT NULL, created_at TEXT NOT NULL);
 """
 # Columns added after a table first shipped; connect() adds any that are missing.
-COLUMNS = (("paragraphs", "superseded_by", "TEXT"),)
+COLUMNS = (("paragraphs", "superseded_by", "TEXT"),
+           ("opinion_polls", "first_seen", "TEXT"),
+           ("riding_projections", "probs", "TEXT"))
 
 
 def iso(now):
@@ -99,6 +120,10 @@ def connect(data_dir):
         for table, column, kind in COLUMNS:
             if column not in {row[1] for row in db.execute("PRAGMA table_info(%s)" % table)}:
                 db.execute("ALTER TABLE %s ADD COLUMN %s %s" % (table, column, kind))
+                if (table, column) == ("opinion_polls", "first_seen"):
+                    # Polls already stored were first seen when they were fetched.
+                    db.execute("UPDATE opinion_polls SET first_seen=fetched_at")
+                    db.commit()
         yield db
     finally:
         db.close()

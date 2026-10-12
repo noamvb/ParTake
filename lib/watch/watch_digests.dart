@@ -77,18 +77,21 @@ class WatchDigest {
     required this.kind,
     required this.replaces,
     required this.sections,
+    this.opinion,
   });
   final String id;
   final DateTime date;
   final String kind;
   final String? replaces;
   final List<WatchDigestSection> sections;
+  final String? opinion;
 
   factory WatchDigest.fromJson(Map<String, dynamic> json) => WatchDigest(
     id: json['id'] as String,
     date: _day(json['date'] as String),
     kind: json['kind'] as String,
     replaces: json['replaces'] as String?,
+    opinion: json['opinion']?['text'] as String?,
     sections: [
       for (final section in json['sections'] as List)
         WatchDigestSection.fromJson(section),

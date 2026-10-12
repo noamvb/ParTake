@@ -1,0 +1,26 @@
+{
+  "best_pm": [
+    {
+      "firm": "Abacus Data",
+      "end_date": "2026-10-01",
+      "shares": {
+        "Carney": 46,
+        "Poilievre": 31
+      }
+    }
+  ],
+  "approval": [
+    {
+      "firm": "Angus Reid",
+      "end_date": "2026-09-28",
+      "approve": 55,
+      "disapprove": 38
+    }
+  ],
+  "source": {
+    "name": "Wikipedia",
+    "url": "https://en.wikipedia.org/wiki/Opinion_polling_for_the_46th_Canadian_federal_election",
+    "licence": "CC BY-SA 4.0",
+    "fetched_at": "2026-10-12T10:30:00Z"
+  }
+}

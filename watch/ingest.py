@@ -1,6 +1,7 @@
 """Pure source parsers and a small injectable fetch/SQLite ingest layer."""
 
 import argparse
+import base64
 from datetime import datetime, timezone
 import gzip
 import hashlib
@@ -73,7 +74,7 @@ def fetch(url, attempts=2):
 
 
 def store_raw(data_dir, source, body, now, key=None):
-    if source not in set(URLS) | {"votes", "ballots", "hansard", "evidence", "meetings", "committees", "evidence_pages", "parlvu", "parlvu_pages"}:
+    if source not in set(URLS) | {"votes", "ballots", "hansard", "evidence", "meetings", "committees", "evidence_pages", "parlvu", "parlvu_pages", "opinion", "opinion_338seats", "opinion_wiki", "ec_results"}:
         raise ValueError("unknown source")
     digest = hashlib.sha256(body).hexdigest()
     with connect(data_dir) as db, db:
@@ -85,7 +86,12 @@ def store_raw(data_dir, source, body, now, key=None):
         at = iso(now)
         path = Path(data_dir).expanduser() / "raw" / source / (at[:10] + ".jsonl.gz")
         path.parent.mkdir(parents=True, exist_ok=True)
-        record = {"at": at, "sha256": digest, "body": body.decode("utf-8-sig")}
+        record = {"at": at, "sha256": digest}
+        try:
+            record["body"] = body.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            # Binary downloads (the Elections Canada zip) are kept as base64.
+            record["base64"] = base64.b64encode(body).decode("ascii")
         with gzip.open(path, "at", encoding="utf-8") as raw:
             raw.write(json.dumps(record, ensure_ascii=False) + "\n")
         set_meta(db, key, digest)

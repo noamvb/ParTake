@@ -1,18 +1,48 @@
 """Build saved feed snapshots for Ottawa sitting dates."""
 
 import argparse
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 import json
 from zoneinfo import ZoneInfo
 
 from watch import feed, store
+from watch.opinion import notes
 
 
 OTTAWA = ZoneInfo('America/Toronto')
+SEAT_LINE = 10
 
 
 def item_count(body):
     return len({item['id'] for section in body['sections'] for item in section['items']})
+
+
+def _projection(db, day):
+    row = db.execute('SELECT body FROM projections WHERE date=?', (day,)).fetchone()
+    return json.loads(row[0]) if row else None
+
+
+def _opinion(db, day):
+    """The poll line for the evening digest: new CAN polls seen that day, and the parties projected to 10+ seats."""
+    tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    if not {'projections', 'opinion_polls'} <= tables:
+        return None
+    polls = notes.new_polls_by_day(db).get(day, 0)
+    body = _projection(db, day)
+    if polls == 0 or body is None:
+        return None
+    seats = body['seats']['CAN']
+    before = _projection(db, (date.fromisoformat(day) - timedelta(days=1)).isoformat())
+    parties = []
+    for party in sorted(notes.NAMES, key=lambda name: -seats[name]):
+        if seats[party] < SEAT_LINE:
+            continue
+        delta = ' (%s)' % notes.change(seats[party] - before['seats']['CAN'][party]) if before else ''
+        parties.append('%s %d%s' % (party, seats[party], delta))
+    text = '%d new poll%s.' % (polls, '' if polls == 1 else 's')
+    if parties:
+        text += ' Projection: %s.' % ', '.join(parties)
+    return {'kind': 'opinion', 'text': text}
 
 
 def build(db, date, kind, now):
@@ -20,6 +50,7 @@ def build(db, date, kind, now):
         raise ValueError('unknown digest kind')
     if kind == 'morning' and not db.execute("SELECT 1 FROM documents WHERE source='hansard' AND date=?", (date,)).fetchone():
         return None
+    opinion = _opinion(db, date) if kind == 'evening' else None
     active = store.list_follows(db)['follows']
     groups = feed._groups(db, active)
     sections = []
@@ -32,11 +63,13 @@ def build(db, date, kind, now):
         items = [item for key, item in rendered.items() if follow['id'] in groups[key]]
         if items:
             sections.append(dict(follow={k: follow[k] for k in ('id', 'label')}, items=items))
-    if not sections:
+    if not sections and opinion is None:
         return None
     evening = 'd_' + date + '_evening'
     replaces = evening if kind == 'morning' and db.execute('SELECT 1 FROM digests WHERE id=?', (evening,)).fetchone() else None
     body = dict(id='d_' + date + '_' + kind, date=date, kind=kind, replaces=replaces, sections=sections)
+    if opinion is not None:
+        body['opinion'] = opinion
     with db:
         db.execute('INSERT INTO digests VALUES (?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET '
                    'created_at=excluded.created_at,replaces=excluded.replaces,body=excluded.body',

@@ -1,0 +1,27 @@
+{
+  "polls": [
+    {
+      "id": "338:2026-10-02:nanos-research",
+      "firm": "Nanos Research",
+      "end_date": "2026-10-02",
+      "sample": 1020,
+      "rolling": 0.25,
+      "link": "https://nanos.co/poll.pdf",
+      "region": "CAN",
+      "shares": {
+        "LPC": 49,
+        "CPC": 28,
+        "NDP": 11,
+        "BQ": 6,
+        "GPC": 3,
+        "OTH": 3
+      }
+    }
+  ],
+  "next": "cursor-2026-10-02",
+  "source": {
+    "name": "338Canada",
+    "url": "https://338canada.com/polls.htm",
+    "fetched_at": "2026-10-12T10:30:00Z"
+  }
+}

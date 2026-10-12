@@ -1,0 +1,45 @@
+{
+  "ridings": [
+    {
+      "id": "35001",
+      "name": "Ajax",
+      "province": "ON",
+      "region": "ON",
+      "mp": null,
+      "won_2025": "LPC",
+      "projected": null,
+      "win_prob": null,
+      "status": "likely"
+    },
+    {
+      "id": "24038",
+      "name": "Chicoutimi—Le Fjord",
+      "province": "QC",
+      "region": "QC",
+      "mp": {
+        "person_id": "123447",
+        "name": "Daniel Gobeil",
+        "party": "LPC"
+      },
+      "won_2025": "CPC",
+      "projected": "LPC",
+      "win_prob": 0.64,
+      "status": "at_risk"
+    },
+    {
+      "id": "24048",
+      "name": "Montréal",
+      "province": "QC",
+      "region": "QC",
+      "mp": {
+        "person_id": "123",
+        "name": "Jane Example",
+        "party": "LPC"
+      },
+      "won_2025": "LPC",
+      "projected": "LPC",
+      "win_prob": 0.95,
+      "status": "safe"
+    }
+  ]
+}

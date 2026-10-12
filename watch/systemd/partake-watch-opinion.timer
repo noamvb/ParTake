@@ -1,0 +1,9 @@
+[Unit]
+Description=Fetch opinion polls once a day at 06:30 Ottawa time
+
+[Timer]
+OnCalendar=*-*-* 06:30:00 America/Toronto
+Persistent=true
+
+[Install]
+WantedBy=timers.target

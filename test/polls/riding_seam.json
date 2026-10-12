@@ -1,0 +1,77 @@
+{
+  "id": "24038",
+  "name": "Chicoutimi—Le Fjord",
+  "province": "QC",
+  "region": "QC",
+  "mp": {
+    "person_id": "123447",
+    "name": "Daniel Gobeil",
+    "party": "LPC"
+  },
+  "won_2025": "CPC",
+  "projected": "LPC",
+  "win_prob": 0.64,
+  "status": "at_risk",
+  "results_2025": {
+    "LPC": 38.2,
+    "CPC": 42,
+    "NDP": 8,
+    "BQ": 9,
+    "GPC": 1.5,
+    "OTH": 1.3
+  },
+  "projection": {
+    "LPC": 47.2,
+    "CPC": 29.1,
+    "NDP": 10.4,
+    "BQ": 6.8,
+    "GPC": 3.1,
+    "OTH": 3.4
+  },
+  "history": [
+    {
+      "date": "2026-10-09",
+      "shares": {
+        "LPC": 46.9,
+        "CPC": 29.4,
+        "NDP": 10.4,
+        "BQ": 6.8,
+        "GPC": 3.1,
+        "OTH": 3.4
+      }
+    },
+    {
+      "date": "2026-10-10",
+      "shares": {
+        "LPC": 47.0,
+        "CPC": 29.3,
+        "NDP": 10.4,
+        "BQ": 6.8,
+        "GPC": 3.1,
+        "OTH": 3.4
+      }
+    },
+    {
+      "date": "2026-10-11",
+      "shares": {
+        "LPC": 47.1,
+        "CPC": 29.2,
+        "NDP": 10.4,
+        "BQ": 6.8,
+        "GPC": 3.1,
+        "OTH": 3.4
+      }
+    },
+    {
+      "date": "2026-10-12",
+      "shares": {
+        "LPC": 47.2,
+        "CPC": 29.1,
+        "NDP": 10.4,
+        "BQ": 6.8,
+        "GPC": 3.1,
+        "OTH": 3.4
+      }
+    }
+  ]
+}
