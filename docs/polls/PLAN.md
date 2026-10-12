@@ -92,20 +92,37 @@ lib/ui/polls_screen.dart    the Polls tab; riding page; charts
   every day since 2025-04-28.
 - The app reads the API through the Deck proxy like the Watch tab; no
   Android background work.
-- Bottom bar becomes Home, Browse, Watch, Polls, Following: check the label
-  fit on the Fold cover screen.
+- Bottom bar becomes Home, Watch, Polls, Browse, Following (Watch keeps its
+  place): check the label fit on the Fold cover screen.
 
 ## Phases
 
 | Phase | Delivers | Visible result |
 |---|---|---|
 | P1. Data (done 12 Oct) | `sources.py`, `results.py`, tables, daily fetch, backfill, `GET /api/polls/list`, `/api/polls/leaders` | `curl` shows every poll since April 2025 with regions |
-| P2. Projection | `average.py`, `swing.py`, `backtest.py`, `/api/polls/summary`, `/api/polls/ridings` (no odds yet) | Seat counts per party; back-test numbers in this file |
+| P2. Projection (done 12 Oct) | `average.py`, `swing.py`, `backtest.py`, `/api/polls/summary`, `/api/polls/ridings` (no odds yet) | Seat counts per party; back-test numbers in this file |
 | P3. Odds + notes | `simulate.py`, `notes.py`, odds in the API, digest line | Majority odds; first weekly note |
-| P4. App | Polls tab, riding page, charts, MP safe/at-risk in Watch follows | The tab on the phone, both screens |
+| P4. App (tab, riding pages, charts done 12 Oct; MP status in Following to do) | Polls tab, riding page, charts, MP safe/at-risk in Watch follows | The tab on the phone, both screens |
 | P5. Release | Fold checks, codebook page, tag (with or without watch Phase 3, decided then) | New ParTake version |
 
 P4 can start once api.md is fixed, alongside P2-P3, against fixtures.
+
+## Back-test result (P2, 12 Oct 2026)
+
+The 2021-transposed baseline was not found, so the back-test projects 2021
+from the 2019 result (same 338-riding map) with 338Canada's campaign polls
+of 15 Aug-19 Sep 2021 (`python3 -m watch.opinion.backtest`, pinned in
+`watch/tests/test_opinion_backtest.py`):
+
+| | LPC | CPC | NDP | BQ | GPC | OTH |
+|---|---|---|---|---|---|---|
+| Projected | 150 | 115 | 39 | 29 | 1 | 4 |
+| Actual | 160 | 119 | 25 | 32 | 2 | 0 |
+
+301 of 338 ridings right (89%). Average error vs the national result: NDP
++1.9, OTH +1.6, GPC +1.3, LPC -1.5, CPC -2.6 points (polls overstated NDP,
+as in 2021 coverage). PPC counts as Others throughout, including in
+`/api/polls/list`.
 
 ## Not in scope
 

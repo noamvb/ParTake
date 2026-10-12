@@ -1,0 +1,214 @@
+{
+  "as_of": "2026-10-12",
+  "polls_used": 14,
+  "average": {
+    "CAN": {
+      "LPC": 47.2,
+      "CPC": 29.1,
+      "NDP": 10.4,
+      "BQ": 6.8,
+      "GPC": 3.1,
+      "OTH": 3.4
+    },
+    "ATL": {
+      "LPC": 47.2,
+      "CPC": 29.1,
+      "NDP": 10.4,
+      "BQ": 6.8,
+      "GPC": 3.1,
+      "OTH": 3.4
+    },
+    "QC": {
+      "LPC": 47.2,
+      "CPC": 29.1,
+      "NDP": 10.4,
+      "BQ": 6.8,
+      "GPC": 3.1,
+      "OTH": 3.4
+    },
+    "ON": {
+      "LPC": 47.2,
+      "CPC": 29.1,
+      "NDP": 10.4,
+      "BQ": 6.8,
+      "GPC": 3.1,
+      "OTH": 3.4
+    },
+    "PR": {
+      "LPC": 47.2,
+      "CPC": 29.1,
+      "NDP": 10.4,
+      "BQ": 6.8,
+      "GPC": 3.1,
+      "OTH": 3.4
+    },
+    "AB": {
+      "LPC": 47.2,
+      "CPC": 29.1,
+      "NDP": 10.4,
+      "BQ": 6.8,
+      "GPC": 3.1,
+      "OTH": 3.4
+    },
+    "BC": {
+      "LPC": 47.2,
+      "CPC": 29.1,
+      "NDP": 10.4,
+      "BQ": 6.8,
+      "GPC": 3.1,
+      "OTH": 3.4
+    },
+    "TERR": {
+      "LPC": 47.2,
+      "CPC": 29.1,
+      "NDP": 10.4,
+      "BQ": 6.8,
+      "GPC": 3.1,
+      "OTH": 3.4
+    }
+  },
+  "seats": {
+    "LPC": {
+      "median": 201,
+      "low": 191,
+      "high": 211
+    },
+    "CPC": {
+      "median": 98,
+      "low": 88,
+      "high": 108
+    },
+    "NDP": {
+      "median": 12,
+      "low": 2,
+      "high": 22
+    },
+    "BQ": {
+      "median": 30,
+      "low": 20,
+      "high": 40
+    },
+    "GPC": {
+      "median": 2,
+      "low": 0,
+      "high": 12
+    },
+    "OTH": {
+      "median": 0,
+      "low": 0,
+      "high": 0
+    }
+  },
+  "majority": {
+    "LPC": 0.91,
+    "CPC": 0,
+    "NDP": 0,
+    "BQ": 0,
+    "GPC": 0,
+    "OTH": 0
+  },
+  "minority": {
+    "LPC": 0.08,
+    "CPC": 0.01,
+    "NDP": 0,
+    "BQ": 0,
+    "GPC": 0,
+    "OTH": 0
+  },
+  "seats_total": 343,
+  "majority_line": 172,
+  "comparison": {
+    "name": "338Canada",
+    "seats": {
+      "LPC": 205,
+      "CPC": 104,
+      "NDP": 10,
+      "BQ": 22,
+      "GPC": 2,
+      "OTH": 0
+    },
+    "as_of": "2026-10-11"
+  },
+  "history": [
+    {
+      "date": "2026-10-09",
+      "average": {
+        "LPC": 46.9,
+        "CPC": 29.4,
+        "NDP": 10.4,
+        "BQ": 6.8,
+        "GPC": 3.1,
+        "OTH": 3.4
+      },
+      "seats": {
+        "LPC": 201,
+        "CPC": 98,
+        "NDP": 12,
+        "BQ": 30,
+        "GPC": 2,
+        "OTH": 0
+      }
+    },
+    {
+      "date": "2026-10-10",
+      "average": {
+        "LPC": 47.0,
+        "CPC": 29.3,
+        "NDP": 10.4,
+        "BQ": 6.8,
+        "GPC": 3.1,
+        "OTH": 3.4
+      },
+      "seats": {
+        "LPC": 201,
+        "CPC": 98,
+        "NDP": 12,
+        "BQ": 30,
+        "GPC": 2,
+        "OTH": 0
+      }
+    },
+    {
+      "date": "2026-10-11",
+      "average": {
+        "LPC": 47.1,
+        "CPC": 29.2,
+        "NDP": 10.4,
+        "BQ": 6.8,
+        "GPC": 3.1,
+        "OTH": 3.4
+      },
+      "seats": {
+        "LPC": 201,
+        "CPC": 98,
+        "NDP": 12,
+        "BQ": 30,
+        "GPC": 2,
+        "OTH": 0
+      }
+    },
+    {
+      "date": "2026-10-12",
+      "average": {
+        "LPC": 47.2,
+        "CPC": 29.1,
+        "NDP": 10.4,
+        "BQ": 6.8,
+        "GPC": 3.1,
+        "OTH": 3.4
+      },
+      "seats": {
+        "LPC": 201,
+        "CPC": 98,
+        "NDP": 12,
+        "BQ": 30,
+        "GPC": 2,
+        "OTH": 0
+      }
+    }
+  ],
+  "note": {
+    "week_of": "2026-10-05",
+    "text": "Liberals up 1.1 points this week."
+  }
+}

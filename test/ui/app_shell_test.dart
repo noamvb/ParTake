@@ -1,10 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:partake/polls/polls_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:partake/ui/app_shell.dart';
 import 'package:partake/watch/watch_follows.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../fakes.dart';
+import '../polls/polls_seams.dart';
 import '../watch/fake_watch_server.dart';
 
 DateTime _clock() => DateTime.utc(2026, 9, 23, 18, 30);
@@ -68,7 +74,7 @@ void main() {
     },
   );
 
-  testWidgets('Watch tab sits second and loads its feed only when opened', (
+  testWidgets('12. Five tabs in order; Watch loads only when opened', (
     tester,
   ) async {
     addTearDown(tester.view.resetPhysicalSize);
@@ -118,6 +124,21 @@ void main() {
       find.descendant(of: bar, matching: find.text('Following')),
       findsOneWidget,
     );
+    expect(
+      find.descendant(of: bar, matching: find.text('Polls')),
+      findsOneWidget,
+    );
+    final destinations = tester
+        .widget<NavigationBar>(bar)
+        .destinations
+        .cast<NavigationDestination>();
+    expect(destinations.map((d) => d.label), [
+      'Home',
+      'Watch',
+      'Polls',
+      'Browse',
+      'Following',
+    ]);
     expect(server.feedRequests, isEmpty);
 
     await tester.tap(find.descendant(of: bar, matching: find.text('Watch')));
@@ -130,7 +151,7 @@ void main() {
   });
 
   testWidgets(
-    'the Digests action is on the Watch tab only and opens the list',
+    '12. Digests appears only on Watch, including after visiting Polls',
     (tester) async {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
@@ -166,10 +187,92 @@ void main() {
       final bar = find.byType(NavigationBar);
       await tester.tap(find.descendant(of: bar, matching: find.text('Watch')));
       await tester.pumpAndSettle();
+      await tester.tap(find.descendant(of: bar, matching: find.text('Browse')));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Digests'), findsNothing);
+      await tester.tap(
+        find.descendant(of: bar, matching: find.text('Following')),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Digests'), findsNothing);
+      await tester.tap(find.descendant(of: bar, matching: find.text('Watch')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Digests'));
       await tester.pumpAndSettle();
       expect(find.text('Evening digest, Mon 19 Oct'), findsOneWidget);
       expect(find.text('Morning digest, Tue 20 Oct'), findsOneWidget);
     },
   );
+  for (final (size, ratio) in [
+    (const Size(1080, 2400), 3.0),
+    (const Size(1800, 2000), 2.25),
+  ]) {
+    testWidgets('12. Polls is lazy and shell fits $size at $ratio', (
+      tester,
+    ) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = ratio;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final requests = <Uri>[];
+      final polls = PollsClient(
+        address: Uri.parse('http://deck.test'),
+        client: MockClient((r) async {
+          requests.add(r.url);
+          return http.Response(
+            jsonEncode(pollsSeam(r.url.path.split('/').last)),
+            200,
+          );
+        }),
+      );
+      addTearDown(polls.close);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: AppShell(
+            source: FakeEventSource(),
+            library: FakeLibrary(),
+            polls: polls,
+            onOpen: (_) {},
+            now: _clock,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(requests, isEmpty);
+      await tester.tap(find.text('Polls'));
+      await tester.pumpAndSettle();
+      expect(requests, hasLength(3));
+      expect(find.text('201'), findsOneWidget);
+      expect(find.byTooltip('Digests'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.text('Watch'));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Digests'), findsOneWidget);
+      await tester.tap(find.text('Polls'));
+      await tester.pumpAndSettle();
+      expect(requests, hasLength(3));
+      expect(find.byTooltip('Digests'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('Polls without a Deck explains setup', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AppShell(
+          source: FakeEventSource(),
+          library: FakeLibrary(),
+          onOpen: (_) {},
+          now: _clock,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Polls'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Set the Deck address in the Watch tab first.'),
+      findsOneWidget,
+    );
+  });
 }

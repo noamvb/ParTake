@@ -179,7 +179,7 @@ def polls_ridings(db, mp=None):
         member = linked.get(riding["id"])
         party = MP_PARTIES.get(member["party"], "OTH") if member else None
         projection = latest.get(riding["id"])
-        items.append(dict(id=riding["id"], name=riding["name_en"], province=riding["province"], region=riding["region"],
+        items.append(dict(id=riding["id"], name=riding["name_en"].replace("--", "\u2014"), province=riding["province"], region=riding["region"],
                           mp=None if member is None else dict(person_id=member["person_id"], name=member["name"],
                                                                party=party),
                           won_2025=won.get(riding["id"]), projected=projection["winner"] if projection else None,
