@@ -148,3 +148,26 @@ paragraphs are excluded. Each built digest prints `id items` with distinct item
 counts. Tests can override the default Ottawa date using hidden `--today YYYY-MM-DD`;
 this does not change the digest's creation timestamp. `/api/digests` lists saved
 digests and `/api/digests/<id>` returns the snapshot.
+
+## Polls (P1)
+
+`python3 -m watch.poll --data "$D" --sources opinion` fetches the 338Canada poll
+page (`polls.htm`, national and six regions, one row per poll since 28 April 2025)
+and the Wikipedia leader and approval tables (sections "Leadership polls" and
+"Government approval polls"). Raw pages go to `raw/opinion*`; `source:opinion`
+records the last attempt, and a Wikipedia failure keeps the 338 rows. Shares are
+percents: the five party labels as printed, OTH = 100 minus them (floored at 0,
+so 17 polls with rounded labels above 100 keep their printed sum). Rows that fail
+the leader-margin check are skipped and counted in `opinion:skipped`.
+
+`python3 -m watch.opinion.results --data "$D" [--force]` loads the Elections
+Canada 2025 riding results (343 ridings, per-party votes, elected flag) into
+`ridings` and `riding_results`. It runs once; the poll job calls it first and it
+returns early when election 2025 is already loaded.
+
+`GET /api/polls/list?region=CAN&limit=50&before=CURSOR` pages the polls newest
+first; `GET /api/polls/leaders` returns the leader and approval tables (CC BY-SA
+4.0, attribution in `source`). See `docs/polls/api.md`.
+
+`partake-watch-opinion.timer` starts `partake-watch-opinion.service` daily at
+06:30 Ottawa time.

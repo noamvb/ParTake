@@ -58,6 +58,59 @@ def bills(db, query):
     return [item for _key, item in sorted(results, key=lambda r: r[0])[:20]]
 
 
+POLL_REGIONS = ("CAN", "ATL", "QC", "ON", "PR", "AB", "BC", "TERR")
+OPINION_URL = "https://338canada.com/polls.htm"
+WIKI_URL = "https://en.wikipedia.org/wiki/Opinion_polling_for_the_46th_Canadian_federal_election"
+
+
+def _meta(db, key):
+    row = db.execute("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
+    return row[0] if row else None
+
+
+def _share(value):
+    value = round(value, 1)
+    return int(value) if value.is_integer() else value
+
+
+def polls_list(db, region, limit, before):
+    if region not in POLL_REGIONS:
+        raise ValueError("unknown region")
+    if not 1 <= limit <= 200:
+        raise ValueError("limit must be between 1 and 200")
+    where, params = "region=?", [region]
+    if before is not None:
+        end, sep, poll_id = before.partition("|")
+        if not sep or not end or not poll_id:
+            raise ValueError("invalid cursor")
+        where += " AND (end_date < ? OR (end_date = ? AND id < ?))"
+        params += [end, end, poll_id]
+    rows = db.execute("SELECT * FROM opinion_polls WHERE " + where + " ORDER BY end_date DESC, id DESC LIMIT ?",
+                      (*params, limit + 1)).fetchall()
+    page = rows[:limit]
+    polls = [dict(id=row["id"], firm=row["firm"], end_date=row["end_date"], sample=row["sample"],
+                  rolling=row["rolling"], link=row["link"], region=row["region"],
+                  shares={party: _share(row[party.lower()]) for party in ("LPC", "CPC", "NDP", "GPC", "BQ", "OTH")})
+             for row in page]
+    next_cursor = "%s|%s" % (page[-1]["end_date"], page[-1]["id"]) if len(rows) > limit else None
+    return {"polls": polls, "next": next_cursor,
+            "source": {"name": "338Canada", "url": OPINION_URL, "fetched_at": _meta(db, "opinion:fetched_at")}}
+
+
+def polls_leaders(db):
+    best = [dict(firm=row["firm"], end_date=row["end_date"],
+                 shares={name: _share(value) for name, value in json.loads(row["body"]).items()})
+            for row in db.execute("SELECT * FROM leader_polls WHERE kind='best_pm' "
+                                  "ORDER BY end_date DESC, firm LIMIT 100")]
+    approval = [dict(firm=row["firm"], end_date=row["end_date"],
+                     **{k: _share(v) for k, v in json.loads(row["body"]).items()})
+                for row in db.execute("SELECT * FROM leader_polls WHERE kind='approval' "
+                                      "ORDER BY end_date DESC, firm LIMIT 100")]
+    return {"best_pm": best, "approval": approval,
+            "source": {"name": "Wikipedia", "url": WIKI_URL, "licence": "CC BY-SA 4.0",
+                       "fetched_at": _meta(db, "opinion_wiki:fetched_at")}}
+
+
 def _fresh(at, now):
     return 0 <= (now - datetime.fromisoformat(at)).total_seconds() <= 180
 
@@ -183,6 +236,13 @@ def make_server(data_dir, host, port, clock=None, new_id=None, ollama=None):
                                 self._error(404, "not found")
                         elif path == "/api/live":
                             self._send(200, live(db, clock()))
+                        elif path == "/api/polls/list":
+                            query = parse_qs(parts.query, keep_blank_values=True)
+                            self._send(200, polls_list(db, query.get("region", ["CAN"])[0],
+                                                       int(query.get("limit", ["50"])[0]),
+                                                       query.get("before", [None])[0]))
+                        elif path == "/api/polls/leaders":
+                            self._send(200, polls_leaders(db))
                         elif path == "/api/health":
                             sources = {row["key"][7:]: json.loads(row["value"]) for row in db.execute(
                                 "SELECT key,value FROM meta WHERE key LIKE 'source:%'")}

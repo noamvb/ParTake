@@ -75,6 +75,17 @@ CREATE TABLE IF NOT EXISTS captions (
 CREATE TABLE IF NOT EXISTS digests (
  id TEXT PRIMARY KEY, date TEXT NOT NULL, kind TEXT NOT NULL, created_at TEXT NOT NULL,
  replaces TEXT, body TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS opinion_polls (
+ id TEXT, region TEXT, firm TEXT, end_date TEXT, sample INTEGER, rolling REAL, link TEXT,
+ lpc REAL, cpc REAL, ndp REAL, gpc REAL, bq REAL, oth REAL, fetched_at TEXT,
+ PRIMARY KEY (id, region));
+CREATE TABLE IF NOT EXISTS leader_polls (
+ kind TEXT, firm TEXT, end_date TEXT, body TEXT, PRIMARY KEY (kind, firm, end_date));
+CREATE TABLE IF NOT EXISTS ridings (
+ id TEXT PRIMARY KEY, name_en TEXT, name_fr TEXT, province TEXT, region TEXT);
+CREATE TABLE IF NOT EXISTS riding_results (
+ riding TEXT, election TEXT, party TEXT, votes INTEGER, elected INTEGER,
+ PRIMARY KEY (riding, election, party));
 """
 # Columns added after a table first shipped; connect() adds any that are missing.
 COLUMNS = (("paragraphs", "superseded_by", "TEXT"),)

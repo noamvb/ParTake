@@ -1,0 +1,10 @@
+[Unit]
+Description=Fetch opinion polls and leader polls for ParTake Polls
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/partake
+ExecStart=/usr/bin/python3 -m watch.poll --data %h/.local/share/partake-watch --sources opinion
+MemoryMax=500M
+Nice=10

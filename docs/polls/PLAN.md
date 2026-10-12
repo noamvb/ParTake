@@ -34,12 +34,12 @@ its store, API process, digest and members index.
 
 | Data | Source | Notes |
 |---|---|---|
-| Voting intention, national + 6 regions | `https://338canada.com/polls.htm`, inline `window.demopoll_TABLE_DATA` | `demos` keys `National`, `ATL`, `QC`, `ON`, `PR` (MB/SK), `AB`, `BC`; 149-231 rows each, 2025-04-28 (the election row, `generalelx` set) to now. Row: `firm`, `date` (last field date), `sample` ("1,020"), `isRolling` (`<sup>(1/4)</sup>` = independent fraction), `poll_link`, `leader` ("L +21"), `cells` (5 labels, fixed order **LPC, CPC, NDP, GPC, BQ**; Others = 100 - sum). Party is by position: text colours change with the leader. Check each row: the `leader` margin equals the top two cells' difference. |
+| Voting intention, national + 6 regions | `https://338canada.com/polls.htm`, inline `window.demopoll_TABLE_DATA` | `demos` keys `National`, `ATL`, `QC`, `ON`, `PR` (MB/SK), `AB`, `BC`; 149-231 rows each, 2025-04-28 (the election row, `generalelx` set) to now. Row: `firm`, `date` (last field date), `sample` ("1,020"), `isRolling` (`<sup>(1/4)</sup>` = independent fraction), `poll_link`, `leader` ("L +21"), `cells` (5 labels, fixed order **LPC, CPC, NDP, GPC, BQ**; Others = 100 - sum). Party is by position: text colours change with the leader. Check each row: the `leader` margin equals the top two cells' difference. Three rows sum over 101 (source typos, e.g. QC Synopsis Recherche 2026-06-07 = 107); the average rescales each poll to 100. Mod_Security answers 406 to a bare `Mozilla/5.0` agent; watch's `USER_AGENT` gets 200. |
 | 338Canada's own seat projection | same site, `window.demopoll_DATA` / projection pages | For the comparison only. Exact field **verify** in P2. |
 | Leader + approval polls | Wikipedia `Opinion_polling_for_the_46th_Canadian_federal_election`, sections "Leadership polls" and "Government approval polls", MediaWiki `action=parse` HTML | CC BY-SA 4.0: show the source link and licence on the chart. Needs a `User-Agent` (403 without). |
 | 2025 riding results | Elections Canada `pollresults_resultatsbureauCanada.zip` (Format 2, long) under `elections.ca/res/rep/off/ovrGE45/62/data_donnees/` | 343 ridings; the map has not changed since. Sum polls to riding level once; keep the zip in `raw/`. |
 | Current MP per riding | watch `members` table | One seat changed in a by-election (Chicoutimi—Le Fjord, CPC to LPC, 31 Aug 2026). Baseline votes stay the 2025 general; the holder comes from `members`. |
-| Back-test inputs | 2021 results on the 2023 map (Elections Canada transposition) and the final pre-election 2025 polls (338 "Polls of past Parliaments") | Both **verify** in P2 before building on them. |
+| Back-test inputs | Polls: `https://338canada.com/polls2.htm` (same `demopoll_TABLE_DATA` shape, 6 cells per row with PPC, 2015-10-19 to 2025-04-28; 154 national campaign polls 23 Mar-27 Apr 2025, 89-120 per region). Baseline: 2021 results on the 2023 map (Elections Canada transposition) | Polls checked 12 Oct 2026. The transposed baseline was not found on 12 Oct: P2 looks once more, else back-tests 2021 from the 2019 result (same 338-riding map, no transposition needed). |
 
 CBC's Poll Tracker feed is not used: CBC's terms forbid automated scraping.
 
@@ -99,7 +99,7 @@ lib/ui/polls_screen.dart    the Polls tab; riding page; charts
 
 | Phase | Delivers | Visible result |
 |---|---|---|
-| P1. Data | `sources.py`, `results.py`, tables, daily fetch, backfill, `GET /api/polls/list`, `/api/polls/leaders` | `curl` shows every poll since April 2025 with regions |
+| P1. Data (done 12 Oct) | `sources.py`, `results.py`, tables, daily fetch, backfill, `GET /api/polls/list`, `/api/polls/leaders` | `curl` shows every poll since April 2025 with regions |
 | P2. Projection | `average.py`, `swing.py`, `backtest.py`, `/api/polls/summary`, `/api/polls/ridings` (no odds yet) | Seat counts per party; back-test numbers in this file |
 | P3. Odds + notes | `simulate.py`, `notes.py`, odds in the API, digest line | Majority odds; first weekly note |
 | P4. App | Polls tab, riding page, charts, MP safe/at-risk in Watch follows | The tab on the phone, both screens |
