@@ -7,6 +7,7 @@ import '../polls/polls_client.dart';
 import '../polls/polls_models.dart';
 import '../watch/watch_client.dart';
 import 'riding_screen.dart';
+import 'polls_method_screen.dart';
 
 String _date(DateTime date) {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -129,9 +130,27 @@ class _PollsScreenState extends State<PollsScreen> {
     ],
   );
 
-  Widget _heading(String text) => Padding(
+  void _method([String? section]) => Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (_) => PollsMethodScreen(section: section),
+    ),
+  );
+
+  Widget _heading(String text, {String? tooltip, String? section}) => Padding(
     padding: const EdgeInsets.only(top: 20, bottom: 8),
-    child: Text(text, style: Theme.of(context).textTheme.titleLarge),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(text, style: Theme.of(context).textTheme.titleLarge),
+        ),
+        if (tooltip != null)
+          IconButton(
+            tooltip: tooltip,
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => _method(section),
+          ),
+      ],
+    ),
   );
 
   List<Widget> _projection(PollsSummary s) {
@@ -151,6 +170,15 @@ class _PollsScreenState extends State<PollsScreen> {
     return [
       _heading('Projection, ${_date(s.asOf)}'),
       Text('${s.pollsUsed} polls'),
+      const Text('A snapshot if an election were held today, not a forecast.'),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton(
+          onPressed: _method,
+          child: const Text('How this works'),
+        ),
+      ),
+      _heading('Seats', tooltip: 'About the ranges and odds', section: '5.'),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Semantics(
@@ -206,7 +234,7 @@ class _PollsScreenState extends State<PollsScreen> {
         Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Text(
-            '${comparison.name}: ${Party.values.where((p) => comparison.seats.containsKey(p.code)).map((p) => '${p.code} ${comparison.seats[p.code]!.round()}').join(', ')} (${comparison.asOf})',
+            '${comparison.name}: ${Party.values.where((p) => comparison.seats.containsKey(p.code)).map((p) => '${p.code} ${comparison.seats[p.code]!.round()}').join(', ')} (${comparison.asOf}) (different model)',
           ),
         ),
       if (note != null)
@@ -215,11 +243,28 @@ class _PollsScreenState extends State<PollsScreen> {
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [Text('Week of ${note.weekOf}'), Text(note.text)],
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: Text('Week of ${note.weekOf}')),
+                    IconButton(
+                      tooltip: 'About the weekly note',
+                      icon: const Icon(Icons.info_outline),
+                      onPressed: () => _method('7.'),
+                    ),
+                  ],
+                ),
+                const Text('Written by fixed rules from the numbers'),
+                Text(note.text),
+              ],
             ),
           ),
         ),
-      _heading('Polling average'),
+      _heading(
+        'Polling average',
+        tooltip: 'About the polling average',
+        section: '2.',
+      ),
       PollsLineChart(
         dates: history.map((h) => h.date).toList(),
         values: history.map((h) => h.average).toList(),

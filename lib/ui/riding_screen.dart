@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../polls/polls_client.dart';
 import '../polls/polls_models.dart';
 import '../watch/watch_client.dart';
+import 'polls_method_screen.dart';
 
 String pollsError(Object error) => switch (error) {
   WatchHttpException(status: 0) => 'Deck unreachable',
@@ -121,7 +122,20 @@ class _RidingsScreenState extends State<RidingsScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Ridings')),
+    appBar: AppBar(
+      title: const Text('Ridings'),
+      actions: [
+        IconButton(
+          tooltip: 'What the labels mean',
+          icon: const Icon(Icons.info_outline),
+          onPressed: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (_) => const PollsMethodScreen(section: '6.'),
+            ),
+          ),
+        ),
+      ],
+    ),
     body: Column(
       children: [
         Padding(
@@ -202,6 +216,23 @@ class RidingScreen extends StatefulWidget {
 }
 
 class _RidingScreenState extends State<RidingScreen> {
+  String _meaning(RidingDetail riding) => switch (riding.status) {
+    'safe' =>
+      riding.winProb == null
+          ? 'Projected lead of more than 10 points.'
+          : "Holder's party keeps the seat in at least 90% of simulations.",
+    'likely' =>
+      riding.winProb == null
+          ? 'Projected lead of 5 to 10 points.'
+          : "Holder's party keeps the seat in at least 70% of simulations.",
+    'at_risk' =>
+      riding.winProb == null
+          ? 'Projected lead of under 5 points.'
+          : "Holder's party keeps the seat in less than 70% of simulations.",
+    'projected_loss' => 'Another party is projected to win this seat.',
+    _ => '',
+  };
+
   RidingDetail? _riding;
   Object? _error;
   @override
@@ -282,6 +313,7 @@ class _RidingScreenState extends State<RidingScreen> {
                         Text('${(r.winProb! * 100).round()}% win probability'),
                     ],
                   ),
+                  Text(_meaning(r)),
                   Text('Projected winner: ${r.projected ?? 'Unavailable'}'),
                   for (final p in Party.values) ...[
                     const SizedBox(height: 12),
@@ -295,6 +327,25 @@ class _RidingScreenState extends State<RidingScreen> {
                     _bar('2025', r.results2025[p.code] ?? 0, p),
                     _bar('Now', r.projection[p.code] ?? 0, p),
                   ],
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Now = 2025 result moved by the regional change in the polls.',
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'About the riding projection',
+                        icon: const Icon(Icons.info_outline),
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                const PollsMethodScreen(section: '3.'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 16),
                   const Text('Projected shares over time'),
                   PollsLineChart(

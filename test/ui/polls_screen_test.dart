@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:partake/polls/polls_client.dart';
 import 'package:partake/ui/polls_screen.dart';
+import 'package:partake/ui/polls_method_screen.dart';
 import 'package:partake/ui/riding_screen.dart';
 
 import '../polls/polls_seams.dart';
@@ -14,6 +15,7 @@ import '../polls/polls_seams.dart';
 PollsClient _client({
   Map<String, dynamic>? summary,
   Map<String, dynamic>? ridings,
+  Map<String, dynamic>? riding,
   int summaryStatus = 200,
   int leadersStatus = 200,
   List<Uri>? requests,
@@ -33,7 +35,7 @@ PollsClient _client({
       'leaders' => pollsSeam('leaders'),
       'list' => pollsSeam('list'),
       'ridings' => ridings ?? pollsSeam('ridings'),
-      _ => pollsSeam('riding'),
+      _ => riding ?? pollsSeam('riding'),
     };
     if (path == 'list' && r.url.queryParameters['before'] != null) {
       data['next'] = null;
@@ -92,6 +94,115 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  for (final (tooltip, prefix, title) in [
+    ('About the ranges and odds', '5.', '5. Ranges and odds'),
+    ('About the polling average', '2.', '2. The polling average'),
+    ('About the weekly note', '7.', '7. The weekly note'),
+  ]) {
+    testWidgets('$tooltip opens the correct methodology section', (
+      tester,
+    ) async {
+      final client = _client();
+      addTearDown(client.close);
+      await _show(tester, PollsScreen(polls: client));
+      await _scrollTo(tester, find.byTooltip(tooltip));
+      await tester.tap(find.byTooltip(tooltip));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<PollsMethodScreen>(find.byType(PollsMethodScreen))
+            .section,
+        prefix,
+      );
+      expect(find.text(title).hitTestable(), findsOneWidget);
+    });
+  }
+
+  testWidgets('How this works opens the methodology at the top', (
+    tester,
+  ) async {
+    final client = _client();
+    addTearDown(client.close);
+    await _show(tester, PollsScreen(polls: client));
+    expect(
+      find.text('A snapshot if an election were held today, not a forecast.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text('How this works'));
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<PollsMethodScreen>(find.byType(PollsMethodScreen)).section,
+      isNull,
+    );
+    expect(find.text('What it shows').hitTestable(), findsOneWidget);
+  });
+
+  for (final hasProbability in [true, false]) {
+    for (final (status, probabilityMeaning, marginMeaning) in [
+      (
+        'safe',
+        "Holder's party keeps the seat in at least 90% of simulations.",
+        'Projected lead of more than 10 points.',
+      ),
+      (
+        'likely',
+        "Holder's party keeps the seat in at least 70% of simulations.",
+        'Projected lead of 5 to 10 points.',
+      ),
+      (
+        'at_risk',
+        "Holder's party keeps the seat in less than 70% of simulations.",
+        'Projected lead of under 5 points.',
+      ),
+      (
+        'projected_loss',
+        'Another party is projected to win this seat.',
+        'Another party is projected to win this seat.',
+      ),
+    ]) {
+      testWidgets('$status meaning with probability $hasProbability', (
+        tester,
+      ) async {
+        final riding = pollsSeam('riding');
+        riding['status'] = status;
+        riding['win_prob'] = hasProbability ? 0.8 : null;
+        final client = _client(riding: riding);
+        addTearDown(client.close);
+        await _show(tester, RidingScreen(polls: client, id: '24038'));
+        expect(
+          find.text(hasProbability ? probabilityMeaning : marginMeaning),
+          findsOneWidget,
+        );
+      });
+    }
+  }
+
+  testWidgets('Riding methodology links open sections 6 and 3', (tester) async {
+    final client = _client();
+    addTearDown(client.close);
+    await _show(tester, RidingsScreen(polls: client));
+    await tester.tap(find.byTooltip('What the labels mean'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('6. Riding status for an MP').hitTestable(),
+      findsOneWidget,
+    );
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await _show(tester, RidingScreen(polls: client, id: '24038'));
+    await _scrollTo(tester, find.byTooltip('About the riding projection'));
+    expect(
+      find.text('Now = 2025 result moved by the regional change in the polls.'),
+      findsOneWidget,
+    );
+    await tester.tap(find.byTooltip('About the riding projection'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('3. From the polls to each riding').hitTestable(),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('5. Majority line and odds exist only with majority data', (
     tester,
