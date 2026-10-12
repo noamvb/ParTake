@@ -854,6 +854,12 @@ class _DigestScreenState extends State<_DigestScreen> {
           : ListView(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
               children: [
+                if (digest.opinion != null)
+                  ListTile(
+                    leading: const Icon(Icons.bar_chart),
+                    title: const Text('Polls'),
+                    subtitle: Text(digest.opinion!),
+                  ),
                 for (final section in digest.sections) ...[
                   Padding(
                     padding: const EdgeInsets.only(top: 16, bottom: 4),

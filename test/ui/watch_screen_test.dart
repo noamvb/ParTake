@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -114,6 +115,40 @@ Future<void> _expectSeamCards(WidgetTester tester) async {
 }
 
 void main() {
+  for (final withSections in [false, true]) {
+    testWidgets('digest polls comes first, sections: $withSections', (
+      tester,
+    ) async {
+      final body = jsonDecode(
+        File('test/watch/digest_opinion_seam.json').readAsStringSync(),
+      ) as Map<String, dynamic>;
+      if (withSections) body['sections'] = jsonDecode(digestSeam)['sections'];
+      final server = FakeWatchServer(feedFollows())
+        ..digestAnswer = (_) async => http.Response(jsonEncode(body), 200);
+      final watch = await _deck(server);
+      addTearDown(watch.dispose);
+      await _pumpDigests(tester, watch);
+      await tester.tap(find.text('Evening digest, Mon 19 Oct'));
+      await tester.pumpAndSettle();
+      expect(find.text('Polls'), findsOneWidget);
+      expect(find.text(body['opinion']['text'] as String), findsOneWidget);
+      expect(find.byIcon(Icons.bar_chart), findsOneWidget);
+      if (withSections) {
+        expect(
+          tester.getTopLeft(find.text('Polls')).dy,
+          lessThan(tester.getTopLeft(find.text('Bill C-37')).dy),
+        );
+      } else {
+        expect(find.byType(ListTile), findsOneWidget);
+        final list = tester.widget<ListView>(find.byType(ListView));
+        expect(
+          (list.childrenDelegate as SliverChildListDelegate).children,
+          hasLength(1),
+        );
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
   testWidgets('feed cards show the seam content on the narrow cover screen', (
     tester,
   ) async {

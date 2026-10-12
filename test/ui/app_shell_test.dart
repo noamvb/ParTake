@@ -7,6 +7,7 @@ import 'package:partake/polls/polls_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:partake/ui/app_shell.dart';
 import 'package:partake/watch/watch_follows.dart';
+import 'package:partake/watch/watch_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../fakes.dart';
@@ -16,6 +17,64 @@ import '../watch/fake_watch_server.dart';
 DateTime _clock() => DateTime.utc(2026, 9, 23, 18, 30);
 
 void main() {
+  testWidgets('Following receives injected polls before Polls is opened', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({'watch.imported': true});
+    final library = FakeLibrary();
+    final server = FakeWatchServer([
+      const WatchFollow(
+        id: 'mp',
+        kind: 'mp',
+        label: 'Daniel Gobeil',
+        mp: WatchMpRef(
+          personId: '123447',
+          name: 'Daniel Gobeil',
+          party: 'LPC',
+          riding: 'Chicoutimi—Le Fjord',
+        ),
+      ),
+    ]);
+    final watch = WatchFollows(
+      prefs: await SharedPreferences.getInstance(),
+      library: library,
+      defaultAddress: 'http://deck.test',
+      clientFactory: server.client,
+    );
+    addTearDown(watch.dispose);
+    await watch.sync();
+    final requests = <Uri>[];
+    final polls = PollsClient(
+      address: Uri.parse('http://injected.test'),
+      client: MockClient((r) async {
+        requests.add(r.url);
+        return http.Response.bytes(
+          utf8.encode(jsonEncode(pollsSeam('ridings'))),
+          200,
+        );
+      }),
+    );
+    addTearDown(polls.close);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AppShell(
+          source: FakeEventSource(),
+          library: library,
+          watch: watch,
+          polls: polls,
+          onOpen: (_) {},
+          now: _clock,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Following'));
+    await tester.pumpAndSettle();
+    expect(find.text('At risk'), findsOneWidget);
+    expect(requests, hasLength(1));
+    expect(requests.single.host, 'injected.test');
+    expect(tester.takeException(), isNull);
+  });
   testWidgets(
     'switches nav layout at 720px, keeps screen state, shows the About dialog',
     (tester) async {

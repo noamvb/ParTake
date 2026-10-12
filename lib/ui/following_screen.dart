@@ -1,17 +1,93 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../core/library.dart';
+import '../polls/polls_client.dart';
+import '../polls/polls_models.dart';
 import '../watch/watch_follows.dart';
 import '../watch/watch_models.dart';
 import 'follow_editor.dart';
+import 'riding_screen.dart';
 
 /// What the viewer follows: the chamber and/or committees, with an unfollow
 /// button on each.
-class FollowingScreen extends StatelessWidget {
-  const FollowingScreen({super.key, required this.library, this.watch});
+class FollowingScreen extends StatefulWidget {
+  const FollowingScreen({
+    super.key,
+    required this.library,
+    this.watch,
+    this.polls,
+  });
 
   final Library library;
   final WatchFollows? watch;
+  final PollsClient? polls;
+
+  @override
+  State<FollowingScreen> createState() => _FollowingScreenState();
+}
+
+class _FollowingScreenState extends State<FollowingScreen> {
+  Library get library => widget.library;
+  WatchFollows? get watch => widget.watch;
+  Set<String> _mpIds = {};
+  Map<String, RidingSummary> _ridings = {};
+  int _loadId = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    watch?.addListener(_watchChanged);
+    _syncRidings();
+  }
+
+  @override
+  void didUpdateWidget(FollowingScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.watch != watch) {
+      oldWidget.watch?.removeListener(_watchChanged);
+      watch?.addListener(_watchChanged);
+    }
+    _syncRidings(force: oldWidget.polls != widget.polls);
+  }
+
+  void _watchChanged() {
+    setState(() => _syncRidings());
+  }
+
+  void _syncRidings({bool force = false}) {
+    final ids = {
+      for (final follow in watch?.follows ?? <WatchFollow>[])
+        if (follow.kind == 'mp' && follow.mp != null) follow.mp!.personId,
+    };
+    if (!force && setEquals(ids, _mpIds)) return;
+    _mpIds = ids;
+    _ridings = {};
+    final loadId = ++_loadId;
+    final polls = widget.polls;
+    if (polls != null && ids.isNotEmpty) _loadRidings(polls, loadId);
+  }
+
+  Future<void> _loadRidings(PollsClient polls, int loadId) async {
+    try {
+      final ridings = await polls.ridings();
+      if (!mounted || loadId != _loadId) return;
+      setState(() {
+        _ridings = {
+          for (final riding in ridings)
+            if (riding.mp != null) riding.mp!.personId: riding,
+        };
+      });
+    } catch (_) {
+      // Seat projections are optional; Following stays usable without them.
+    }
+  }
+
+  @override
+  void dispose() {
+    watch?.removeListener(_watchChanged);
+    super.dispose();
+  }
 
   static String _label(String key) =>
       key == 'HOC' ? 'House of Commons (chamber)' : key;
@@ -159,17 +235,38 @@ class FollowingScreen extends StatelessWidget {
         ),
       for (final follow in watch.follows)
         if (['topic', 'bill', 'mp', 'votes'].contains(follow.kind))
-          ListTile(
-            title: Text(follow.label),
-            subtitle: Text(_subtitle(follow)),
-            trailing: IconButton(
-              tooltip: 'Remove ${follow.label}',
-              icon: const Icon(Icons.delete_outline),
-              onPressed: follow.id == null
-                  ? null
-                  : () => watch.remove(follow.id!),
-            ),
-          ),
+          _followTile(context, watch, follow),
     ],
   );
+
+  Widget _followTile(
+    BuildContext context,
+    WatchFollows watch,
+    WatchFollow follow,
+  ) {
+    final riding = follow.kind == 'mp' ? _ridings[follow.mp?.personId] : null;
+    final delete = IconButton(
+      tooltip: 'Remove ${follow.label}',
+      icon: const Icon(Icons.delete_outline),
+      onPressed: follow.id == null ? null : () => watch.remove(follow.id!),
+    );
+    return ListTile(
+      title: Text(follow.label),
+      subtitle: Text(_subtitle(follow)),
+      trailing: riding == null
+          ? delete
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [RidingStatusChip(riding.status), delete],
+            ),
+      onTap: riding == null
+          ? null
+          : () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) =>
+                    RidingScreen(polls: widget.polls!, id: riding.id),
+              ),
+            ),
+    );
+  }
 }

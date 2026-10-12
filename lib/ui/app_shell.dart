@@ -66,28 +66,50 @@ class _AppShellState extends State<AppShell> {
     if (i == 1) _watchOpened = true;
     if (i == 2) {
       _pollsOpened = true;
-      final address = widget.watch?.address ?? '';
-      if (widget.polls == null) {
-        if (_ownedPolls != null && _ownedPolls!.address.toString() != address) {
-          _ownedPolls!.close();
-          _ownedPolls = null;
-        }
-        if (_ownedPolls == null && address.isNotEmpty) {
-          _ownedPolls = PollsClient(address: Uri.parse(address));
-        }
-      }
+      _pollsClient();
     }
   });
 
   @override
+  void initState() {
+    super.initState();
+    widget.watch?.addListener(_watchChanged);
+  }
+
+  @override
+  void didUpdateWidget(AppShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.watch != widget.watch) {
+      oldWidget.watch?.removeListener(_watchChanged);
+      widget.watch?.addListener(_watchChanged);
+    }
+  }
+
+  void _watchChanged() => setState(() {});
+
+  PollsClient? _pollsClient() {
+    if (widget.polls != null) return widget.polls;
+    final address = widget.watch?.address ?? '';
+    if (_ownedPolls != null && _ownedPolls!.address.toString() != address) {
+      _ownedPolls!.close();
+      _ownedPolls = null;
+    }
+    if (_ownedPolls == null && address.isNotEmpty) {
+      _ownedPolls = PollsClient(address: Uri.parse(address));
+    }
+    return _ownedPolls;
+  }
+
+  @override
   void dispose() {
+    widget.watch?.removeListener(_watchChanged);
     _ownedPolls?.close();
     super.dispose();
   }
 
   Widget _pollsTab() {
     if (!_pollsOpened) return const SizedBox.shrink();
-    final client = widget.polls ?? _ownedPolls;
+    final client = _pollsClient();
     if (client == null ||
         (widget.polls == null && (widget.watch?.address ?? '').isEmpty)) {
       return const Center(
@@ -158,7 +180,11 @@ class _AppShellState extends State<AppShell> {
           onOpen: widget.onOpen,
           now: _now,
         ),
-        FollowingScreen(library: widget.library, watch: widget.watch),
+        FollowingScreen(
+          library: widget.library,
+          watch: widget.watch,
+          polls: _pollsClient(),
+        ),
       ],
     );
 

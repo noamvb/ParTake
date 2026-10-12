@@ -9,6 +9,19 @@ final _digest = File('test/watch/digest_seam.json').readAsStringSync();
 final _live = File('test/watch/live_seam.json').readAsStringSync();
 
 void main() {
+  test('opinion-only digest reads its text and accepts null opinion', () {
+    final json = jsonDecode(
+      File('test/watch/digest_opinion_seam.json').readAsStringSync(),
+    ) as Map<String, dynamic>;
+    final digest = WatchDigest.fromJson(json);
+    expect(digest.sections, isEmpty);
+    expect(
+      digest.opinion,
+      '2 new polls. Projection: LPC 201 (+2), CPC 98 (-1).',
+    );
+    json['opinion'] = null;
+    expect(WatchDigest.fromJson(json).opinion, isNull);
+  });
   test(
     '1 digests seam parses two rows with ids, kinds, items and replaces',
     () {
@@ -39,6 +52,7 @@ void main() {
       expect(digest.date, DateTime.utc(2026, 10, 19));
       expect(digest.kind, 'evening');
       expect(digest.replaces, isNull);
+      expect(digest.opinion, isNull);
 
       expect(digest.sections, hasLength(1));
       final section = digest.sections.single;
