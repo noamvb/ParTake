@@ -52,8 +52,10 @@ Leader names are the column headers as Wikipedia gives them.
  "note": {"week_of": "2026-10-05", "text": "Liberals up 1.1 points ..."}}
 ```
 
-Until P3: `low` = `high` = `median` = the swing count, `majority` and
-`minority` are `null`. `history` has one entry per day since 2025-04-28
+`seats` holds the simulation's median and 10th/90th percentiles (10,000
+runs of the latest day, seeded by the date). `majority` and `minority` are
+each party's share of runs with 172+ seats, or the most seats short of 172.
+They are `null` only if the simulation has not run. `history` has one entry per day since 2025-04-28
 (`?history=0` drops it). `comparison` is `null` when 338's number could not
 be read.
 
@@ -71,17 +73,22 @@ MP holds.
 
 `status` is from the holder's view: `safe` (holder's party win_prob >= 0.9),
 `likely` (>= 0.7), `at_risk` (< 0.7), `projected_loss` (another party is
-projected to win). Before P3, `win_prob` is `null` and `status` uses the
-margin instead: `safe` > 10 points, `likely` > 5, `at_risk` > 0.
+projected to win). `win_prob` is the projected winner's share of runs. If a
+day has no simulation, `win_prob` is `null` and `status` uses the margin
+instead: `safe` > 10 points, `likely` > 5, `at_risk` > 0.
 
 ## GET /api/polls/ridings/{id} (P2)
 
 One riding: the list fields plus `results_2025` (`{"LPC": 38.2, ...}`),
-`projection` (shares), and `history` (date, projected shares) since
+`projection` (shares), `probs` (each party's win share of runs, or `null`),
+and `history` (date, projected shares) since
 2025-04-28.
 
 ## Digest line (P3)
 
-The evening digest gains an `opinion` item when a new poll arrived that day:
-`{"kind": "opinion", "text": "2 new polls. Projection: LPC 201 (+2), CPC 98 (-1)."}`
-(see watch api.md "Digests").
+An evening digest gets an `opinion` key when a national poll was first
+seen that day (polls loaded by the first backfill never count):
+`"opinion": {"kind": "opinion", "text": "2 new polls. Projection: LPC 201 (+2), CPC 98 (-1)."}`.
+It lists parties projected to 10+ seats, with the change from the day
+before. A day with no followed activity but a new poll still gets an
+evening digest with empty `sections` (see watch api.md "Digests").
