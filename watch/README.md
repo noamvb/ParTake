@@ -206,10 +206,12 @@ the holder is not the projected winner.
 the Monday) that has projections for its Sunday and the Sunday before. The text is
 fixed rules, no LLM: movers of at least 0.5 points in the CAN average, the top two
 parties by seats with their change, the top party's majority odds when both weeks
-have a simulation, and the new CAN polls first seen that week. The backfill day (the
-earliest `first_seen`) never counts. `opinion_polls.first_seen` is set on insert only.
+have a simulation, and the CAN polls whose field work ended that week (the backfill
+saw every earlier poll on one day, so first-seen dates cannot count them). The digest
+line counts CAN polls first seen that day; the backfill day (the earliest
+`first_seen`) never counts. `opinion_polls.first_seen` is set on insert only.
 
-`comparison.py` reads 338Canada's seat projection from its front page each run
+`comparison.py` reads 338Canada's seat projection from its federal page (`federal.htm`) each run
 (`opinion:338_seats`, raw under `raw/opinion_338seats/`). A failure is written to
 stderr and leaves the stored value; it does not fail the poll run.
 
