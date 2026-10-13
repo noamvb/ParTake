@@ -53,4 +53,10 @@ Web, locally:
   [Releases page](https://github.com/noamvb/ParTake/releases). With
   [Obtainium](https://github.com/ImranR98/Obtainium), add this repository's URL
   to get updates automatically.
+- **Windows:** download and run
+  [ParTake-Setup.exe](https://github.com/noamvb/ParTake/releases/latest/download/ParTake-Setup.exe)
+  (always the newest version). Windows may warn about an unknown publisher:
+  choose **More info**, then **Run anyway**. The Windows app is the viewer
+  only (no Watch, Polls or Following), and it says when a newer version is
+  out.
 - **Web:** see `server/README.md` for running the server on a home machine.
