@@ -553,6 +553,13 @@
       "description": "Fast-forward push of local polls-mixed-swing to origin/polls-mixed-swing",
       "remote": "origin",
       "branch": "polls-mixed-swing"
+    },
+    {
+      "id": "push-windows-app",
+      "adapter": "git_push",
+      "description": "Fast-forward push of local windows-app to origin/windows-app",
+      "remote": "origin",
+      "branch": "windows-app"
     }
   ]
 }
