@@ -92,6 +92,18 @@ CREATE TABLE IF NOT EXISTS projections (date TEXT PRIMARY KEY, body TEXT NOT NUL
 CREATE TABLE IF NOT EXISTS riding_projections (
  riding TEXT, date TEXT, shares TEXT NOT NULL, winner TEXT NOT NULL, margin REAL NOT NULL,
  PRIMARY KEY (riding, date));
+CREATE TABLE IF NOT EXISTS alerts (
+ id TEXT PRIMARY KEY, at TEXT NOT NULL, kind TEXT NOT NULL, follow TEXT NOT NULL,
+ dedupe TEXT UNIQUE NOT NULL, title TEXT NOT NULL, body TEXT NOT NULL,
+ video TEXT, division TEXT);
+CREATE INDEX IF NOT EXISTS alerts_at ON alerts (at);
+CREATE TABLE IF NOT EXISTS push_devices (
+ device TEXT PRIMARY KEY, channel TEXT NOT NULL, token TEXT NOT NULL,
+ registered_at TEXT NOT NULL, last_error TEXT);
+CREATE TABLE IF NOT EXISTS push_outbox (
+ alert TEXT NOT NULL, device TEXT NOT NULL, state TEXT NOT NULL,
+ attempts INTEGER NOT NULL DEFAULT 0, sent_at TEXT, error TEXT,
+ PRIMARY KEY (alert, device));
 CREATE TABLE IF NOT EXISTS opinion_notes (
  week_of TEXT PRIMARY KEY, text TEXT NOT NULL, created_at TEXT NOT NULL);
 """
@@ -132,6 +144,29 @@ def connect(data_dir):
 def set_meta(db, key, value):
     db.execute("INSERT INTO meta VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
                (key, value))
+
+
+def add_alert(db, alert, dedupe):
+    """Store one alert unless its dedupe key exists; return the stored id or None.
+
+    `alert` has the api.md shape without `id`: at, kind, follow, title, body,
+    video (dict or None), division (dict or None)."""
+    alert_id = "a_" + secrets.token_hex(4)
+    cursor = db.execute(
+        "INSERT OR IGNORE INTO alerts(id,at,kind,follow,dedupe,title,body,video,division) "
+        "VALUES (?,?,?,?,?,?,?,?,?)",
+        (alert_id, alert["at"], alert["kind"], alert["follow"], dedupe, alert["title"], alert["body"],
+         None if alert.get("video") is None else json.dumps(alert["video"]),
+         None if alert.get("division") is None else json.dumps(alert["division"])))
+    return alert_id if cursor.rowcount else None
+
+
+def alert_dict(row):
+    """An alerts row as the api.md object."""
+    return {"id": row["id"], "at": row["at"], "kind": row["kind"], "follow": row["follow"],
+            "title": row["title"], "body": row["body"],
+            "video": None if row["video"] is None else json.loads(row["video"]),
+            "division": None if row["division"] is None else json.loads(row["division"])}
 
 
 def list_follows(db):

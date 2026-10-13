@@ -111,6 +111,10 @@ class FakeWatchServer {
   Future<http.Response> Function(Uri url)? liveAnswer;
   final liveRequests = <Uri>[];
 
+  /// Answers `GET /watch/api/alerts`; defaults to no alerts.
+  Future<http.Response> Function(Uri url)? alertsAnswer;
+  final alertsRequests = <Uri>[];
+
   /// Answers `GET /watch/api/digests`; defaults to the seam list.
   Future<http.Response> Function(Uri url)? digestsAnswer;
 
@@ -133,6 +137,13 @@ class FakeWatchServer {
       if (request.url.path == '/watch/api/live') {
         liveRequests.add(request.url);
         final answer = liveAnswer;
+        return answer == null
+            ? http.Response.bytes(utf8.encode('[]'), 200)
+            : answer(request.url);
+      }
+      if (request.url.path == '/watch/api/alerts') {
+        alertsRequests.add(request.url);
+        final answer = alertsAnswer;
         return answer == null
             ? http.Response.bytes(utf8.encode('[]'), 200)
             : answer(request.url);

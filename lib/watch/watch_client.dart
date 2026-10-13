@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'watch_alerts.dart';
 import 'watch_digests.dart';
 import 'watch_feed.dart';
 import 'watch_models.dart';
@@ -125,6 +126,15 @@ class WatchClient {
       (await _request('GET', 'live') as List)
           .map((l) => WatchLive.fromJson(l))
           .toList();
+  Future<List<WatchAlert>> alerts({DateTime? since}) async => (await _request(
+    'GET',
+    'alerts',
+    query: since == null ? null : {'since': isoUtcSeconds(since)},
+  ) as List).map((a) => WatchAlert.fromJson(a)).toList();
 
   void close() => _client.close();
 }
+
+/// Whole seconds, UTC, `Z` suffix: the form the Deck's `since` expects.
+String isoUtcSeconds(DateTime time) =>
+    '${time.toUtc().toIso8601String().split('.').first}Z';

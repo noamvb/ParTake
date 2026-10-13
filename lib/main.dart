@@ -12,6 +12,7 @@ import 'platform/background_audio.dart';
 import 'services/parlvu_event_source.dart';
 import 'services/prefs_library.dart';
 import 'ui/open_request.dart';
+import 'watch/watch_alerts.dart';
 import 'watch/watch_follows.dart';
 
 Future<void> main() async {
@@ -23,7 +24,7 @@ Future<void> main() async {
   final watch = WatchFollows(
     prefs: prefs,
     library: library,
-    defaultAddress: kIsWeb ? Uri.base.origin : 'http://100.98.120.41:8797',
+    defaultAddress: kIsWeb ? Uri.base.origin : deckDefaultAddress,
   );
   final source = ParlVuEventSource(
     // In the browser ParlVU is only reachable through the home server's
