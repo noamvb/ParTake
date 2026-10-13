@@ -29,3 +29,19 @@ jobs:
           flutter test
       - name: home server
         run: python3 -m unittest server/test_partake_server.py -v
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+          cache: true
+      - name: Build, start, package and install
+        run: pwsh windows/installer/build.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ParTake-Setup
+          path: dist/ParTake-Setup.exe

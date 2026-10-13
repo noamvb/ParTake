@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../core/library.dart';
+import '../platform/app_features.dart';
+import '../update/update_check.dart';
 import '../polls/polls_client.dart';
 import '../watch/watch_follows.dart';
 import 'browse_screen.dart';
@@ -10,6 +13,8 @@ import 'open_request.dart';
 import 'polls_screen.dart';
 import 'watch_screen.dart';
 
+enum _Tab { home, watch, polls, browse, following }
+
 /// The navigation frame: Home, Watch, Polls, Browse and Following, switched by a
 /// bottom bar on narrow screens or a side rail on wide ones.
 class AppShell extends StatefulWidget {
@@ -18,6 +23,9 @@ class AppShell extends StatefulWidget {
     required this.source,
     required this.library,
     this.watch,
+    this.features = const AppFeatures(),
+    this.checkForUpdate,
+    this.openUrl,
     this.polls,
     required this.onOpen,
     this.now,
@@ -28,6 +36,9 @@ class AppShell extends StatefulWidget {
   final EventSource source;
   final Library library;
   final WatchFollows? watch;
+  final AppFeatures features;
+  final Future<UpdateInfo?> Function()? checkForUpdate;
+  final void Function(Uri url)? openUrl;
   final PollsClient? polls;
   final OpenEvent onOpen;
   final Widget? overlay;
@@ -44,6 +55,14 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _index = 0;
+  UpdateInfo? _update;
+
+  List<_Tab> get _tabs => [
+    _Tab.home,
+    if (widget.features.deck) ...[_Tab.watch, _Tab.polls],
+    _Tab.browse,
+    if (widget.features.following) _Tab.following,
+  ];
 
   /// The Watch tab is built on first visit so its feed is not fetched earlier.
   bool _watchOpened = false;
@@ -63,8 +82,8 @@ class _AppShellState extends State<AppShell> {
 
   void _select(int i) => setState(() {
     _index = i;
-    if (i == 1) _watchOpened = true;
-    if (i == 2) {
+    if (_tabs[i] == _Tab.watch) _watchOpened = true;
+    if (_tabs[i] == _Tab.polls) {
       _pollsOpened = true;
       _pollsClient();
     }
@@ -74,11 +93,22 @@ class _AppShellState extends State<AppShell> {
   void initState() {
     super.initState();
     widget.watch?.addListener(_watchChanged);
+    widget.checkForUpdate?.call().then((info) {
+      if (mounted && info != null) setState(() => _update = info);
+    });
   }
 
   @override
   void didUpdateWidget(AppShell oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final oldTab = [
+      _Tab.home,
+      if (oldWidget.features.deck) ...[_Tab.watch, _Tab.polls],
+      _Tab.browse,
+      if (oldWidget.features.following) _Tab.following,
+    ][_index];
+    final newIndex = _tabs.indexOf(oldTab);
+    _index = newIndex < 0 ? 0 : newIndex;
     if (oldWidget.watch != widget.watch) {
       oldWidget.watch?.removeListener(_watchChanged);
       widget.watch?.addListener(_watchChanged);
@@ -164,27 +194,37 @@ class _AppShellState extends State<AppShell> {
     final content = IndexedStack(
       index: _index,
       children: [
-        HomeScreen(
-          source: widget.source,
-          library: widget.library,
-          onOpen: widget.onOpen,
-          now: _now,
-        ),
-        _watchOpened
-            ? WatchScreen(watch: widget.watch, onOpen: widget.onOpen, now: _now)
-            : const SizedBox.shrink(),
-        _pollsTab(),
-        BrowseScreen(
-          source: widget.source,
-          library: widget.library,
-          onOpen: widget.onOpen,
-          now: _now,
-        ),
-        FollowingScreen(
-          library: widget.library,
-          watch: widget.watch,
-          polls: _pollsClient(),
-        ),
+        for (final tab in _tabs)
+          switch (tab) {
+            _Tab.home => HomeScreen(
+              source: widget.source,
+              library: widget.library,
+              onOpen: widget.onOpen,
+              now: _now,
+              showFollow: widget.features.following,
+            ),
+            _Tab.watch =>
+              _watchOpened
+                  ? WatchScreen(
+                      watch: widget.watch,
+                      onOpen: widget.onOpen,
+                      now: _now,
+                    )
+                  : const SizedBox.shrink(),
+            _Tab.polls => _pollsTab(),
+            _Tab.browse => BrowseScreen(
+              source: widget.source,
+              library: widget.library,
+              onOpen: widget.onOpen,
+              now: _now,
+              showFollow: widget.features.following,
+            ),
+            _Tab.following => FollowingScreen(
+              library: widget.library,
+              watch: widget.watch,
+              polls: widget.features.deck ? _pollsClient() : null,
+            ),
+          },
       ],
     );
 
@@ -196,10 +236,10 @@ class _AppShellState extends State<AppShell> {
                 labelType: NavigationRailLabelType.all,
                 onDestinationSelected: _select,
                 destinations: [
-                  for (var i = 0; i < _labels.length; i++)
+                  for (final tab in _tabs)
                     NavigationRailDestination(
-                      icon: Icon(_icons[i]),
-                      label: Text(_labels[i]),
+                      icon: Icon(_icons[tab.index]),
+                      label: Text(_labels[tab.index]),
                     ),
                 ],
               ),
@@ -213,7 +253,7 @@ class _AppShellState extends State<AppShell> {
       appBar: AppBar(
         title: const Text('ParTake'),
         actions: [
-          if (_index == 1)
+          if (_tabs[_index] == _Tab.watch)
             IconButton(
               tooltip: 'Digests',
               icon: const Icon(Icons.summarize_outlined),
@@ -229,7 +269,35 @@ class _AppShellState extends State<AppShell> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          body,
+          Column(
+            children: [
+              if (_update case final info?)
+                MaterialBanner(
+                  content: Text('ParTake ${info.version} is available.'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        final open = widget.openUrl;
+                        if (open != null) {
+                          open(info.url);
+                        } else {
+                          launchUrl(
+                            info.url,
+                            mode: LaunchMode.externalApplication,
+                          );
+                        }
+                      },
+                      child: const Text('Download'),
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() => _update = null),
+                      child: const Text('Later'),
+                    ),
+                  ],
+                ),
+              Expanded(child: body),
+            ],
+          ),
           if (widget.overlay != null && !widget.fullscreenOverlay)
             Positioned(right: 12, bottom: 12, child: widget.overlay!),
         ],
@@ -246,10 +314,10 @@ class _AppShellState extends State<AppShell> {
                 selectedIndex: _index,
                 onDestinationSelected: _select,
                 destinations: [
-                  for (var i = 0; i < _labels.length; i++)
+                  for (final tab in _tabs)
                     NavigationDestination(
-                      icon: Icon(_icons[i]),
-                      label: _labels[i],
+                      icon: Icon(_icons[tab.index]),
+                      label: _labels[tab.index],
                     ),
                 ],
               ),

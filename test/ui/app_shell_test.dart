@@ -10,6 +10,10 @@ import 'package:partake/watch/watch_follows.dart';
 import 'package:partake/watch/watch_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:parlvu/parlvu.dart';
+import 'package:partake/platform/app_features.dart';
+import 'package:partake/update/update_check.dart';
+
 import '../fakes.dart';
 import '../polls/polls_seams.dart';
 import '../watch/fake_watch_server.dart';
@@ -17,6 +21,162 @@ import '../watch/fake_watch_server.dart';
 DateTime _clock() => DateTime.utc(2026, 9, 23, 18, 30);
 
 void main() {
+  testWidgets('viewer 9: narrow and wide navigation has Home and Browse', (
+    tester,
+  ) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(400, 800);
+    Widget shell(AppFeatures features) => MaterialApp(
+      home: AppShell(
+        features: features,
+        source: FakeEventSource(),
+        library: FakeLibrary(),
+        onOpen: (_) {},
+        now: _clock,
+      ),
+    );
+    await tester.pumpWidget(shell(const AppFeatures()));
+    await tester.pumpAndSettle();
+    for (final label in ['Watch', 'Polls', 'Following']) {
+      expect(find.text(label), findsOneWidget);
+    }
+    await tester.pumpWidget(shell(AppFeatures.viewerOnly));
+    await tester.pumpAndSettle();
+    final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
+    expect(bar.destinations.cast<NavigationDestination>().map((d) => d.label), [
+      'Home',
+      'Browse',
+    ]);
+    for (final label in ['Watch', 'Polls', 'Following']) {
+      expect(find.text(label), findsNothing);
+    }
+    await tester.tap(find.text('Browse'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Digests'), findsNothing);
+    tester.view.physicalSize = const Size(1200, 800);
+    await tester.pumpAndSettle();
+    final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
+    expect(rail.destinations.map((d) => (d.label as Text).data), [
+      'Home',
+      'Browse',
+    ]);
+  });
+
+  testWidgets('viewer 10: Home hides follow stars with a positive control', (
+    tester,
+  ) async {
+    final event = ListingEvent(
+      id: 1,
+      foreignKey: null,
+      title: 'Viewer event',
+      description: '',
+      location: 'Room 415',
+      scheduledStart: _clock(),
+      scheduledEnd: null,
+      actualStart: null,
+      actualEnd: null,
+      status: EventStatus.ended,
+      statusCode: EventStatus.ended.code!,
+      statusText: '',
+    );
+    final source = FakeEventSource(
+      days: {
+        parliamentDate(_clock()): [event],
+      },
+    );
+    Widget shell(AppFeatures features) => MaterialApp(
+      home: AppShell(
+        features: features,
+        source: source,
+        library: FakeLibrary(),
+        onOpen: (_) {},
+        now: _clock,
+      ),
+    );
+    await tester.pumpWidget(shell(const AppFeatures()));
+    await tester.pumpAndSettle();
+    expect(find.text('Viewer event'), findsOneWidget);
+    expect(find.byTooltip('Follow'), findsWidgets);
+    await tester.pumpWidget(shell(AppFeatures.viewerOnly));
+    await tester.pumpAndSettle();
+    expect(find.text('Viewer event'), findsOneWidget);
+    expect(find.byTooltip('Follow'), findsNothing);
+  });
+
+  testWidgets('viewer 11: update banner downloads and dismisses', (
+    tester,
+  ) async {
+    final urls = <Uri>[];
+    final url = Uri.parse('https://example.com/r');
+    var checks = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AppShell(
+          source: FakeEventSource(),
+          library: FakeLibrary(),
+          onOpen: (_) {},
+          now: _clock,
+          checkForUpdate: () async {
+            checks++;
+            return UpdateInfo(version: '0.8.0', url: url);
+          },
+          openUrl: urls.add,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('ParTake 0.8.0 is available.'), findsOneWidget);
+    await tester.tap(find.text('Download'));
+    await tester.pumpAndSettle();
+    expect(urls, [url]);
+    await tester.tap(find.text('Later'));
+    await tester.pumpAndSettle();
+    expect(find.text('ParTake 0.8.0 is available.'), findsNothing);
+    expect(checks, 1);
+  });
+
+  testWidgets('viewer 12: null and omitted checks show no banner', (
+    tester,
+  ) async {
+    Widget shell(Future<UpdateInfo?> Function()? check) => MaterialApp(
+      home: AppShell(
+        key: UniqueKey(),
+        source: FakeEventSource(),
+        library: FakeLibrary(),
+        onOpen: (_) {},
+        now: _clock,
+        checkForUpdate: check,
+      ),
+    );
+    await tester.pumpWidget(
+      shell(
+        () async => UpdateInfo(
+          version: '0.8.0',
+          url: Uri.parse('https://example.com/r'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('is available.'), findsOneWidget);
+    await tester.pumpWidget(shell(() async => null));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('is available.'), findsNothing);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: AppShell(
+          source: FakeEventSource(),
+          library: FakeLibrary(),
+          onOpen: (_) {},
+          now: _clock,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('is available.'), findsNothing);
+  });
+
   testWidgets('Following receives injected polls before Polls is opened', (
     tester,
   ) async {

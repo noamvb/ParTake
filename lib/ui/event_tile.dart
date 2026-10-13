@@ -11,14 +11,14 @@ class EventTile extends StatelessWidget {
     required this.event,
     required this.followed,
     required this.onTap,
-    required this.onToggleFollow,
+    this.onToggleFollow,
     this.progress,
   });
 
   final ListingEvent event;
   final bool followed;
   final VoidCallback onTap;
-  final VoidCallback onToggleFollow;
+  final VoidCallback? onToggleFollow;
 
   /// The viewer's progress in this event, if any.
   final WatchRecord? progress;
@@ -97,11 +97,13 @@ class EventTile extends StatelessWidget {
             ),
         ],
       ),
-      trailing: IconButton(
-        tooltip: followed ? 'Unfollow' : 'Follow',
-        icon: Icon(followed ? Icons.star : Icons.star_border),
-        onPressed: onToggleFollow,
-      ),
+      trailing: onToggleFollow == null
+          ? null
+          : IconButton(
+              tooltip: followed ? 'Unfollow' : 'Follow',
+              icon: Icon(followed ? Icons.star : Icons.star_border),
+              onPressed: onToggleFollow,
+            ),
     );
   }
 }

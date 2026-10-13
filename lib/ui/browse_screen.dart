@@ -23,8 +23,10 @@ class BrowseScreen extends StatefulWidget {
     required this.library,
     required this.onOpen,
     required this.now,
+    this.showFollow = true,
   });
 
+  final bool showFollow;
   final EventSource source;
   final Library library;
   final OpenEvent onOpen;
@@ -152,10 +154,12 @@ class _BrowseScreenState extends State<BrowseScreen> {
                             resumeAt: widget.library.record(e.id)?.position,
                           ),
                         ),
-                        onToggleFollow: () => widget.library.setFollowed(
-                          followKeyOf(e),
-                          !followed.contains(followKeyOf(e)),
-                        ),
+                        onToggleFollow: widget.showFollow
+                            ? () => widget.library.setFollowed(
+                                followKeyOf(e),
+                                !followed.contains(followKeyOf(e)),
+                              )
+                            : null,
                         progress: widget.library.record(e.id),
                       ),
                   ],

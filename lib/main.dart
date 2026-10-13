@@ -9,6 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'alerts/alert_runtime.dart';
 import 'app.dart';
 import 'platform/background_audio.dart';
+import 'platform/app_features.dart';
+import 'update/update_check.dart';
 import 'services/parlvu_event_source.dart';
 import 'services/prefs_library.dart';
 import 'ui/open_request.dart';
@@ -21,11 +23,15 @@ Future<void> main() async {
 
   final prefs = await SharedPreferences.getInstance();
   final library = PrefsLibrary(prefs);
-  final watch = WatchFollows(
-    prefs: prefs,
-    library: library,
-    defaultAddress: kIsWeb ? Uri.base.origin : deckDefaultAddress,
-  );
+  final features = AppFeatures.forPlatform();
+  // Windows is viewer only: no Deck connection at all.
+  final watch = features.deck
+      ? WatchFollows(
+          prefs: prefs,
+          library: library,
+          defaultAddress: kIsWeb ? Uri.base.origin : deckDefaultAddress,
+        )
+      : null;
   final source = ParlVuEventSource(
     // In the browser ParlVU is only reachable through the home server's
     // same-origin proxy (ParlVU sends no CORS headers); see server/.
@@ -49,6 +55,10 @@ Future<void> main() async {
       source: source,
       library: library,
       watch: watch,
+      features: features,
+      checkForUpdate: features.updateCheck
+          ? UpdateChecker(currentVersion: partakeVersion).check
+          : null,
       openRequests: opens.stream,
       audioHandler: audioHandler,
     ),
@@ -56,7 +66,7 @@ Future<void> main() async {
 
   // After the first frame so the navigator exists; no-ops off Android.
   WidgetsBinding.instance.addPostFrameCallback((_) async {
-    unawaited(watch.sync());
+    if (watch != null) unawaited(watch.sync());
     final launched = await AlertRuntime.launchEventId();
     if (launched != null) opens.add(fromAlert(launched));
     await AlertRuntime.requestPermission();
