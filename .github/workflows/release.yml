@@ -75,3 +75,21 @@ jobs:
         with:
           files: dist/*
           generate_release_notes: true
+
+  windows:
+    # After the Android job, so it adds to the release that job created.
+    needs: release
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+          cache: true
+      - name: Build, start, package and install
+        shell: pwsh
+        run: windows/installer/build.ps1 -Version ('${{ github.ref_name }}'.TrimStart('v'))
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/ParTake-Setup.exe
