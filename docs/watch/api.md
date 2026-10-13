@@ -298,8 +298,8 @@ How each alert is made (Phase 3):
   `watch/speaker.py` `CallIndex`: riding, portfolio, committee surname),
   once the next speech has begun (`>>` after the call). Only calls with
   confidence >= 0.75 alert, at most once per speech. ParlVU's own speaker
-  list (`GetNewData`) is used instead when it ever carries names; it was
-  empty on every stream checked (research Q1-Q2).
+  list (`GetNewData`) is not used: it was empty on every stream checked
+  (research Q1-Q2); re-check on the first live sitting (19 Oct).
 - Only live captions (`source='live'`) newer than 10 minutes alert, so a
   restart or archive import never sends old news.
 
