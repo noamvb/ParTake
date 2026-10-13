@@ -10,14 +10,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 
 import '../core/library.dart';
+import '../watch/watch_alerts.dart';
+import '../watch/watch_client.dart';
 import 'alert_logic.dart';
+import 'quiet_hours.dart';
 
-const _channel = AndroidNotificationChannel(
-  'partake_live',
-  'Live proceedings',
-  description: 'Alerts when followed proceedings go live.',
-  importance: Importance.high,
-);
 final FlutterLocalNotificationsPlugin _notifications =
     FlutterLocalNotificationsPlugin();
 final StreamController<int> _taps = StreamController<int>.broadcast();
@@ -108,7 +105,38 @@ Future<void> _initializeNotifications() async {
       .resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin
       >()
-      ?.createNotificationChannel(_channel);
+      ?.createNotificationChannel(loudChannel);
+  await _notifications
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
+      ?.createNotificationChannel(quietChannel);
+}
+
+Future<void> _syncDeck() async {
+  final prefs = await _freshPrefs();
+  final token = prefs.getString('watch.token') ?? '';
+  await syncDeckAlerts(
+    prefs: prefs,
+    clientFor: (address) => WatchClient(address: address, token: token),
+    show: (alert, details) => _notifications.show(
+      id: _alertNotificationId(alert.id),
+      title: alert.title,
+      body: alert.body,
+      notificationDetails: details,
+      payload: alert.video?.event,
+    ),
+    now: DateTime.now,
+  );
+}
+
+/// Stable id per Deck alert, kept clear of ParlVU event ids (below 1 << 30).
+int _alertNotificationId(String alertId) {
+  var hash = 0x811c9dc5;
+  for (final unit in alertId.codeUnits) {
+    hash = ((hash ^ unit) * 0x01000193) & 0xffffffff;
+  }
+  return (hash & 0x3fffffff) + (1 << 30);
 }
 
 Future<void> _syncNow() async {
@@ -119,6 +147,11 @@ Future<void> _syncNow() async {
     await _syncPm(now);
   } catch (error) {
     debugPrint('ParTake alerts: pm itinerary failed: $error');
+  }
+  try {
+    await _syncDeck();
+  } catch (error) {
+    debugPrint('ParTake alerts: deck alerts failed: $error');
   }
   final tomorrow = today.add(const Duration(days: 1));
   final client = ParlVuClient();
@@ -232,16 +265,7 @@ Future<void> _notify(ListingEvent event) async {
     id: event.id,
     title: '${event.title} is live',
     body: 'Tap to watch on ParTake.',
-    notificationDetails: const NotificationDetails(
-      android: AndroidNotificationDetails(
-        'partake_live',
-        'Live proceedings',
-        channelDescription: 'Alerts when followed proceedings go live.',
-        importance: Importance.high,
-        priority: Priority.high,
-        icon: '@drawable/ic_stat_partake',
-      ),
-    ),
+    notificationDetails: notificationDetails(DateTime.now()),
     payload: event.id.toString(),
   );
   notified.add(event.id);
@@ -285,17 +309,6 @@ Future<SharedPreferences> _freshPrefs() async {
   return prefs;
 }
 
-const _pmDetails = NotificationDetails(
-  android: AndroidNotificationDetails(
-    'partake_live',
-    'Live proceedings',
-    channelDescription: 'Alerts when followed proceedings go live.',
-    importance: Importance.high,
-    priority: Priority.high,
-    icon: '@drawable/ic_stat_partake',
-  ),
-);
-
 String _pmDayKey(DateTime day) => day.toIso8601String().substring(0, 10);
 
 Future<void> _syncPm(DateTime now) async {
@@ -327,7 +340,7 @@ Future<void> _syncPm(DateTime now) async {
         id: id,
         title: 'Carney will attend Question Period',
         body: pmHeadsUpBody(qp, now),
-        notificationDetails: _pmDetails,
+        notificationDetails: notificationDetails(DateTime.now()),
       );
       notified.add(_pmDayKey(qp.day));
       final days = notified.toList()..sort();
@@ -396,7 +409,7 @@ Future<void> _checkPmAlarm(
         id: pmLiveId(parliamentDate(startsAt)),
         title: 'Carney is in Question Period',
         body: 'Tap to watch the House live.',
-        notificationDetails: _pmDetails,
+        notificationDetails: notificationDetails(DateTime.now()),
         payload: event.id.toString(),
       );
       notified.add(dayKey);

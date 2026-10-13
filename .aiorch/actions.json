@@ -555,6 +555,13 @@
       "branch": "polls-mixed-swing"
     },
     {
+      "id": "push-watch-phase3",
+      "adapter": "git_push",
+      "description": "Fast-forward push of local watch/phase3 to origin/watch/phase3",
+      "remote": "origin",
+      "branch": "watch/phase3"
+    },
+    {
       "id": "push-windows-app",
       "adapter": "git_push",
       "description": "Fast-forward push of local windows-app to origin/windows-app",

@@ -225,3 +225,18 @@ day before. An evening digest with only that item is built with `sections: []`.
 
 The 2021 back-test also simulates (2,000 runs, seed 2021): `sim_range` and
 `in_range` for LPC, CPC, NDP and BQ.
+
+## Push (Phase 3)
+
+`watch/push.py` sends each alert to the registered devices through Firebase Cloud
+Messaging (HTTP v1, data-only, high priority, 600 s TTL). The Google service-account
+key is `<data>/fcm-service-account.json` (mode 0600); without it push is off: alerts
+are still stored and served by `GET /api/alerts`, and deliveries stay pending until
+they expire after 10 minutes. `POST /api/push/register` and
+`DELETE /api/push/register?device=` manage devices (bearer token).
+
+`python3 -m watch.push deliver --data DIR` runs one delivery round: it queues every
+alert newer than a device's registration, sends the pending ones, expires those older
+than 10 minutes, and writes `source:push` to `/api/health`. `--dry-run` prints each
+device and data payload that would be sent and rolls back, so nothing is stored or
+sent. Quiet hours (22:00 to 08:00 Ottawa time) set `quiet: "1"`.

@@ -1,0 +1,60 @@
+{
+  "events": 23,
+  "called": 17,
+  "matched": 16,
+  "divisions_in_window": 31,
+  "recall": 0.8064516129032258,
+  "precision": 0.9411764705882353,
+  "misses": [
+    {
+      "event": "45552",
+      "division": "45-1/161",
+      "bill": "45-1/C-9",
+      "at": "2026-06-16T02:26:54Z",
+      "context": ""
+    },
+    {
+      "event": "45551",
+      "division": "45-1/155",
+      "bill": "45-1/C-14",
+      "at": "2026-06-12T17:30:13Z",
+      "context": "[Some Applause] seconded by Mr. McGuinty moved that in relation to Bill C-14 an act to amend the Criminal Code and the Youth Criminal Justice Act and the national defence act bail and sentencing not more than five hours shall be allocated-- shall I dispense-- dispense? The House will now proceed to the vote for members participating in person. All of those in favour of the motion will please rise. [Calling of Recorded Vote]"
+    },
+    {
+      "event": "45550",
+      "division": "45-1/154",
+      "bill": "45-1/C-25",
+      "at": "2026-06-11T20:45:34Z",
+      "context": ""
+    },
+    {
+      "event": "45548",
+      "division": "45-1/142",
+      "bill": "45-1/C-20",
+      "at": "2026-06-09T16:15:20Z",
+      "context": ""
+    },
+    {
+      "event": "45547",
+      "division": "45-1/140",
+      "bill": "45-1/C-33",
+      "at": "2026-06-09T03:20:16Z",
+      "context": "le for what goes on at Canada health FOINway or is she not? Is she responsible for how they spend tax payer's money or is she not? Does she have the power to fire the CEO or does she not? I'll tell you who has the power to fire all of us. The tax payer. So why won't she say who said what in this chamber so the tax payers can make a decision about who needs to be fired? Why won't she come to committee to answer these questions instead of sending attaches to frankly not tans questions when we ask. Hopeful for tonight. >> The Speaker:  Honourable parliamentary Secretary to the minister of health. >> Thank you Mr. Speaker. I thank the member for his question. As a minister has stated, any feature fundings must align with info way's mandate and deliver value for Canadians. That means supporting the modernization of Canada's health care system improving health information how it is shared across the country. And our government will remain focused on making sure Canadians have access to a modern connected health care system that works for them. >> The Speaker:  The honourable member for kitchener south--. >> Speaker I asked several very specific questions. I asked whether Canada health FOIN way's independent or not. I asked whether the minister of health has oversight on their funding or not. I asked whether the minister of health has the power to fire the CEO of Canada health info way or not. I have asked whether the minister would come to help committee to explain these things in more detail. And that member didn't answer one of those questions. It's 11 P.M. It cost money to keep this chamber open. Tens of thousands of people voted for me so that I could ask these questions. Tens of thousands of people voted for her so she could answer these questions. Why won't she just answer them and respect this house. Respect the speaker. Respect that? >> The Speaker:  Honourable parliamentary Secretary to the minister of health. >> Thank you Mr. Speaker. And I do want to remind folks again that the member opposite continued to obstruct on our health committee on this very important study on HIV in Manitoba in that colleague's-- in his colleague's own province. And he openly stated that he didn't believe that we can take any action as Parliamentarians to help Manitobans. And Mr. Speaker that's frankly just disgraceful. It's shameful and on this side of the house, we'll also work to improve the health of Canadians. We'll also take a public health crisis urgently. Thank you."
+    },
+    {
+      "event": "45525",
+      "division": "45-1/134",
+      "bill": "45-1/C-16",
+      "at": "2026-06-04T16:33:00Z",
+      "context": ""
+    }
+  ],
+  "false_alerts": [
+    {
+      "event": "45549",
+      "at": "2026-06-11T01:02:42.018Z",
+      "title": "Vote called on Bill C-16",
+      "context": "ended. If members were not able to vote due to technical difficulties, they may now use the Rays hand function. The chair will recognize them. The table will now compile the results of the vote. I declare the motion defeated. It being 9:01, pursuant to order made on Thursday June fourth, 2026, it is my duty to interrupt the proceedings to put forth with every question necessary to dispose of the third reading stage of the Bill now before the house. The question is as follows. [Speaking French] >> Interpreter: Move that bill C-16, An act to amend certain acts in relation to criminal matters, child protection, gender based violence delays and other measures be now read a third time and do pass. If a member participating in person wishes this to be-- the honorable Parliamentary Secretary. [End of Interpretation] >> Pass on division, please. [Speaking French] >> Interpreter: The recorded vote. Call in the members. [End of Interpretation] Forgive me, not calling the members. Thursday June 11th, 2026, time provided for oral questions. >> Orders of the day. Government bills, comments, consideration and report Stage of Bill C-25 strong and free Elections Act, the Minister of Transport and lead of Government in the House of Commons. [Speaking French] >> Interpreter: There being no motion at report stage, the house will proceed without debate to the putting of the question on the motion to concur in the Bill at report stage. [Speaking French] [End of Interpretation] For members participating in person, the motion be carried or"
+    }
+  ]
+}

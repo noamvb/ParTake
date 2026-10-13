@@ -280,10 +280,63 @@ Oldest first. `bill_vote` may be sent twice for one vote: once when called
 (`division: null`) and once with the recorded result (`division` as in the
 feed).
 
+`since` is optional (default: the last 7 days) and exclusive; at most 200
+items. `video.offset_s` counts from the start of the ParlVU recording, as in
+the feed.
+
+How each alert is made (Phase 3):
+
+- `bill_vote`, called: English House captions saying "call in the members",
+  announcing the ten-minute electronic voting period or that electronic voting
+  has started, saying the House will wait for that period to end, or showing
+  "[Calling of Recorded Vote]" (case and bracket spacing ignored; phrases may
+  span caption lines). A bill must be named in the current question or motion
+  within five minutes before the trigger. Unrelated debate, adjournment,
+  time allocation, closure, and questions saying "stands deferred" do not alert.
+  Same-bill triggers within 15 minutes of the first trigger make one alert per
+  (follow, event, vote), including across polls; separately named bills in
+  stacked deferred votes each alert once.
+- `bill_vote`, result: a new row in `divisions` whose `bill` is a followed
+  bill. Dedupe per (follow, division).
+- `mp_speaking`: the presiding officer's call naming the member (the
+  `watch/speaker.py` `CallIndex`: riding, portfolio, committee surname),
+  once the next speech has begun (`>>` after the call). Only calls with
+  confidence >= 0.75 alert, at most once per speech. ParlVU's own speaker
+  list (`GetNewData`) is not used: it was empty on every stream checked
+  (research Q1-Q2); re-check on the first live sitting (19 Oct).
+- Only live captions (`source='live'`) newer than 10 minutes alert, so a
+  restart or archive import never sends old news.
+
 ### POST /api/push/register
 
-Body `{"channel": "fcm" | "ntfy", "token": str, "device": str}`; only once the
-push channel is chosen (see PLAN.md). Returns `{"ok": true}`.
+Body `{"channel": "fcm", "token": str, "device": str}` (Firebase Cloud
+Messaging, owner 11 Oct). Bearer token required. Re-registering a device
+replaces its token. Returns `{"ok": true}`.
+
+### DELETE /api/push/register?device=<device>
+
+Bearer token required. Returns `{"ok": true}` (also when unknown).
+
+### Push messages
+
+Data-only FCM messages (no `notification` block, so Android never shows
+them on its own with a sound). Data values are strings:
+
+```json
+{"type": "alert", "alert": "<the alert object as JSON>", "quiet": "1"}
+```
+
+Android priority `high`, `ttl` 600 s (a stale speaking alert is useless).
+No key file (`$DATA/fcm-service-account.json`) means push is off: alerts
+are still stored and `GET /api/alerts` serves them.
+
+### Quiet hours (no sound at night, ever)
+
+22:00 to 08:00 Ottawa time. The Deck sets `quiet: "1"` for any alert sent
+in that window; the app also checks its own clock and shows the alert
+silently (no sound, no vibration, low-importance channel) if EITHER says
+quiet. This applies to every notification the app posts, including the
+older "proceeding is live" alerts.
 
 ## GET /api/live
 

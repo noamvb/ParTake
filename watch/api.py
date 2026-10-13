@@ -1,7 +1,7 @@
 """Authenticated follow writes and public Parliament watch lookups."""
 
 import argparse
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import hmac
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -13,12 +13,12 @@ import sys
 import unicodedata
 from urllib.parse import parse_qs, urlsplit
 
-from watch import digest, embed
+from watch import digest, embed, push
 from watch.feed import feed, _speaker
 from watch.opinion.results import ELECTION, results_from_db
 from watch.opinion.swing import PARTIES, shares
 
-from watch.store import (DEFAULT_DATA, StaleVersion, connect, follow_id, import_follows,
+from watch.store import (DEFAULT_DATA, StaleVersion, alert_dict, connect, follow_id, import_follows,
                          iso, list_follows, replace_follows)
 
 
@@ -247,6 +247,19 @@ def polls_summary(db, history=True):
                          for day, past in entries] if history else [])
 
 
+def alerts_since(db, since, now):
+    """Alerts with at > since, oldest first, at most 200; default the last 7 days."""
+    if since is None:
+        cutoff = now - timedelta(days=7)
+    else:
+        cutoff = datetime.fromisoformat(since)
+        if cutoff.tzinfo is None:
+            raise ValueError("since needs a timezone")
+    rows = [row for row in db.execute("SELECT * FROM alerts") if datetime.fromisoformat(row["at"]) > cutoff]
+    rows.sort(key=lambda row: (datetime.fromisoformat(row["at"]), row["id"]))
+    return [alert_dict(row) for row in rows[:200]]
+
+
 def _fresh(at, now):
     return 0 <= (now - datetime.fromisoformat(at)).total_seconds() <= 180
 
@@ -370,6 +383,9 @@ def make_server(data_dir, host, port, clock=None, new_id=None, ollama=None):
                                 self._send(200, json.loads(row[0]))
                             else:
                                 self._error(404, "not found")
+                        elif path == "/api/alerts":
+                            query = parse_qs(parts.query, keep_blank_values=True)
+                            self._send(200, alerts_since(db, query.get("since", [None])[0], clock()))
                         elif path == "/api/live":
                             self._send(200, live(db, clock()))
                         elif path == "/api/polls/list":
@@ -421,6 +437,18 @@ def make_server(data_dir, host, port, clock=None, new_id=None, ollama=None):
                     body = self._body()
                     writer = replace_follows if self.command == "PUT" else import_follows
                     self._send(200, writer(data_dir, body, clock, new_id))
+                elif (self.command, path) == ("POST", "/api/push/register"):
+                    body = self._body()
+                    with connect(data_dir) as db, db:
+                        push.register(db, body, clock())
+                    self._send(200, {"ok": True})
+                elif (self.command, path) == ("DELETE", "/api/push/register"):
+                    device = parse_qs(parts.query, keep_blank_values=True).get("device", [""])[0]
+                    if not device:
+                        raise ValueError("device required")
+                    with connect(data_dir) as db, db:
+                        push.unregister(db, device)
+                    self._send(200, {"ok": True})
                 else:
                     self._error(404, "not found")
             except OverflowError:
