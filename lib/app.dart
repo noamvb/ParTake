@@ -6,6 +6,8 @@ import 'watch/watch_follows.dart';
 
 import 'core/library.dart';
 import 'platform/background_audio.dart';
+import 'platform/app_features.dart';
+import 'update/update_check.dart';
 import 'platform/pip.dart';
 import 'player/player_screen.dart';
 import 'player/player_session.dart';
@@ -22,6 +24,8 @@ class PartakeApp extends StatefulWidget {
     required this.source,
     required this.library,
     this.watch,
+    this.features = const AppFeatures(),
+    this.checkForUpdate,
     this.playerBuilder,
     this.sessionFactory,
     this.now,
@@ -32,6 +36,8 @@ class PartakeApp extends StatefulWidget {
   final EventSource source;
   final Library library;
   final WatchFollows? watch;
+  final AppFeatures features;
+  final Future<UpdateInfo?> Function()? checkForUpdate;
   final PlayerBuilder? playerBuilder;
   final PlayerSession Function(OpenRequest request)? sessionFactory;
   final DateTime Function()? now;
@@ -162,6 +168,8 @@ class _PartakeAppState extends State<PartakeApp> {
       source: widget.source,
       library: widget.library,
       watch: widget.watch,
+      features: widget.features,
+      checkForUpdate: widget.checkForUpdate,
       onOpen: _open,
       now: widget.now,
       overlay: _session?.minimized == true

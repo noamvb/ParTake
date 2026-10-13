@@ -17,8 +17,10 @@ class HomeScreen extends StatefulWidget {
     required this.library,
     required this.onOpen,
     required this.now,
+    this.showFollow = true,
   });
 
+  final bool showFollow;
   final EventSource source;
   final Library library;
   final OpenEvent onOpen;
@@ -112,7 +114,9 @@ class _HomeScreenState extends State<HomeScreen> {
           resumeAt: widget.library.record(e.id)?.position,
         ),
       ),
-      onToggleFollow: () => widget.library.setFollowed(key, !followed),
+      onToggleFollow: widget.showFollow
+          ? () => widget.library.setFollowed(key, !followed)
+          : null,
       progress: widget.library.record(e.id),
     );
   }
