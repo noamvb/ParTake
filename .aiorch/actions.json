@@ -553,6 +553,13 @@
       "description": "Fast-forward push of local polls-mixed-swing to origin/polls-mixed-swing",
       "remote": "origin",
       "branch": "polls-mixed-swing"
+    },
+    {
+      "id": "push-watch-phase3",
+      "adapter": "git_push",
+      "description": "Fast-forward push of local watch/phase3 to origin/watch/phase3",
+      "remote": "origin",
+      "branch": "watch/phase3"
     }
   ]
 }
