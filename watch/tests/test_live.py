@@ -193,3 +193,52 @@ class LiveTests(unittest.TestCase):
             ['systemctl', '--user', 'is-active', 'partake-watch-recorder@45873.service'],
             ['systemctl', '--user', 'reset-failed', 'partake-watch-recorder@45873.service'],
             ['systemctl', '--user', 'start', 'partake-watch-recorder@45873.service']])
+
+
+class AlertTickTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.data = Path(self.temp.name)
+
+    def test_09_alerting_only_while_recording(self):
+        from watch.live import main
+        test = LiveTests('test_01_live_house_page_and_start')
+        test.setUp()
+        self.addCleanup(test.temp.cleanup)
+        seen = []
+        with patch('watch.worker.main', return_value=0):
+            main(['--data', str(test.data)], fetch=test.fetch, now=lambda: NOW, units=test.units,
+                 sleep=lambda s: None, monotonic=lambda: 0, max_ticks=2,
+                 alerting=lambda data, now: seen.append((data, now)))
+        self.assertEqual(seen, [(str(test.data), NOW)] * 2)
+        test.rows = [dict(test.house, EntityStatus=-1)]
+        test.units = Units()
+        seen.clear()
+        with patch('watch.worker.main', return_value=0):
+            main(['--data', str(test.data)], fetch=test.fetch, now=lambda: NOW, units=test.units,
+                 sleep=lambda s: None, max_ticks=2, alerting=lambda data, now: seen.append(now))
+        self.assertEqual(seen, [])
+
+    def test_10_alert_tick_pushes_and_survives_errors(self):
+        from watch.live import alert_tick
+        from watch.store import add_alert
+        with connect(self.data) as db, db:
+            db.execute("INSERT INTO push_devices VALUES ('fold','fcm','tok',?,NULL)",
+                       (iso(NOW - timedelta(hours=1)),))
+            add_alert(db, dict(at=iso(NOW - timedelta(minutes=1)), kind='mp_speaking', follow='f_x',
+                               title='Bardish Chagger is speaking', body='House', video=None, division=None),
+                      'test:1')
+        sent = []
+
+        class Sender:
+            def send(self, token, data):
+                sent.append((token, data))
+                return True, None, False
+        result = alert_tick(self.data, NOW, sender_from=lambda data: Sender())
+        self.assertEqual(result['push']['sent'], 1)
+        self.assertEqual([token for token, _ in sent], ['tok'])
+        self.assertEqual(json.loads(sent[0][1]['alert'])['title'], 'Bardish Chagger is speaking')
+        with patch('watch.alerts.run', side_effect=RuntimeError('boom')):
+            self.assertIsNone(alert_tick(self.data, NOW, sender_from=lambda data: Sender()))
+        self.assertEqual(len(sent), 1)

@@ -193,6 +193,10 @@ def main(argv=None):
             ok = {"hansard": poll_hansard, "evidence": poll_evidence}[source](args.data, fetch, sleep, now, max_docs=args.max_docs)
         outcomes.append(ok)
         sys.stderr.write("%s %s\n" % (source, "ok" if ok else "failed"))
+    if "votes" in sources:
+        # A recorded result on a followed bill is the second bill_vote alert.
+        from watch.live import alert_tick
+        alert_tick(args.data, datetime.now(timezone.utc))
     return 0 if all(outcomes) else 1
 
 

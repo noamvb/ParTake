@@ -7,7 +7,7 @@ import subprocess
 import sys
 import time
 
-from watch import embed, parlvu, worker
+from watch import alerts, embed, parlvu, push, worker
 from watch.ingest import fetch as fetch_url, store_raw
 from watch.store import DEFAULT_DATA, connect, iso, list_follows, set_meta
 
@@ -84,8 +84,20 @@ def tick(data_dir, fetch, now, units, max_recorders=3):
     return {'wanted': wanted, 'started': started, 'active': sorted(active)}
 
 
+def alert_tick(data_dir, now, sender_from=push.sender_from):
+    """Make the live alerts and push them; never stops the supervisor."""
+    try:
+        made = alerts.run(data_dir, now)
+        with connect(data_dir) as db, db:
+            sent = push.deliver(db, now, sender_from(data_dir))
+        return {'alerts': made, 'push': sent}
+    except Exception as exc:
+        sys.stderr.write('alerts failed: %s\n' % (str(exc) or type(exc).__name__))
+        return None
+
+
 def main(argv=None, *, fetch=fetch_url, now=None, units=None, sleep=time.sleep,
-         monotonic=time.monotonic, max_ticks=None):
+         monotonic=time.monotonic, max_ticks=None, alerting=alert_tick):
     parser = argparse.ArgumentParser(description='Supervise live Parliament caption recorders')
     parser.add_argument('--data', default=DEFAULT_DATA)
     parser.add_argument('--ollama', default=embed.URL)
@@ -100,6 +112,8 @@ def main(argv=None, *, fetch=fetch_url, now=None, units=None, sleep=time.sleep,
     ticks = 0
     while max_ticks is None or ticks < max_ticks:
         result = tick(args.data, fetch, now(), units)
+        if result['active']:
+            alerting(args.data, now())
         at = monotonic()
         if result['active'] and (last_work is None or at - last_work >= args.work_every):
             worker.main(['--data', args.data, '--ollama', args.ollama])
