@@ -13,14 +13,35 @@ from watch.speaker import PRESIDING, CallIndex, label
 
 
 BILL = re.compile(r'(?<![A-Za-z0-9])([CS])-(\d+)(?![A-Za-z0-9])', re.I)
-CALL = re.compile(r'\bcall\s+in\s+the\s+members\b', re.I)
+CALL = re.compile(
+    r'\bcall\s+in\s+the\s+members\b'
+    r'|\b(?:ten|10)[- ]minute period for (?:members )?(?:voting electronically|electronic voting) '
+    r'has (?:now )?start(?:ed)?\b'
+    r'|\b(?:the )?electronic voting has (?:now )?started\b'
+    r'|\b(?:the )?house will now wait for the electronic voting period to end\b'
+    r'|\[\s*calling of recorded vote\s*\]', re.I)
+QUESTION = re.compile(
+    r'\b(?:the )?(?:(?:first|next) )?question is (?:as follows|on|that|the following|motion)\b'
+    r'|\bdeferred recorded division on\b'
+    r'|\bmove[sd]? (?:that )?(?=bill\b|the house\b|this question\b)'
+    r'|\b(?:second|third) reading of bill\b', re.I)
+PROCEDURAL = re.compile(
+    r'\bstands deferred\b|\btime[- ]allocation\b|\bclosure\b'
+    r'|\b(?:the|this) house (?:do )?(?:now )?adjourn\b'
+    r'|\b(?:this|the) question be now put\b'
+    r'|\bdebate not be further adjourned\b'
+    r'|\bbe disposed of[f]? as follows\b'
+    r'|\b(?:hours?|sitting days?) shall be (?:allocated|allotted)\b'
+    r'|\bgovernment business (?:no\.?|number)\s*\d+', re.I)
+QUESTION_BILL = re.compile(r'\bbill\s+([CS])(?:\s*-\s*|\s+minus\s+|\s*)(\d+)\b', re.I)
 VOTE_FRESH = timedelta(minutes=10)
-BILL_LOOKBACK = timedelta(minutes=30)
+BILL_LOOKBACK = timedelta(minutes=5)
+VOTE_CLUSTER = timedelta(minutes=15)
 SPEAKING_FRESH = timedelta(minutes=10)
 SPEAKING_WINDOW = timedelta(minutes=15)
 DIVISION_FRESH = timedelta(hours=24)
 MIN_CONFIDENCE = 0.75
-RESULT_LEAD = timedelta(minutes=2)
+RESULT_LEAD = timedelta(minutes=30)
 RESULT_LAG = timedelta(minutes=90)
 
 
@@ -77,16 +98,36 @@ def _bill_follows(follows):
 
 
 def _calls(lines):
-    """(line index where a 'call in the members' phrase ends, text of that line up to the phrase end)."""
+    """Triggers ending on this caption, including phrases split across caption lines."""
     for i, line in enumerate(lines):
-        for match in CALL.finditer(line['text']):
-            yield i, line['text'][:match.end()]
-        if i:
-            previous = lines[i - 1]['text']
-            joined = previous + ' ' + line['text']
-            for match in CALL.finditer(joined):
-                if match.start() < len(previous) and match.end() > len(previous) + 1:
-                    yield i, joined[len(previous) + 1:][:match.end() - len(previous) - 1]
+        if not re.search(r'\b(?:members|started|start|end)\b|\]', line['text'], re.I):
+            continue
+        previous = ' '.join(row['text'] for row in lines[max(0, i - 7):i])
+        joined = previous + ' ' + line['text'] if previous else line['text']
+        boundary = len(previous) + 1 if previous else 0
+        for match in CALL.finditer(joined):
+            if match.end() > boundary:
+                yield i, line['text'][:match.end() - boundary]
+
+
+def _question_bills(lines, i, upto):
+    begin = _time(lines[i]['begin'])
+    j = i
+    while j > 0 and begin - _time(lines[j - 1]['begin']) <= BILL_LOOKBACK:
+        j -= 1
+    text = ' '.join([row['text'] for row in lines[j:i]] + [upto])
+    text = ' '.join(text.split())
+    questions = list(QUESTION.finditer(text))
+    if not questions:
+        return []
+    question = text[questions[-1].start():]
+    if PROCEDURAL.search(question):
+        return []
+    # Require the number in the motion itself, before the invitation to request a vote.
+    question = re.split(r'\bif (?:a|any) member\b', question, maxsplit=1, flags=re.I)[0]
+    numbers = bill_numbers(question)
+    numbers += [f'{m[1].upper()}-{m[2]}' for m in QUESTION_BILL.finditer(question)]
+    return list(dict.fromkeys(numbers))
 
 
 def detect_votes(db, now, follows, source='live'):
@@ -95,25 +136,31 @@ def detect_votes(db, now, follows, source='live'):
     if not wanted:
         return created
     for event in _events(db, ('house',), source, now, VOTE_FRESH):
-        lines = _lines(db, event['id'], source, now - VOTE_FRESH - BILL_LOOKBACK, now)
+        lines = _lines(db, event['id'], source, now - VOTE_FRESH - VOTE_CLUSTER - BILL_LOOKBACK, now)
+        anchors = {}
         for i, upto in _calls(lines):
             begin = _time(lines[i]['begin'])
-            if begin < now - VOTE_FRESH or begin > now:
-                continue
-            numbers = bill_numbers(upto)
-            j = i - 1
-            while not numbers and j >= 0 and begin - _time(lines[j]['begin']) <= BILL_LOOKBACK:
-                numbers = bill_numbers(lines[j]['text'])
-                j -= 1
-            if not numbers or numbers[-1] not in wanted:
-                continue
-            for follow in wanted[numbers[-1]]:
-                alert = dict(at=lines[i]['begin'], kind='bill_vote', follow=follow['id'],
-                             title=f'Vote called on Bill {numbers[-1]}', body='Members are being called in for the vote.',
-                             video=_video(event, lines[i]['begin'], source), division=None)
-                alert_id = store.add_alert(db, alert, f"bill_vote:{follow['id']}:{event['id']}:{lines[i]['seq']}")
-                if alert_id:
-                    created.append(alert_id)
+            for number in _question_bills(lines, i, upto):
+                if number in anchors and begin - anchors[number] <= VOTE_CLUSTER:
+                    continue
+                anchors[number] = begin
+                if begin < now - VOTE_FRESH or begin > now:
+                    continue
+                for follow in wanted.get(number, []):
+                    # Persist the cluster across polls, restarts and overlapping replay windows.
+                    prior = db.execute(
+                        "SELECT 1 FROM alerts WHERE substr(dedupe,1,?)=? AND at>=? AND at<=? LIMIT 1",
+                        (len(f"bill_vote:{follow['id']}:{event['id']}:"),
+                         f"bill_vote:{follow['id']}:{event['id']}:", _stamp(begin - VOTE_CLUSTER),
+                         lines[i]['begin'])).fetchone()
+                    if prior:
+                        continue
+                    alert = dict(at=lines[i]['begin'], kind='bill_vote', follow=follow['id'],
+                                 title=f'Vote called on Bill {number}', body='Members are being called in for the vote.',
+                                 video=_video(event, lines[i]['begin'], source), division=None)
+                    alert_id = store.add_alert(db, alert, f"bill_vote:{follow['id']}:{event['id']}:{lines[i]['seq']}")
+                    if alert_id:
+                        created.append(alert_id)
     return created
 
 
@@ -219,7 +266,7 @@ def replay(db, event_id, follows, index, step_s=60):
 def _context(db, event_id, since, until):
     rows = db.execute("SELECT text FROM captions WHERE event=? AND lang='en' AND source='archive' "
                       'AND begin>=? AND begin<=? ORDER BY seq', (event_id, _stamp(since), _stamp(until))).fetchall()
-    return ' '.join(row['text'] for row in rows)[-300:]
+    return ' '.join(row['text'] for row in rows)[-2500:]
 
 
 def measure(source_db_path, limit=None):
@@ -268,13 +315,13 @@ def measure(source_db_path, limit=None):
                                and -RESULT_LEAD <= _time(d['at']) - at <= RESULT_LAG), key=lambda d: d['at'])
                 if hits:
                     result['matched'] += 1
-                    event_matched.add(hits[0]['id'])
-                elif len(result['false_alerts']) < 10:
+                    event_matched.update(d['id'] for d in hits)
+                else:
                     result['false_alerts'].append(dict(event=event_id, at=alert['at'], title=alert['title'],
-                                                       context=_context(scratch, event_id, at - timedelta(minutes=5), at)))
+                                                       context=_context(scratch, event_id, at - timedelta(minutes=5), at + timedelta(minutes=1))))
             matched_divisions |= {(event_id, d) for d in event_matched}
             for d in window:
-                if d['id'] not in event_matched and len(result['misses']) < 10:
+                if d['id'] not in event_matched:
                     at = _time(d['at'])
                     result['misses'].append(dict(event=event_id, division=d['id'], bill=d['bill'], at=d['at'],
                                                  context=_context(scratch, event_id, at - timedelta(minutes=5), at + timedelta(minutes=1))))

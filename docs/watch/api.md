@@ -286,12 +286,16 @@ the feed.
 
 How each alert is made (Phase 3):
 
-- `bill_vote`, called: an English House caption line saying "call in the
-  members" (any case, also "now, call in the members"). The bill is the
-  last bill number ("Bill C-39", "C-39", "projet de loi C-39") said in that
-  event's captions in the 30 minutes before the call. One alert per
-  (follow, event, call). Captions saying a division "stands deferred" do
-  not alert.
+- `bill_vote`, called: English House captions saying "call in the members",
+  announcing the ten-minute electronic voting period or that electronic voting
+  has started, saying the House will wait for that period to end, or showing
+  "[Calling of Recorded Vote]" (case and bracket spacing ignored; phrases may
+  span caption lines). A bill must be named in the current question or motion
+  within five minutes before the trigger. Unrelated debate, adjournment,
+  time allocation, closure, and questions saying "stands deferred" do not alert.
+  Same-bill triggers within 15 minutes of the first trigger make one alert per
+  (follow, event, vote), including across polls; separately named bills in
+  stacked deferred votes each alert once.
 - `bill_vote`, result: a new row in `divisions` whose `bill` is a followed
   bill. Dedupe per (follow, division).
 - `mp_speaking`: the presiding officer's call naming the member (the

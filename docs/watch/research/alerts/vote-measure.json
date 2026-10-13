@@ -1,39 +1,11 @@
 {
   "events": 23,
-  "called": 20,
-  "matched": 11,
+  "called": 17,
+  "matched": 16,
   "divisions_in_window": 31,
-  "recall": 0.3548387096774194,
-  "precision": 0.55,
+  "recall": 0.8064516129032258,
+  "precision": 0.9411764705882353,
   "misses": [
-    {
-      "event": "45733",
-      "division": "45-1/177",
-      "bill": "45-1/C-218",
-      "at": "2026-10-07T19:45:00Z",
-      "context": "[ Calling of Recorded Vote ] [ Calling of Recorded Vote ] The House will now wait for the electronic voting period to end before resuming its proceedings."
-    },
-    {
-      "event": "45554",
-      "division": "45-1/170",
-      "bill": "45-1/C-267",
-      "at": "2026-06-17T20:00:00Z",
-      "context": "peaker: (Voice of Interpreter): Fifth row on my left. Fourth row on my left. [Calling of Recorded Vote] >> The Speaker: (Voice of Interpreter): Third row on my left. [Calling of Recorded Vote] [Calling of recorded vote] [Calling of recorded vote] [Calling of recorded vote] [Calling of recorded vote]"
-    },
-    {
-      "event": "45554",
-      "division": "45-1/169",
-      "bill": "45-1/C-26",
-      "at": "2026-06-17T19:45:00Z",
-      "context": " out of the consolidated revenue fund for the pump  purpose of improving the housing supply be moved to the secretary of finance. The electronic voting has started and the house will move to those participating in person. All those in favour of the motion will please rise. [Calling of Recorded Vote]"
-    },
-    {
-      "event": "45554",
-      "division": "45-1/167",
-      "bill": "45-1/C-9",
-      "at": "2026-06-17T19:15:00Z",
-      "context": "tion for the fiscal year ending March 31st, 2027, Bill C-33... (Voice of Interpreter): Mr. Speaker, I have the honour of informing the house that a communication has been received. Mr. Speaker, I have the honour of informing you that the right honourable Louise Arbour has granted royal assent to the"
-    },
     {
       "event": "45552",
       "division": "45-1/161",
@@ -42,95 +14,47 @@
       "context": ""
     },
     {
-      "event": "45549",
-      "division": "45-1/151",
+      "event": "45551",
+      "division": "45-1/155",
+      "bill": "45-1/C-14",
+      "at": "2026-06-12T17:30:13Z",
+      "context": "[Some Applause] seconded by Mr. McGuinty moved that in relation to Bill C-14 an act to amend the Criminal Code and the Youth Criminal Justice Act and the national defence act bail and sentencing not more than five hours shall be allocated-- shall I dispense-- dispense? The House will now proceed to the vote for members participating in person. All of those in favour of the motion will please rise. [Calling of Recorded Vote]"
+    },
+    {
+      "event": "45550",
+      "division": "45-1/154",
       "bill": "45-1/C-25",
-      "at": "2026-06-11T01:36:00Z",
-      "context": " The ten minute period for members voting electronically has started and the house will now proceed to the vote for members participating in person. All those in favor of the motion will please rise. [Calling of recorded vote]. It's what I read, not what is on the screen. [Calling of recorded vote]."
+      "at": "2026-06-11T20:45:34Z",
+      "context": ""
     },
     {
-      "event": "45549",
-      "division": "45-1/147",
-      "bill": "45-1/C-232",
-      "at": "2026-06-10T19:35:03Z",
-      "context": " Act to Amend the Divorce Act presented Monday, June 8th, 026, be concurred in. The ten-minute period for voting electronically has now started and the house will now proceed to the vote for those participating in person. All those in favour of the motion will please rise. [Calling of Recorded Vote]"
-    },
-    {
-      "event": "45549",
-      "division": "45-1/146",
+      "event": "45548",
+      "division": "45-1/142",
       "bill": "45-1/C-20",
-      "at": "2026-06-10T19:35:32Z",
-      "context": " Act to Amend the Divorce Act presented Monday, June 8th, 026, be concurred in. The ten-minute period for voting electronically has now started and the house will now proceed to the vote for those participating in person. All those in favour of the motion will please rise. [Calling of Recorded Vote]"
+      "at": "2026-06-09T16:15:20Z",
+      "context": ""
     },
     {
       "event": "45547",
       "division": "45-1/140",
       "bill": "45-1/C-33",
       "at": "2026-06-09T03:20:16Z",
-      "context": "ted that he didn't believe that we can take any action as Parliamentarians to help Manitobans. And Mr. Speaker that's frankly just disgraceful. It's shameful and on this side of the house, we'll also work to improve the health of Canadians. We'll also take a public health crisis urgently. Thank you."
+      "context": "le for what goes on at Canada health FOINway or is she not? Is she responsible for how they spend tax payer's money or is she not? Does she have the power to fire the CEO or does she not? I'll tell you who has the power to fire all of us. The tax payer. So why won't she say who said what in this chamber so the tax payers can make a decision about who needs to be fired? Why won't she come to committee to answer these questions instead of sending attaches to frankly not tans questions when we ask. Hopeful for tonight. >> The Speaker:  Honourable parliamentary Secretary to the minister of health. >> Thank you Mr. Speaker. I thank the member for his question. As a minister has stated, any feature fundings must align with info way's mandate and deliver value for Canadians. That means supporting the modernization of Canada's health care system improving health information how it is shared across the country. And our government will remain focused on making sure Canadians have access to a modern connected health care system that works for them. >> The Speaker:  The honourable member for kitchener south--. >> Speaker I asked several very specific questions. I asked whether Canada health FOIN way's independent or not. I asked whether the minister of health has oversight on their funding or not. I asked whether the minister of health has the power to fire the CEO of Canada health info way or not. I have asked whether the minister would come to help committee to explain these things in more detail. And that member didn't answer one of those questions. It's 11 P.M. It cost money to keep this chamber open. Tens of thousands of people voted for me so that I could ask these questions. Tens of thousands of people voted for her so she could answer these questions. Why won't she just answer them and respect this house. Respect the speaker. Respect that? >> The Speaker:  Honourable parliamentary Secretary to the minister of health. >> Thank you Mr. Speaker. And I do want to remind folks again that the member opposite continued to obstruct on our health committee on this very important study on HIV in Manitoba in that colleague's-- in his colleague's own province. And he openly stated that he didn't believe that we can take any action as Parliamentarians to help Manitobans. And Mr. Speaker that's frankly just disgraceful. It's shameful and on this side of the house, we'll also work to improve the health of Canadians. We'll also take a public health crisis urgently. Thank you."
     },
     {
-      "event": "45547",
-      "division": "45-1/137",
+      "event": "45525",
+      "division": "45-1/134",
       "bill": "45-1/C-16",
-      "at": "2026-06-08T19:35:38Z",
-      "context": ">> The Speaker: (Voice of Interpreter): The house will now wait for the electronic voting period to end before resuming its proceedings. >> The Speaker: (Voice of"
+      "at": "2026-06-04T16:33:00Z",
+      "context": ""
     }
   ],
   "false_alerts": [
     {
-      "event": "45553",
-      "at": "2026-06-16T20:09:58.274Z",
-      "title": "Vote called on Bill C-9",
-      "context": "seconder. >> Brandon--Souris. >> Replies stoneis seconded by Mr. Jackson move that the House now adjourn. If a member participating in Dern I see the Parliamentary Secretary to the Government House Leader. >> Mr. Speaker, we would request a recorded vote, please. >> The Speaker: Call in the members."
-    },
-    {
-      "event": "45553",
-      "at": "2026-06-17T00:05:16.578Z",
-      "title": "Vote called on Bill C-26",
-      "context": "lities. And, B, deleting paragraph E. A member participating in person wishes that the amendment be carried or carried on division or -- I see the honourable parliamentary secretary to the honourable house leader rising >> Yes. We request a recorded vote, please. >> The Speaker: Call in the members."
-    },
-    {
-      "event": "45552",
-      "at": "2026-06-15T16:35:26.035Z",
-      "title": "Vote called on Bill C-30",
-      "context": "nment business number 12 the debate not be further adjourned. >> [Voice of Interpreter]: If a member participating in-person would like to adopt the motion or adapt it on descent -- [ End of Interpretation ] >> Madam Speaker, we request a recorded vote, please. >> The Speaker: Call in the members. ."
-    },
-    {
-      "event": "45552",
-      "at": "2026-06-16T00:08:12.141Z",
-      "title": "Vote called on Bill C-30",
-      "context": "ied on division or if a member of a recognized party participating in person wishes or requests a recorded division I invite them to rise and indicate to the chair. The Honourable Member for barrie south Innisfil. >> Mr. Speaker, we request a recorded division. >> The Speaker: Call in the members. \u266a"
-    },
-    {
-      "event": "45549",
-      "at": "2026-06-10T20:16:31.131Z",
-      "title": "Vote called on Bill C-232",
-      "context": "ried or carried on division or if a member of a recognized party participating in person wishes to request a recorded division, I'd invite them to rise and indicate it to the Chair. The honourable member for Bruce--Grey--Owen Sound. >> Recorded vote, Mr. Speaker. >> The Speaker: Call in the members."
-    },
-    {
       "event": "45549",
       "at": "2026-06-11T01:02:42.018Z",
       "title": "Vote called on Bill C-16",
-      "context": "based violence delays and other measures be now read a third time and do pass. If a member participating in person wishes this to be-- the honorable Parliamentary Secretary. [End of Interpretation] >> Pass on division, please. [Speaking French] >> Interpreter: The recorded vote. Call in the members."
-    },
-    {
-      "event": "45548",
-      "at": "2026-06-09T19:15:00.130Z",
-      "title": "Vote called on Bill C-30",
-      "context": "ition side. When previous speakers have chosen not to regulate the quality of the answers from the Prime Minister and the Government, why -- >> The Speaker: The Honourable Member should know that the rules do not require a speaker to need an answer. We will now move to the vote. Call in the members."
-    },
-    {
-      "event": "43209",
-      "at": "2025-06-20T21:08:29.919Z",
-      "title": "Vote called on Bill C-5",
-      "context": "es the short title be carried or carried on division or a member if recognized party wishes to request a recorded division, I would like them to rise and indicate it to the Chair. The Honourable Member for London West. >> I would like to call for a recorded vote. >> The Speaker: Call in the members."
-    },
-    {
-      "event": "43209",
-      "at": "2025-06-20T21:09:22.939Z",
-      "title": "Vote called on Bill C-5",
-      "context": "f Interpreter: Thank you, Mr. Speaker. We would ask for a recorded division. >> The Speaker: Recorded division on Part 2 including the schedule stands deferred. Pursuant to order made on Monday, June 16th, 2025, the House will now proceed to third reading stage of the bill. Now, call in the members."
+      "context": "ended. If members were not able to vote due to technical difficulties, they may now use the Rays hand function. The chair will recognize them. The table will now compile the results of the vote. I declare the motion defeated. It being 9:01, pursuant to order made on Thursday June fourth, 2026, it is my duty to interrupt the proceedings to put forth with every question necessary to dispose of the third reading stage of the Bill now before the house. The question is as follows. [Speaking French] >> Interpreter: Move that bill C-16, An act to amend certain acts in relation to criminal matters, child protection, gender based violence delays and other measures be now read a third time and do pass. If a member participating in person wishes this to be-- the honorable Parliamentary Secretary. [End of Interpretation] >> Pass on division, please. [Speaking French] >> Interpreter: The recorded vote. Call in the members. [End of Interpretation] Forgive me, not calling the members. Thursday June 11th, 2026, time provided for oral questions. >> Orders of the day. Government bills, comments, consideration and report Stage of Bill C-25 strong and free Elections Act, the Minister of Transport and lead of Government in the House of Commons. [Speaking French] >> Interpreter: There being no motion at report stage, the house will proceed without debate to the putting of the question on the motion to concur in the Bill at report stage. [Speaking French] [End of Interpretation] For members participating in person, the motion be carried or"
     }
   ]
 }

@@ -102,7 +102,7 @@ class AlertTests(unittest.TestCase):
 
     def test_04_dedupe(self):
         from watch.alerts import detect_votes
-        base = self.live(['Bill C-39 is before us.', 'Call in the members.'])
+        base = self.live(['The question is on the motion that Bill C-39 be now read a second time.', 'Call in the members.'])
         now = base + timedelta(minutes=2)
         follows = [bill_follow('C-39')]
         self.assertEqual(len(detect_votes(self.db, now, follows)), 1)
@@ -112,7 +112,7 @@ class AlertTests(unittest.TestCase):
 
     def test_05_stale_call(self):
         from watch.alerts import detect_votes
-        base = self.live(['Bill C-39 is before us.', 'Call in the members.'])
+        base = self.live(['The question is on the motion that Bill C-39 be now read a second time.', 'Call in the members.'])
         follows = [bill_follow('C-39')]
         self.assertEqual(detect_votes(self.db, base + timedelta(minutes=11), follows), [])
         self.assertEqual(detect_votes(self.db, base + timedelta(seconds=5), follows), [])
@@ -136,7 +136,7 @@ class AlertTests(unittest.TestCase):
         with connect(self.temp.name + '/other') as other:
             last = data['captions'][-1]
             extra = dict(last, seq=last['seq'] + 1, begin='2026-05-08T17:16:40.000Z', end='2026-05-08T17:16:41.000Z',
-                         text='Call in the members.')
+                         text='The question is on the motion that Bill C-11 be referred back to committee. Call in the members.')
             data['captions'].append(extra)
             seed(other, data)
             from watch.alerts import replay
@@ -144,13 +144,98 @@ class AlertTests(unittest.TestCase):
             self.assertEqual([a['title'] for a in again], ['Vote called on Bill C-11'])
 
     def test_08_bill_not_in_sentence(self):
-        # The sentence names no bill; C-5 was last said ~1 minute earlier in
-        # the window, so the 30-minute rule alerts for C-5 at both calls
-        # (the Speaker's "Call in the members." and "Now, call in the members.").
-        data = load('vote-43209')
-        found = self.replay(data, [bill_follow('C-5')])
-        self.assertEqual([a['title'] for a in found], ['Vote called on Bill C-5'] * 2)
-        self.assertEqual([a['at'] for a in found], ['2025-06-20T21:08:29.919Z', '2025-06-20T21:09:22.939Z'])
+        # The current questions name Part 1 / Part 2, not a bill. Do not borrow C-5
+        # from the earlier third-reading question, or from the deferral announcement.
+        self.assertEqual(len(self.replay(load('vote-45734'), [bill_follow('C-39')])), 1)
+        self.assertEqual(self.replay(load('vote-43209'), [bill_follow('C-5')]), [])
+
+    def test_15_electronic_vote_without_members_call(self):
+        self.assertIn('call in the members',
+                      ' '.join(c['text'] for c in load('vote-45734')['captions']).lower())
+        data = load('electronic-45549')
+        text = ' '.join(c['text'] for c in data['captions'])
+        self.assertNotIn('call in the members', text.lower())
+        found = self.replay(data, [bill_follow('C-232')])
+        self.assertEqual([a['title'] for a in found], ['Vote called on Bill C-232'])
+        # This is the start announcement, before the repeated recorded-vote markers.
+        self.assertEqual(found[0]['at'], '2026-06-10T19:57:50.645Z')
+
+    def test_16_adjournment_does_not_borrow_debated_bill(self):
+        self.assertEqual(len(self.replay(load('vote-45734'), [bill_follow('C-39')])), 1)
+        data = load('adjournment-45553')
+        text = ' '.join(c['text'] for c in data['captions']).lower()
+        self.assertIn('c-9', text)
+        self.assertIn('house now adjourn', text)
+        self.assertIn('call in the members', text)
+        self.assertEqual(self.replay(data, [bill_follow('C-9')]), [])
+
+    def test_17_multiple_triggers_are_one_vote_across_polls(self):
+        from watch.alerts import detect_votes
+        data = load('vote-45734')
+        text = ' '.join(c['text'] for c in data['captions']).lower()
+        self.assertIn('call in the members', text)
+        self.assertIn('has started', text)
+        self.assertGreater(text.count('calling of recorded vote'), 3)
+        found = self.replay(data, [bill_follow('C-39')])
+        self.assertEqual(len(found), 1)
+        self.assertEqual(found[0]['at'], '2026-10-08T19:15:25.371Z')
+        self.assertEqual(detect_votes(self.db, at(data['captions'][-1]['begin']),
+                                      [bill_follow('C-39')], source='archive'), [])
+
+    def test_18_stacked_deferred_votes_name_each_bill_once(self):
+        found = self.replay(load('stacked-45549'), [bill_follow('C-20'), bill_follow('C-232')])
+        self.assertEqual([a['title'] for a in found],
+                         ['Vote called on Bill C-20', 'Vote called on Bill C-232'])
+        self.assertEqual(len({a['follow'] for a in found}), 2)
+
+    def test_19_split_electronic_caption(self):
+        found = self.replay(load('electronic-45733'), [bill_follow('C-218')])
+        self.assertEqual([a['title'] for a in found], ['Vote called on Bill C-218'])
+        self.assertEqual(found[0]['at'], '2026-10-07T19:49:06.916Z')
+
+    def test_20_measure_matches_early_stacked_timestamps(self):
+        from watch.alerts import measure
+        seed(self.db, load('stacked-45549'))
+        self.db.commit()
+        result = measure(Path(self.temp.name) / 'watch.db')
+        self.assertEqual((result['events'], result['called'], result['matched'],
+                          result['divisions_in_window'], result['recall'], result['precision']),
+                         (1, 2, 2, 2, 1.0, 1.0))
+        self.assertEqual(result['misses'], [])
+        self.assertEqual(result['false_alerts'], [])
+
+    def test_21_one_call_matches_multiple_same_bill_divisions(self):
+        from watch.alerts import measure
+        seed(self.db, load('same-bill-45554'))
+        self.db.commit()
+        result = measure(Path(self.temp.name) / 'watch.db')
+        self.assertEqual((result['called'], result['matched'], result['divisions_in_window'],
+                          result['recall'], result['precision']), (1, 1, 2, 1.0, 1.0))
+        self.assertEqual(result['misses'], [])
+        self.assertEqual(result['false_alerts'], [])
+
+    def test_22_closure_does_not_borrow_debated_bill(self):
+        self.assertEqual(len(self.replay(load('vote-45734'), [bill_follow('C-39')])), 1)
+        data = load('closure-45552')
+        text = ' '.join(c['text'] for c in data['captions']).lower()
+        self.assertIn('c-30', text)
+        self.assertIn('debate not be further adjourned', text)
+        self.assertIn('call in the members', text)
+        self.assertEqual(self.replay(data, [bill_follow('C-30')]), [])
+
+    def test_23_procedural_motion_names_bill_but_is_not_bill_vote(self):
+        self.assertEqual(len(self.replay(load('vote-45734'), [bill_follow('C-39')])), 1)
+        data = load('procedural-45552')
+        text = ' '.join(c['text'] for c in data['captions']).lower()
+        self.assertIn('bill c-30', text)
+        self.assertIn('be disposed off as follows', text)
+        self.assertIn('call in the members', text)
+        self.assertEqual(self.replay(data, [bill_follow('C-30')]), [])
+
+    def test_24_question_names_number_without_word_bill(self):
+        found = self.replay(load('numbered-question-43209'), [bill_follow('C-5')])
+        self.assertEqual([a['title'] for a in found], ['Vote called on Bill C-5'])
+        self.assertEqual(found[0]['at'], '2025-06-20T17:51:32.880Z')
 
     def division(self, when, bill='45-1/C-39', ident='45-1/178'):
         self.db.execute('INSERT INTO divisions VALUES (?,178,?,?,?,?,172,143,5,0)',
@@ -212,7 +297,7 @@ class AlertTests(unittest.TestCase):
 
     def test_12_run(self):
         from watch.alerts import run
-        base = self.live(['Bill C-39 is before us.', 'Call in the members.'])
+        base = self.live(['The question is on the motion that Bill C-39 be now read a second time.', 'Call in the members.'])
         self.db.execute('INSERT INTO follows(id,created_at,body) VALUES (?,?,?)',
                         ('f_c39', 'now', json.dumps(bill_follow('C-39'))))
         self.division(base, ident='45-1/178')
@@ -232,7 +317,7 @@ class AlertTests(unittest.TestCase):
     def test_13_run_isolates_failures(self):
         from unittest import mock
         from watch import alerts
-        base = self.live(['Bill C-39 is before us.', 'Call in the members.'])
+        base = self.live(['The question is on the motion that Bill C-39 be now read a second time.', 'Call in the members.'])
         self.db.execute('INSERT INTO follows(id,created_at,body) VALUES (?,?,?)',
                         ('f_c39', 'now', json.dumps(bill_follow('C-39'))))
         self.db.commit()
