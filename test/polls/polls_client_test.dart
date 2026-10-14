@@ -74,4 +74,99 @@ void main() {
       throwsA(isA<WatchHttpException>().having((e) => e.status, 'status', 0)),
     );
   });
+  test('B1. Snapshot requests the five public JSON paths', () async {
+    final base = Uri.parse('https://example.test/snap/');
+    final requests = <Uri>[];
+    final client = PollsClient.snapshot(
+      base: base,
+      client: MockClient((r) async {
+        requests.add(r.url);
+        final name = r.url.path.split('/').last.replaceAll('.json', '');
+        final seam = name == '24038' ? 'riding' : name;
+        return http.Response.bytes(
+          utf8.encode(jsonEncode(pollsSeam(seam))),
+          200,
+        );
+      }),
+    );
+    addTearDown(client.close);
+    expect(client.address, base);
+    expect((await client.summary(history: false)).pollsUsed, 14);
+    await client.leaders();
+    await client.list();
+    await client.ridings();
+    expect((await client.riding('24038')).id, '24038');
+    expect(requests.map((u) => u.toString()), [
+      '${base}summary.json',
+      '${base}leaders.json',
+      '${base}list.json',
+      '${base}ridings.json',
+      '${base}ridings/24038.json',
+    ]);
+  });
+
+  test(
+    'B2. Snapshot paging and unavailable regions make no requests',
+    () async {
+      var requests = 0;
+      final client = PollsClient.snapshot(
+        base: Uri.parse('https://example.test/snap/'),
+        client: MockClient((r) async {
+          requests++;
+          return http.Response(jsonEncode(pollsSeam('list')), 200);
+        }),
+      );
+      addTearDown(client.close);
+      await client.list();
+      expect(requests, 1);
+      requests = 0;
+      final page = await client.list(before: 'x');
+      expect(page.polls, isEmpty);
+      expect(page.next, isNull);
+      await expectLater(
+        client.list(region: 'QC'),
+        throwsA(
+          isA<WatchHttpException>()
+              .having((e) => e.status, 'status', 404)
+              .having((e) => e.message, 'message', 'Not in snapshot'),
+        ),
+      );
+      expect(requests, 0);
+    },
+  );
+
+  test('B3. Snapshot filters riding MPs locally without a query', () async {
+    final seam = pollsSeam('ridings');
+    final riding = (seam['ridings'] as List).firstWhere((r) => r['mp'] != null);
+    final requests = <Uri>[];
+    final client = PollsClient.snapshot(
+      base: Uri.parse('https://example.test/snap/'),
+      client: MockClient((r) async {
+        requests.add(r.url);
+        return http.Response.bytes(utf8.encode(jsonEncode(seam)), 200);
+      }),
+    );
+    addTearDown(client.close);
+    final ridings = await client.ridings(mp: riding['mp']['person_id']);
+    expect(ridings.map((r) => r.id), [riding['id']]);
+    expect(
+      requests.single.toString(),
+      'https://example.test/snap/ridings.json',
+    );
+    expect(requests.single.query, isEmpty);
+  });
+
+  test('B4. Snapshot HTTP 404 preserves the status', () async {
+    final client = PollsClient.snapshot(
+      base: Uri.parse('https://example.test/snap/'),
+      client: MockClient(
+        (r) async => http.Response('{"error":"Missing"}', 404),
+      ),
+    );
+    addTearDown(client.close);
+    await expectLater(
+      client.summary(),
+      throwsA(isA<WatchHttpException>().having((e) => e.status, 'status', 404)),
+    );
+  });
 }

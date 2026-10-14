@@ -8,3 +8,5 @@ WorkingDirectory=%h/partake
 ExecStart=/usr/bin/python3 -m watch.poll --data %h/.local/share/partake-watch --sources opinion
 MemoryMax=500M
 Nice=10
+# Public snapshot for the Windows build; see watch/opinion/publish.sh.
+ExecStartPost=/bin/sh %h/partake/watch/opinion/publish.sh

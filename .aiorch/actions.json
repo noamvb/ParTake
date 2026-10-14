@@ -638,6 +638,13 @@
         ]
       },
       "recovery_description": "A pushed tag is not rolled back automatically. If the release run fails, fix forward with a higher version; delete the tag on GitHub only with the owner's OK."
+    },
+    {
+      "id": "push-windows-polls",
+      "adapter": "git_push",
+      "description": "Fast-forward push of local windows-polls to origin/windows-polls",
+      "remote": "origin",
+      "branch": "windows-polls"
     }
   ]
 }

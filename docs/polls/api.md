@@ -92,3 +92,17 @@ seen that day (polls loaded by the first backfill never count):
 It lists parties projected to 10+ seats, with the change from the day
 before. A day with no followed activity but a new poll still gets an
 evening digest with empty `sections` (see watch api.md "Digests").
+
+## Public snapshot (Windows build)
+
+Windows reads the public snapshot at
+`https://raw.githubusercontent.com/noamvb/ParTake/polls-data/`.
+The Deck force-pushes these files daily to branch `polls-data`:
+
+| File | Source endpoint |
+| --- | --- |
+| `summary.json` | `/api/polls/summary` (including history) |
+| `leaders.json` | `/api/polls/leaders` |
+| `list.json` | `/api/polls/list?region=CAN&limit=200` (all pages combined, `next: null`) |
+| `ridings.json` | `/api/polls/ridings` |
+| `ridings/<id>.json` | `/api/polls/ridings/<id>` (one file per riding) |

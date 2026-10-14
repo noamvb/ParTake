@@ -47,9 +47,10 @@ void main() {
     final bar = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(bar.destinations.cast<NavigationDestination>().map((d) => d.label), [
       'Home',
+      'Polls',
       'Browse',
     ]);
-    for (final label in ['Watch', 'Polls', 'Following']) {
+    for (final label in ['Watch', 'Following']) {
       expect(find.text(label), findsNothing);
     }
     await tester.tap(find.text('Browse'));
@@ -60,6 +61,7 @@ void main() {
     final rail = tester.widget<NavigationRail>(find.byType(NavigationRail));
     expect(rail.destinations.map((d) => (d.label as Text).data), [
       'Home',
+      'Polls',
       'Browse',
     ]);
   });
@@ -492,6 +494,57 @@ void main() {
     expect(
       find.text('Set the Deck address in the Watch tab first.'),
       findsOneWidget,
+    );
+  });
+  testWidgets('Viewer snapshot Polls shows the summary without Deck setup', (
+    tester,
+  ) async {
+    final base = Uri.parse('https://example.test/snap/');
+    final polls = PollsClient.snapshot(
+      base: base,
+      client: MockClient(
+        (r) async => http.Response(
+          jsonEncode(
+            pollsSeam(r.url.path.split('/').last.replaceAll('.json', '')),
+          ),
+          200,
+        ),
+      ),
+    );
+    addTearDown(polls.close);
+    Widget shell(AppFeatures features, {PollsClient? client}) => MaterialApp(
+      home: AppShell(
+        features: features,
+        polls: client,
+        source: FakeEventSource(),
+        library: FakeLibrary(),
+        onOpen: (_) {},
+        now: _clock,
+      ),
+    );
+    final setup = find.text('Set the Deck address in the Watch tab first.');
+    await tester.pumpWidget(shell(const AppFeatures()));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Polls'));
+    await tester.pumpAndSettle();
+    expect(setup, findsOneWidget);
+    await tester.pumpWidget(
+      shell(
+        AppFeatures(deck: false, following: false, pollsSnapshot: base),
+        client: polls,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Polls'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('${pollsSeam('summary')['polls_used']} polls'),
+      findsOneWidget,
+    );
+    expect(setup, findsNothing);
+    expect(
+      AppFeatures.viewerOnly.pollsSnapshot.toString(),
+      'https://raw.githubusercontent.com/noamvb/ParTake/polls-data/',
     );
   });
 }
