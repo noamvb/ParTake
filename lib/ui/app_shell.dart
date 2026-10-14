@@ -59,7 +59,9 @@ class _AppShellState extends State<AppShell> {
 
   List<_Tab> get _tabs => [
     _Tab.home,
-    if (widget.features.deck) ...[_Tab.watch, _Tab.polls],
+    if (widget.features.deck) _Tab.watch,
+    if (widget.features.deck || widget.features.pollsSnapshot != null)
+      _Tab.polls,
     _Tab.browse,
     if (widget.features.following) _Tab.following,
   ];
@@ -103,7 +105,9 @@ class _AppShellState extends State<AppShell> {
     super.didUpdateWidget(oldWidget);
     final oldTab = [
       _Tab.home,
-      if (oldWidget.features.deck) ...[_Tab.watch, _Tab.polls],
+      if (oldWidget.features.deck) _Tab.watch,
+      if (oldWidget.features.deck || oldWidget.features.pollsSnapshot != null)
+        _Tab.polls,
       _Tab.browse,
       if (oldWidget.features.following) _Tab.following,
     ][_index];
@@ -119,6 +123,14 @@ class _AppShellState extends State<AppShell> {
 
   PollsClient? _pollsClient() {
     if (widget.polls != null) return widget.polls;
+    final snapshot = widget.features.pollsSnapshot;
+    if (snapshot != null) {
+      if (_ownedPolls != null && _ownedPolls!.address != snapshot) {
+        _ownedPolls!.close();
+        _ownedPolls = null;
+      }
+      return _ownedPolls ??= PollsClient.snapshot(base: snapshot);
+    }
     final address = widget.watch?.address ?? '';
     if (_ownedPolls != null && _ownedPolls!.address.toString() != address) {
       _ownedPolls!.close();
@@ -141,7 +153,9 @@ class _AppShellState extends State<AppShell> {
     if (!_pollsOpened) return const SizedBox.shrink();
     final client = _pollsClient();
     if (client == null ||
-        (widget.polls == null && (widget.watch?.address ?? '').isEmpty)) {
+        (widget.polls == null &&
+            widget.features.pollsSnapshot == null &&
+            (widget.watch?.address ?? '').isEmpty)) {
       return const Center(
         child: Padding(
           padding: EdgeInsets.all(16),

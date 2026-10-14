@@ -1,21 +1,31 @@
 import 'package:flutter/foundation.dart';
 
-/// What this build offers. Windows is viewer only: it has no Deck (so no
-/// Watch or Polls tab) and no Android alerts (so no Following tab or follow
+final pollsSnapshotUrl = Uri.parse(
+  'https://raw.githubusercontent.com/noamvb/ParTake/polls-data/',
+);
+
+/// What this build offers. Windows is viewer only: no Watch tab, Polls from
+/// the public snapshot, and no Android alerts (so no Following tab or follow
 /// stars), and it checks GitHub for newer releases.
 class AppFeatures {
   const AppFeatures({
     this.deck = true,
     this.following = true,
     this.updateCheck = false,
+    this.pollsSnapshot,
   });
 
   /// The viewer-only set used on Windows.
-  static const viewerOnly = AppFeatures(
+  static final viewerOnly = AppFeatures(
     deck: false,
     following: false,
     updateCheck: true,
+    pollsSnapshot: pollsSnapshotUrl,
   );
+
+  /// When set, the Polls tab reads this public snapshot instead of the Deck
+  /// and is shown even without [deck].
+  final Uri? pollsSnapshot;
 
   /// Watch and Polls tabs, and the Deck connection behind them.
   final bool deck;

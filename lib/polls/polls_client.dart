@@ -7,7 +7,13 @@ import 'polls_models.dart';
 
 class PollsClient {
   PollsClient({required this.address, http.Client? client})
-    : _client = client ?? http.Client();
+    : _snapshot = false,
+      _client = client ?? http.Client();
+  PollsClient.snapshot({required Uri base, http.Client? client})
+    : address = base,
+      _snapshot = true,
+      _client = client ?? http.Client();
+  final bool _snapshot;
   final Uri address;
   final http.Client _client;
 
@@ -15,9 +21,11 @@ class PollsClient {
     String path, [
     Map<String, String>? query,
   ]) async {
-    final uri = address
-        .resolve('/watch/api/polls/$path')
-        .replace(queryParameters: query);
+    final uri = _snapshot
+        ? address.resolve('$path.json')
+        : address
+              .resolve('/watch/api/polls/$path')
+              .replace(queryParameters: query);
     final http.Response response;
     try {
       response = await _client.get(uri).timeout(const Duration(seconds: 15));
@@ -49,19 +57,34 @@ class PollsClient {
     String region = 'CAN',
     int limit = 50,
     String? before,
-  }) async => PollsPage.fromJson(
-    await _get('list', {
-      'region': region,
-      'limit': '$limit',
-      'before': ?before,
-    }),
-  );
+  }) async {
+    if (_snapshot) {
+      if (region != 'CAN') {
+        throw const WatchHttpException(404, 'Not in snapshot');
+      }
+      if (before != null) {
+        return PollsPage.fromJson({
+          'polls': <dynamic>[],
+          'next': null,
+          'source': {'name': '', 'url': address.toString(), 'fetched_at': ''},
+        });
+      }
+    }
+    return PollsPage.fromJson(
+      await _get('list', {
+        'region': region,
+        'limit': '$limit',
+        'before': ?before,
+      }),
+    );
+  }
+
   Future<LeaderPolls> leaders() async =>
       LeaderPolls.fromJson(await _get('leaders'));
   Future<List<RidingSummary>> ridings({String? mp}) async => List.unmodifiable(
-    ((await _get('ridings', {'mp': ?mp}))['ridings'] as List).map(
-      (r) => RidingSummary.fromJson(r),
-    ),
+    ((await _get('ridings', {'mp': ?mp}))['ridings'] as List)
+        .map((r) => RidingSummary.fromJson(r))
+        .where((r) => !_snapshot || mp == null || r.mp?.personId == mp),
   );
   Future<RidingDetail> riding(String id) async =>
       RidingDetail.fromJson(await _get('ridings/${Uri.encodeComponent(id)}'));
