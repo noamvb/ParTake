@@ -108,6 +108,13 @@ abstract class EventSource {
   /// by `parliamentDate`), in ParlVU's order.
   Future<List<ListingEvent>> day(DateTime ottawaDate, {bool refresh = false});
 
+  /// Events in an inclusive range of Ottawa days.
+  Future<List<ListingEvent>> range(
+    DateTime fromDay,
+    DateTime toDay, {
+    bool refresh = false,
+  });
+
   /// Today's events whose status is live or paused.
   Future<List<ListingEvent>> liveNow({bool refresh = false});
 

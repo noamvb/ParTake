@@ -808,6 +808,13 @@
       "description": "Fast-forward push of local pm-zones-2 to origin/pm-zones-2",
       "remote": "origin",
       "branch": "pm-zones-2"
+    },
+    {
+      "id": "push-parliament-calendar",
+      "adapter": "git_push",
+      "description": "Fast-forward push of local parliament-calendar to origin/parliament-calendar",
+      "remote": "origin",
+      "branch": "parliament-calendar"
     }
   ]
 }

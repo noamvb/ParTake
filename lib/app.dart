@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import 'calendar/sitting_calendar.dart';
 import 'watch/watch_follows.dart';
 
 import 'core/library.dart';
@@ -24,6 +25,7 @@ class PartakeApp extends StatefulWidget {
     required this.source,
     required this.library,
     this.watch,
+    this.calendar,
     this.features = const AppFeatures(),
     this.checkForUpdate,
     this.playerBuilder,
@@ -33,6 +35,7 @@ class PartakeApp extends StatefulWidget {
     this.audioHandler,
   });
 
+  final SittingCalendarClient? calendar;
   final EventSource source;
   final Library library;
   final WatchFollows? watch;
@@ -165,6 +168,7 @@ class _PartakeAppState extends State<PartakeApp> {
     theme: _theme(Brightness.light),
     darkTheme: _theme(Brightness.dark),
     home: AppShell(
+      calendar: widget.calendar,
       source: widget.source,
       library: widget.library,
       watch: widget.watch,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../calendar/sitting_calendar.dart';
 import '../core/library.dart';
 import '../platform/app_features.dart';
 import '../update/update_check.dart';
@@ -25,6 +26,7 @@ class AppShell extends StatefulWidget {
     required this.source,
     required this.library,
     this.watch,
+    this.calendar,
     this.features = const AppFeatures(),
     this.checkForUpdate,
     this.openUrl,
@@ -36,6 +38,7 @@ class AppShell extends StatefulWidget {
     this.fullscreenOverlay = false,
   });
 
+  final SittingCalendarClient? calendar;
   final EventSource source;
   final Library library;
   final WatchFollows? watch;
@@ -274,6 +277,7 @@ class _AppShellState extends State<AppShell> {
               onOpen: widget.onOpen,
               now: _now,
               showFollow: widget.features.following,
+              calendar: widget.calendar,
             ),
             _Tab.watch =>
               _watchOpened
@@ -291,6 +295,7 @@ class _AppShellState extends State<AppShell> {
               onOpen: widget.onOpen,
               now: _now,
               showFollow: widget.features.following,
+              calendar: widget.calendar,
             ),
             _Tab.following => FollowingScreen(
               library: widget.library,

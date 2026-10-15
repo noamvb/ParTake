@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'alerts/alert_runtime.dart';
 import 'app.dart';
+import 'calendar/sitting_calendar.dart';
 import 'platform/background_audio.dart';
 import 'platform/app_features.dart';
 import 'update/update_check.dart';
@@ -52,6 +53,9 @@ Future<void> main() async {
 
   runApp(
     PartakeApp(
+      calendar: SittingCalendarClient(
+        baseUri: kIsWeb ? Uri.base.resolve('/ourcommons/') : null,
+      ),
       source: source,
       library: library,
       watch: watch,

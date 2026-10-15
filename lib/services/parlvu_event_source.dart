@@ -21,6 +21,15 @@ class ParlVuEventSource implements EventSource {
     })
   >
   _days = {};
+  final _ranges =
+      <
+        (DateTime, DateTime),
+        ({
+          DateTime fetchedAt,
+          Future<List<ListingEvent>> future,
+          List<ListingEvent>? value,
+        })
+      >{};
   final Map<
     int,
     ({DateTime fetchedAt, Future<EventDetail> future, EventDetail? value})
@@ -77,6 +86,50 @@ class ParlVuEventSource implements EventSource {
       return value;
     } catch (_) {
       if (identical(_days[date], entry)) _days.remove(date);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<ListingEvent>> range(
+    DateTime fromDay,
+    DateTime toDay, {
+    bool refresh = false,
+  }) async {
+    final from = DateTime.utc(fromDay.year, fromDay.month, fromDay.day);
+    final date = DateTime.utc(toDay.year, toDay.month, toDay.day);
+    final key = (from, date);
+    final existing = _ranges[key];
+    final today = parliamentDate(_now());
+    final ttl = date.isBefore(today)
+        ? null
+        : date == today
+        ? const Duration(seconds: 60)
+        : const Duration(minutes: 10);
+    if (!refresh &&
+        existing != null &&
+        (existing.value == null ||
+            ttl == null ||
+            _now().difference(existing.fetchedAt) < ttl)) {
+      return existing.value ?? await existing.future;
+    }
+    final future = parlvu.eventsBetween(
+      from,
+      date,
+      includeUpcoming: !date.isBefore(today),
+    );
+    final entry = (
+      fetchedAt: _now(),
+      future: future,
+      value: null as List<ListingEvent>?,
+    );
+    _ranges[key] = entry;
+    try {
+      final value = await future;
+      _ranges[key] = (fetchedAt: entry.fetchedAt, future: future, value: value);
+      return value;
+    } catch (_) {
+      if (identical(_ranges[key], entry)) _ranges.remove(key);
       rethrow;
     }
   }

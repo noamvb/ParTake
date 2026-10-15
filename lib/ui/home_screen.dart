@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:parlvu/parlvu.dart';
 
+import '../calendar/sitting_calendar.dart';
 import '../core/library.dart';
 import 'event_tile.dart';
 import 'load_view.dart';
@@ -18,8 +19,10 @@ class HomeScreen extends StatefulWidget {
     required this.onOpen,
     required this.now,
     this.showFollow = true,
+    this.calendar,
   });
 
+  final SittingCalendarClient? calendar;
   final bool showFollow;
   final EventSource source;
   final Library library;
@@ -40,6 +43,49 @@ class _HomeData {
 class _HomeScreenState extends State<HomeScreen> {
   final _loadKey = GlobalKey<LoadViewState<_HomeData>>();
   Timer? _timer;
+  Future<String?>? _breakNotice;
+
+  @override
+  void initState() {
+    super.initState();
+    _breakNotice = _loadBreakNotice();
+  }
+
+  @override
+  void didUpdateWidget(HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.calendar != widget.calendar || oldWidget.now != widget.now) {
+      _breakNotice = _loadBreakNotice();
+    }
+  }
+
+  Future<String?> _loadBreakNotice() async {
+    final calendar = widget.calendar;
+    if (calendar == null) return null;
+    try {
+      final today = parliamentDate(widget.now());
+      final monday = today.subtract(Duration(days: today.weekday - 1));
+      final sunday = monday.add(const Duration(days: 6));
+      final days = <DateTime>{};
+      for (final year in {today.year, monday.year, sunday.year}) {
+        final yearDays = await calendar.year(year);
+        if (yearDays.isEmpty) return null;
+        days.addAll(yearDays);
+      }
+      if (List.generate(
+        7,
+        (i) => monday.add(Duration(days: i)),
+      ).any(days.contains)) {
+        return null;
+      }
+      var next = nextSittingDay(today, days);
+      next ??= nextSittingDay(today, await calendar.year(today.year + 1));
+      if (next == null) return 'House not sitting';
+      return 'House not sitting · returns ${calendarWeekdays[next.weekday - 1].substring(0, 3)} ${next.day} ${calendarMonths[next.month - 1].substring(0, 3)}';
+    } catch (_) {
+      return null;
+    }
+  }
 
   @override
   void dispose() {
@@ -177,6 +223,15 @@ class _HomeScreenState extends State<HomeScreen> {
               for (final e in data.liveNow) _tileFor(e),
             ],
             _continueWatchingSection(),
+            FutureBuilder<String?>(
+              future: _breakNotice,
+              builder: (context, snapshot) => snapshot.data == null
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      child: Text(snapshot.data!),
+                    ),
+            ),
             const _SectionHeader('Today'),
             if (today.isEmpty)
               const Padding(

@@ -27,6 +27,10 @@ class FakeUpstreamHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             body = b'{"ContentEntityDatas": []}'
+        elif self.path == "/en/sitting-calendar/2026":
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            body = b"<td class='2026-10-19 chamber-meeting'>"
         elif self.path == EVENT:
             self.send_response(200)
             self.send_header("Content-Type", "text/html")
@@ -97,6 +101,31 @@ class PartakeServerTests(unittest.TestCase):
         result = response.status, dict(response.getheaders()), body
         conn.close()
         return result
+
+    def test_A1_sitting_calendar_year_proxy(self):
+        server = make_server(str(self.root), "127.0.0.1", 0, "http://127.0.0.1:1",
+                             ourcommons_upstream="http://127.0.0.1:%d" % self.fake.server_port)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            status, headers, body = self.request("/ourcommons/sitting-calendar/2026", server=server)
+            self.assertEqual((status, body), (200, b"<td class='2026-10-19 chamber-meeting'>"))
+            self.assertEqual(headers["Content-Type"], "text/html; charset=utf-8")
+            self.request("/ourcommons/sitting-calendar/2026", server=server)
+            status, headers, body = self.request("/ourcommons/sitting-calendar/2026", "HEAD", server=server)
+            self.assertEqual((status, body), (200, b""))
+            self.assertEqual([r[0] for r in FakeUpstreamHandler.records], ["/en/sitting-calendar/2026"])
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join()
+
+    def test_A2_sitting_calendar_disallowed_paths(self):
+        for path in ("/ourcommons/sitting-calendar/20261", "/ourcommons/sitting-calendar/2026?x=1", "/ourcommons/en/other"):
+            status, _headers, body = self.request(path)
+            self.assertEqual(status, 404)
+            self.assertEqual(json.loads(body), {"error": "not allowed"})
+        self.assertEqual(FakeUpstreamHandler.records, [])
 
     def test_healthz(self):
         status, headers, body = self.request("/healthz")

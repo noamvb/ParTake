@@ -70,6 +70,22 @@ class FakeEventSource implements EventSource {
   }
 
   @override
+  Future<List<ListingEvent>> range(
+    DateTime fromDay,
+    DateTime toDay, {
+    bool refresh = false,
+  }) async {
+    String date(DateTime d) => d.toIso8601String().substring(0, 10);
+    calls.add('range ${date(fromDay)} ${date(toDay)}');
+    final keys =
+        days.keys
+            .where((d) => !d.isBefore(fromDay) && !d.isAfter(toDay))
+            .toList()
+          ..sort();
+    return [for (final day in keys) ...days[day]!];
+  }
+
+  @override
   Future<List<ListingEvent>> liveNow({bool refresh = false}) async {
     calls.add('liveNow');
     return [
