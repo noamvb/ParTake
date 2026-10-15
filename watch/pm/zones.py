@@ -33,6 +33,13 @@ COUNTRIES = {
     'Philippines': 'Asia/Manila', 'Indonesia': 'Asia/Jakarta', 'Vietnam': 'Asia/Ho_Chi_Minh',
     'Malaysia': 'Asia/Kuala_Lumpur', 'Peru': 'America/Lima', 'Chile': 'America/Santiago',
     'Brazil': 'America/Sao_Paulo', 'Argentina': 'America/Argentina/Buenos_Aires',
+    'Republic of Korea': 'Asia/Seoul', 'Republic of Singapore': 'Asia/Singapore',
+    'Latvia': 'Europe/Riga', 'Estonia': 'Europe/Tallinn', 'Lithuania': 'Europe/Vilnius',
+    'Austria': 'Europe/Vienna', 'Greece': 'Europe/Athens', 'Czechia': 'Europe/Prague',
+    'Hungary': 'Europe/Budapest', 'Romania': 'Europe/Bucharest', 'Slovakia': 'Europe/Bratislava',
+    'Luxembourg': 'Europe/Luxembourg', 'Iceland': 'Atlantic/Reykjavik', 'New Zealand': 'Pacific/Auckland',
+    'Kenya': 'Africa/Nairobi', 'Nigeria': 'Africa/Lagos', 'Colombia': 'America/Bogota',
+    'Jamaica': 'America/Jamaica', 'Barbados': 'America/Barbados', 'Jordan': 'Asia/Amman',
 }
 
 
@@ -49,4 +56,6 @@ def zone_for(heading: str, lat: float | None, lon: float | None) -> str | None:
             if lon >= boundary:
                 return zone
         return 'America/Los_Angeles'
+    if region.startswith('the '):  # "the Netherlands"
+        region = region[4:]
     return COUNTRIES.get(region)
