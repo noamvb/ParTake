@@ -124,6 +124,8 @@ class PmDataTests(unittest.TestCase):
             ('Busan, Republic of Korea', None, None, 'Asia/Seoul'),
             ('Singapore, Republic of Singapore', None, None, 'Asia/Singapore'),
             ('Riga, Latvia', None, None, 'Europe/Riga'),
+            ('Ottawa, Canada', None, None, 'America/Toronto'),
+            ('Beijing, People’s Republic of China', None, None, 'Asia/Shanghai'),
             ('Atlantis, Nowhere', None, None, None),
         ]:
             with self.subTest(heading=heading):
