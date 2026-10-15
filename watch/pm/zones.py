@@ -2,7 +2,7 @@
 
 
 PROVINCES = {
-    'Ontario': 'America/Toronto', 'Quebec': 'America/Toronto',
+    'Ontario': 'America/Toronto', 'Quebec': 'America/Toronto', 'Québec': 'America/Toronto',
     'Manitoba': 'America/Winnipeg', 'Saskatchewan': 'America/Regina',
     'Alberta': 'America/Edmonton', 'British Columbia': 'America/Vancouver',
     'Nova Scotia': 'America/Halifax', 'New Brunswick': 'America/Halifax',
