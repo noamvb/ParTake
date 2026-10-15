@@ -801,6 +801,13 @@
       "description": "Fast-forward push of local pm-zones to origin/pm-zones",
       "remote": "origin",
       "branch": "pm-zones"
+    },
+    {
+      "id": "push-pm-zones-2",
+      "adapter": "git_push",
+      "description": "Fast-forward push of local pm-zones-2 to origin/pm-zones-2",
+      "remote": "origin",
+      "branch": "pm-zones-2"
     }
   ]
 }
