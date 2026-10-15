@@ -28,13 +28,14 @@ An **event** object (one timed line of an itinerary):
 ```json
 {"date": "2026-10-15", "local_time": "09:15", "starts_at": "2026-10-15T15:15:00Z",
  "place": {...place...}, "text": "The Prime Minister will meet with community members at a local business.",
- "media": "open", "item_id": "media-advisories/2026/10/14/thursday-october-15-2026"}
+ "venue": "West Block, Parliament Hill", "media": "open", "item_id": "media-advisories/2026/10/14/thursday-october-15-2026"}
 ```
 
 `date` is the itinerary's date; `local_time` is 24-hour `HH:MM` in the
 place's zone; `starts_at` is UTC or `null` when the zone is unknown;
-`media` is `open`, `closed`, `pool` (pooled cameras or photographers only) or
-`null`.
+`venue` joins the untimed lines that follow the event line before any media
+note (`null` when none); `media` is `open` ("Open to media"), `closed`
+("Closed to media"), `pool` (any "Pool"/"Pooled" note) or `null`.
 
 ## GET /api/pm/today
 
