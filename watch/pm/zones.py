@@ -14,6 +14,7 @@ PROVINCES = {
 OVERRIDES = {
     'Saint-Pierre-et-Miquelon, France': 'America/Miquelon',
     'National Capital Region, Canada': 'America/Toronto',
+    'Ottawa, Canada': 'America/Toronto',
     'Greater Toronto Area, Ontario': 'America/Toronto',
     'Washington, D.C., United States of America': 'America/New_York',
     'New York City, United States of America': 'America/New_York',
@@ -39,6 +40,7 @@ COUNTRIES = {
     'Hungary': 'Europe/Budapest', 'Romania': 'Europe/Bucharest', 'Slovakia': 'Europe/Bratislava',
     'Luxembourg': 'Europe/Luxembourg', 'Iceland': 'Atlantic/Reykjavik', 'New Zealand': 'Pacific/Auckland',
     'Kenya': 'Africa/Nairobi', 'Nigeria': 'Africa/Lagos', 'Colombia': 'America/Bogota',
+    'People’s Republic of China': 'Asia/Shanghai', "People's Republic of China": 'Asia/Shanghai',
     'Jamaica': 'America/Jamaica', 'Barbados': 'America/Barbados', 'Jordan': 'Asia/Amman',
 }
 
