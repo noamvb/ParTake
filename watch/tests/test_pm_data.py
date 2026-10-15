@@ -204,10 +204,18 @@ class PmDataTests(unittest.TestCase):
         calls, timeline = [], []
         def fetch(url):
             if 'web.archive.org' in url:
-                return fixture('cdx-readouts-2026-09.txt').encode() if 'readouts/2026/' in url else b''
+                if 'readouts/2026/' in url:
+                    return fixture('cdx-readouts-2026-09.txt').encode()
+                if 'news-releases/2026/' in url:
+                    return ('https://www.pm.gc.ca/en/news/news-releases/2026/09/03/swearing-\n'
+                            'https://www.pm.gc.ca/en/news/news-releases/2026/09/03/http.initiator\n'
+                            'https://www.pm.gc.ca/en/news/news-releases/2026/09/03/gone\n').encode()
+                return b''
             timeline.append(('fetch', url))
             if '/media-advisories/' in url:
                 raise HTTPError(url, 404, 'missing', None, None)
+            if url.endswith('/gone'):
+                raise HTTPError(url, 400, 'bad request', None, None)
             calls.append(url)
             return fixture('readout-guyana.html').encode()
         def sleep(n):
