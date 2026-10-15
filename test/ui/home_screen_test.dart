@@ -53,6 +53,13 @@ class _ThrowingDaySource implements EventSource {
   }
 
   @override
+  Future<List<ListingEvent>> range(
+    DateTime fromDay,
+    DateTime toDay, {
+    bool refresh = false,
+  }) => inner.range(fromDay, toDay, refresh: refresh);
+
+  @override
   Future<List<ListingEvent>> liveNow({bool refresh = false}) =>
       inner.liveNow(refresh: refresh);
 

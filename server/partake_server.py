@@ -98,7 +98,7 @@ def _json_body(value):
     return json.dumps({"error": value}, separators=(",", ":")).encode("utf-8")
 
 
-def make_server(root: str, host: str, port: int, upstream: str, clock=None, watch_upstream=None) -> ThreadingHTTPServer:
+def make_server(root: str, host: str, port: int, upstream: str, clock=None, watch_upstream=None, ourcommons_upstream="https://www.ourcommons.ca") -> ThreadingHTTPServer:
     """Create a configured server. ``clock`` is injectable for cache tests."""
     root_path = Path(root).resolve()
     if not root_path.is_dir():
@@ -228,6 +228,25 @@ def make_server(root: str, host: str, port: int, upstream: str, clock=None, watc
                     status = 200
                     self._send(status, b"ok", "text/plain", head=head)
                     return
+                if decoded_path.startswith("/ourcommons/"):
+                    if not re.fullmatch(r"/ourcommons/sitting-calendar/[0-9]{4}", self.path):
+                        status = 404
+                        self._json_error(status, "not allowed", head)
+                        return
+                    relative = "/en/" + self.path[len("/ourcommons/"):]
+                    status, headers, body = cache.get_or_fetch(
+                        ("ourcommons", relative),
+                        lambda: self._fetch(relative, "GET", ourcommons_upstream),
+                    )
+                    if status >= 500:
+                        self._json_error(502, "upstream %d" % status, head)
+                        status = 502
+                    elif status < 200 or status >= 300:
+                        self._json_error(502, "upstream unreachable", head)
+                        status = 502
+                    else:
+                        self._send(status, body, headers.get("Content-Type", "application/octet-stream"), "no-store", head)
+                    return
                 if decoded_path.startswith("/parlvu/"):
                     relative = self.path[len("/parlvu"):]
                     if not allowed_proxy_path(relative):
@@ -264,9 +283,9 @@ def make_server(root: str, host: str, port: int, upstream: str, clock=None, watc
                 log_path = raw_path if raw_path.startswith("/parlvu/") else decoded_path
                 self._log(log_path, status, started)
 
-        def _fetch(self, path_and_query, method):
+        def _fetch(self, path_and_query, method, base=None):
             request = Request(
-                upstream + path_and_query,
+                (base or upstream).rstrip("/") + path_and_query,
                 headers={"User-Agent": USER_AGENT, "Accept": "application/json, text/html"},
                 method=method,
             )
@@ -335,8 +354,9 @@ def main(argv=None):
     parser.add_argument("--port", type=int, default=8790)
     parser.add_argument("--upstream", default="https://parlvu.parl.gc.ca")
     parser.add_argument("--watch-upstream")
+    parser.add_argument("--ourcommons-upstream", default="https://www.ourcommons.ca")
     args = parser.parse_args(argv)
-    server = make_server(args.root, args.host, args.port, args.upstream, watch_upstream=args.watch_upstream)
+    server = make_server(args.root, args.host, args.port, args.upstream, watch_upstream=args.watch_upstream, ourcommons_upstream=args.ourcommons_upstream)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
