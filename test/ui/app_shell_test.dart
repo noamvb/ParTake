@@ -21,6 +21,52 @@ import '../watch/fake_watch_server.dart';
 DateTime _clock() => DateTime.utc(2026, 9, 23, 18, 30);
 
 void main() {
+  testWidgets('14 PM tab order on Deck and viewer bar and rail', (
+    tester,
+  ) async {
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    tester.view.devicePixelRatio = 1;
+    for (final features in [const AppFeatures(), AppFeatures.viewerOnly]) {
+      final expected = features.deck
+          ? ['Home', 'Watch', 'Polls', 'PM', 'Browse', 'Following']
+          : ['Home', 'Polls', 'PM', 'Browse'];
+      for (final width in [400.0, 1200.0]) {
+        tester.view.physicalSize = Size(width, 800);
+        await tester.pumpWidget(
+          MaterialApp(
+            home: AppShell(
+              source: FakeEventSource(),
+              library: FakeLibrary(),
+              features: features,
+              onOpen: (_) {},
+              now: _clock,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        if (width < 720) {
+          expect(
+            tester
+                .widget<NavigationBar>(find.byType(NavigationBar))
+                .destinations
+                .cast<NavigationDestination>()
+                .map((d) => d.label),
+            expected,
+          );
+        } else {
+          expect(
+            tester
+                .widget<NavigationRail>(find.byType(NavigationRail))
+                .destinations
+                .map((d) => (d.label as Text).data),
+            expected,
+          );
+        }
+      }
+    }
+  });
+
   testWidgets('viewer 9: narrow and wide navigation has Home and Browse', (
     tester,
   ) async {
@@ -48,6 +94,7 @@ void main() {
     expect(bar.destinations.cast<NavigationDestination>().map((d) => d.label), [
       'Home',
       'Polls',
+      'PM',
       'Browse',
     ]);
     for (final label in ['Watch', 'Following']) {
@@ -62,6 +109,7 @@ void main() {
     expect(rail.destinations.map((d) => (d.label as Text).data), [
       'Home',
       'Polls',
+      'PM',
       'Browse',
     ]);
   });
@@ -357,6 +405,7 @@ void main() {
       'Home',
       'Watch',
       'Polls',
+      'PM',
       'Browse',
       'Following',
     ]);

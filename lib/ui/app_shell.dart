@@ -5,17 +5,19 @@ import '../core/library.dart';
 import '../platform/app_features.dart';
 import '../update/update_check.dart';
 import '../polls/polls_client.dart';
+import '../pm/pm_client.dart';
 import '../watch/watch_follows.dart';
 import 'browse_screen.dart';
 import 'following_screen.dart';
 import 'home_screen.dart';
 import 'open_request.dart';
 import 'polls_screen.dart';
+import 'pm_screen.dart';
 import 'watch_screen.dart';
 
-enum _Tab { home, watch, polls, browse, following }
+enum _Tab { home, watch, polls, pm, browse, following }
 
-/// The navigation frame: Home, Watch, Polls, Browse and Following, switched by a
+/// The navigation frame: Home, Watch, Polls, PM, Browse and Following, switched by a
 /// bottom bar on narrow screens or a side rail on wide ones.
 class AppShell extends StatefulWidget {
   const AppShell({
@@ -27,6 +29,7 @@ class AppShell extends StatefulWidget {
     this.checkForUpdate,
     this.openUrl,
     this.polls,
+    this.pm,
     required this.onOpen,
     this.now,
     this.overlay,
@@ -40,6 +43,7 @@ class AppShell extends StatefulWidget {
   final Future<UpdateInfo?> Function()? checkForUpdate;
   final void Function(Uri url)? openUrl;
   final PollsClient? polls;
+  final PmClient? pm;
   final OpenEvent onOpen;
   final Widget? overlay;
   final bool fullscreenOverlay;
@@ -62,6 +66,7 @@ class _AppShellState extends State<AppShell> {
     if (widget.features.deck) _Tab.watch,
     if (widget.features.deck || widget.features.pollsSnapshot != null)
       _Tab.polls,
+    if (widget.features.deck || widget.features.pollsSnapshot != null) _Tab.pm,
     _Tab.browse,
     if (widget.features.following) _Tab.following,
   ];
@@ -69,13 +74,23 @@ class _AppShellState extends State<AppShell> {
   /// The Watch tab is built on first visit so its feed is not fetched earlier.
   bool _watchOpened = false;
   bool _pollsOpened = false;
+  bool _pmOpened = false;
+  PmClient? _ownedPm;
   PollsClient? _ownedPolls;
 
-  static const _labels = ['Home', 'Watch', 'Polls', 'Browse', 'Following'];
+  static const _labels = [
+    'Home',
+    'Watch',
+    'Polls',
+    'PM',
+    'Browse',
+    'Following',
+  ];
   static const _icons = [
     Icons.home,
     Icons.newspaper,
     Icons.bar_chart,
+    Icons.account_balance_outlined,
     Icons.calendar_month,
     Icons.star,
   ];
@@ -84,6 +99,10 @@ class _AppShellState extends State<AppShell> {
 
   void _select(int i) => setState(() {
     _index = i;
+    if (_tabs[i] == _Tab.pm) {
+      _pmOpened = true;
+      _pmClient();
+    }
     if (_tabs[i] == _Tab.watch) _watchOpened = true;
     if (_tabs[i] == _Tab.polls) {
       _pollsOpened = true;
@@ -108,6 +127,8 @@ class _AppShellState extends State<AppShell> {
       if (oldWidget.features.deck) _Tab.watch,
       if (oldWidget.features.deck || oldWidget.features.pollsSnapshot != null)
         _Tab.polls,
+      if (oldWidget.features.deck || oldWidget.features.pollsSnapshot != null)
+        _Tab.pm,
       _Tab.browse,
       if (oldWidget.features.following) _Tab.following,
     ][_index];
@@ -142,10 +163,47 @@ class _AppShellState extends State<AppShell> {
     return _ownedPolls;
   }
 
+  PmClient? _pmClient() {
+    if (widget.pm != null) return widget.pm;
+    final snapshot = widget.features.deck
+        ? null
+        : widget.features.pollsSnapshot;
+    final address = snapshot ?? Uri.tryParse(widget.watch?.address ?? '');
+    if (_ownedPm != null &&
+        (_ownedPm!.address != address ||
+            _ownedPm!.isSnapshot != (snapshot != null))) {
+      _ownedPm!.close();
+      _ownedPm = null;
+    }
+    if (snapshot != null) return _ownedPm ??= PmClient.snapshot(base: snapshot);
+    if ((widget.watch?.address ?? '').isNotEmpty) {
+      return _ownedPm ??= PmClient(address: address!);
+    }
+    return null;
+  }
+
+  Widget _pmTab() {
+    if (!_pmOpened) return const SizedBox.shrink();
+    final client = _pmClient();
+    if (client == null) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text(
+            'Set the Deck address in the Watch tab first.',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+    return PmScreen(key: ValueKey(client), pm: client, now: _now);
+  }
+
   @override
   void dispose() {
     widget.watch?.removeListener(_watchChanged);
     _ownedPolls?.close();
+    _ownedPm?.close();
     super.dispose();
   }
 
@@ -226,6 +284,7 @@ class _AppShellState extends State<AppShell> {
                     )
                   : const SizedBox.shrink(),
             _Tab.polls => _pollsTab(),
+            _Tab.pm => _pmTab(),
             _Tab.browse => BrowseScreen(
               source: widget.source,
               library: widget.library,
@@ -253,6 +312,9 @@ class _AppShellState extends State<AppShell> {
                   for (final tab in _tabs)
                     NavigationRailDestination(
                       icon: Icon(_icons[tab.index]),
+                      selectedIcon: tab == _Tab.pm
+                          ? const Icon(Icons.account_balance)
+                          : null,
                       label: Text(_labels[tab.index]),
                     ),
                 ],
@@ -331,6 +393,9 @@ class _AppShellState extends State<AppShell> {
                   for (final tab in _tabs)
                     NavigationDestination(
                       icon: Icon(_icons[tab.index]),
+                      selectedIcon: tab == _Tab.pm
+                          ? const Icon(Icons.account_balance)
+                          : null,
                       label: _labels[tab.index],
                     ),
                 ],

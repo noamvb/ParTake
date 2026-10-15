@@ -1,0 +1,135 @@
+{
+  "days": [
+    {
+      "date": "2026-07-15",
+      "item_id": "media-advisories/2026/07/14/wednesday-july-15-2026",
+      "url": "https://www.pm.gc.ca/en/news/media-advisories/2026/07/14/wednesday-july-15-2026",
+      "notes": [
+        "Private meetings"
+      ],
+      "events": [
+        {
+          "date": "2026-07-15",
+          "local_time": "14:00",
+          "starts_at": "2026-07-15T12:00:00Z",
+          "place": {
+            "id": "paris-france",
+            "name": "Paris, France",
+            "country": "France",
+            "lat": 48.8566,
+            "lon": 2.3522,
+            "zone": "Europe/Paris"
+          },
+          "text": "Community meeting",
+          "venue": "West Block, Parliament Hill",
+          "media": "open",
+          "item_id": "media-advisories/2026/07/14/wednesday-july-15-2026"
+        },
+        {
+          "date": "2026-07-15",
+          "local_time": "17:00",
+          "starts_at": "2026-07-15T15:00:00Z",
+          "place": {
+            "id": "paris-france",
+            "name": "Paris, France",
+            "country": "France",
+            "lat": 48.8566,
+            "lon": 2.3522,
+            "zone": "Europe/Paris"
+          },
+          "text": "Bilateral meeting",
+          "venue": "West Block, Parliament Hill",
+          "media": "open",
+          "item_id": "media-advisories/2026/07/14/wednesday-july-15-2026"
+        },
+        {
+          "date": "2026-07-15",
+          "local_time": "18:00",
+          "starts_at": null,
+          "place": {
+            "id": "unknown",
+            "name": "Unknown place",
+            "country": "Canada",
+            "lat": null,
+            "lon": null,
+            "zone": null
+          },
+          "text": "Private reception",
+          "venue": "West Block, Parliament Hill",
+          "media": "open",
+          "item_id": "media-advisories/2026/07/14/wednesday-july-15-2026"
+        }
+      ]
+    },
+    {
+      "date": "2026-07-16",
+      "item_id": "media-advisories/2026/07/14/wednesday-july-15-2026",
+      "url": "https://www.pm.gc.ca/en/news/media-advisories/2026/07/14/wednesday-july-15-2026",
+      "notes": [],
+      "events": [
+        {
+          "date": "2026-07-16",
+          "local_time": "09:15",
+          "starts_at": "2026-07-16T13:15:00Z",
+          "place": {
+            "id": "ottawa-ontario",
+            "name": "Ottawa, Ontario",
+            "country": "Canada",
+            "lat": 45.42,
+            "lon": -75.69,
+            "zone": "America/Toronto"
+          },
+          "text": "Question Period",
+          "venue": "West Block, Parliament Hill",
+          "media": "pool",
+          "item_id": "media-advisories/2026/07/14/wednesday-july-15-2026"
+        }
+      ]
+    }
+  ],
+  "now": {
+    "place": {
+      "id": "ottawa-ontario",
+      "name": "Ottawa, Ontario",
+      "country": "Canada",
+      "lat": 45.42,
+      "lon": -75.69,
+      "zone": "America/Toronto"
+    },
+    "event": {
+      "date": "2026-07-14",
+      "local_time": "14:00",
+      "starts_at": "2026-07-14T16:00:00Z",
+      "place": {
+        "id": "ottawa-ontario",
+        "name": "Ottawa, Ontario",
+        "country": "Canada",
+        "lat": 45.42,
+        "lon": -75.69,
+        "zone": "America/Toronto"
+      },
+      "text": "Community meeting",
+      "venue": "West Block, Parliament Hill",
+      "media": "open",
+      "item_id": "media-advisories/2026/07/14/wednesday-july-15-2026"
+    }
+  },
+  "next": {
+    "date": "2026-07-15",
+    "local_time": "17:00",
+    "starts_at": "2026-07-15T15:00:00Z",
+    "place": {
+      "id": "paris-france",
+      "name": "Paris, France",
+      "country": "France",
+      "lat": 48.8566,
+      "lon": 2.3522,
+      "zone": "Europe/Paris"
+    },
+    "text": "Bilateral meeting",
+    "venue": "West Block, Parliament Hill",
+    "media": "open",
+    "item_id": "media-advisories/2026/07/14/wednesday-july-15-2026"
+  },
+  "fetched_at": "2026-07-15T08:00:00Z"
+}

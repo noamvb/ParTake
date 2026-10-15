@@ -121,7 +121,7 @@ Query: `since`, `until` (dates, required, at most 31 days apart; else 400).
 ```
 
 One stop per consecutive run of events in the same place, ordered by date
-then local time.
+then itinerary order (the order the PMO lists them).
 
 ## Snapshot (Windows build)
 

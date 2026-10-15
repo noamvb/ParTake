@@ -127,7 +127,7 @@ def places(db, since, until, now):
 def path(db, since, until, now):
     since, until = _range(since, until, now, required=True)
     stops = []
-    for row in db.execute('SELECT * FROM pm_events WHERE date BETWEEN ? AND ? ORDER BY date,local_time,item_id,seq', (since, until)):
+    for row in db.execute('SELECT * FROM pm_events WHERE date BETWEEN ? AND ? ORDER BY date,seq', (since, until)):
         if stops and stops[-1]['place']['id'] == row['place_id']:
             stops[-1]['events'] += 1
         else:

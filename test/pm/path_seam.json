@@ -1,0 +1,45 @@
+{
+  "stops": [
+    {
+      "date": "2026-07-13",
+      "place": {
+        "id": "ottawa-ontario",
+        "name": "Ottawa, Ontario",
+        "country": "Canada",
+        "lat": 45.42,
+        "lon": -75.69,
+        "zone": "America/Toronto"
+      },
+      "first_time": "09:00",
+      "events": 3
+    },
+    {
+      "date": "2026-07-15",
+      "place": {
+        "id": "paris-france",
+        "name": "Paris, France",
+        "country": "France",
+        "lat": 48.8566,
+        "lon": 2.3522,
+        "zone": "Europe/Paris"
+      },
+      "first_time": "14:00",
+      "events": 2
+    },
+    {
+      "date": "2026-07-16",
+      "place": {
+        "id": "unknown",
+        "name": "Unknown place",
+        "country": "Canada",
+        "lat": null,
+        "lon": null,
+        "zone": null
+      },
+      "first_time": "18:00",
+      "events": 1
+    }
+  ],
+  "since": "2026-07-13",
+  "until": "2026-07-19"
+}

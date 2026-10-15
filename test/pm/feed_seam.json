@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "id": "readouts/2026/10/14/x",
+      "type": "readout",
+      "title": "Prime Minister speaks with President of Guyana",
+      "published_at": "2026-07-15T10:00:00Z",
+      "url": "https://www.pm.gc.ca/en/news/readouts/2026/10/14/x",
+      "summary": "Today, the Prime Minister spoke with the President of Guyana."
+    },
+    {
+      "id": "statements/2026/07/15/x",
+      "type": "statement",
+      "title": "Statement on Canada",
+      "published_at": "2026-07-15T10:00:00Z",
+      "url": "https://www.pm.gc.ca/en/news/readouts/2026/10/14/x",
+      "summary": "Today, the Prime Minister spoke with the President of Guyana."
+    }
+  ],
+  "next": "c1",
+  "source": {
+    "name": "Prime Minister\u2019s Office",
+    "url": "https://www.pm.gc.ca/en/news"
+  }
+}

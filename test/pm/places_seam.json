@@ -1,0 +1,30 @@
+{
+  "places": [
+    {
+      "id": "paris-france",
+      "name": "Paris, France",
+      "country": "France",
+      "lat": 48.8566,
+      "lon": 2.3522,
+      "zone": "Europe/Paris",
+      "visits": 14,
+      "days": 9,
+      "first": "2025-03-21",
+      "last": "2026-07-15"
+    },
+    {
+      "id": "unknown",
+      "name": "Unknown place",
+      "country": "Canada",
+      "lat": null,
+      "lon": null,
+      "zone": null,
+      "visits": 2,
+      "days": 1,
+      "first": "2025-03-22",
+      "last": "2026-06-01"
+    }
+  ],
+  "since": "2025-03-14",
+  "until": "2026-07-15"
+}
