@@ -251,7 +251,7 @@ def backfill(data_dir, fetch, sleep, now, since='2025-03-14'):
             urls = set()
             for original in fetch(cdx).decode('utf-8-sig').splitlines():
                 path = urlsplit(original.strip()).path
-                match = re.fullmatch(r'/en/news/' + segment + r'/(\d{4})/(\d{2})/(\d{2})/[^/]+', path)
+                match = re.fullmatch(r'/en/news/' + segment + r'/(\d{4})/(\d{2})/(\d{2})/[a-z0-9]+(?:-[a-z0-9]+)*', path)
                 if match and '-'.join(match.groups()) >= since:
                     urls.add(BASE + path)
             for url in sorted(urls):
@@ -259,7 +259,8 @@ def backfill(data_dir, fetch, sleep, now, since='2025-03-14'):
                     try:
                         payload = get(url)
                     except HTTPError as exc:
-                        if exc.code == 404:
+                        # The Archive also lists junk URLs that pm.gc.ca rejects (400) or lacks (404).
+                        if 400 <= exc.code < 500:
                             continue
                         raise
                     _page(data_dir, url, payload, fetch, sleep, now)
