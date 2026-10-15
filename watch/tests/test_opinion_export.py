@@ -20,6 +20,12 @@ class OpinionExportTests(unittest.TestCase):
             "/api/polls/ridings/24038": {"id": "24038", "name": "Chicoutimi"},
             "/api/polls/ridings/35001": {"id": "35001", "name": "Ajax"},
         }
+        self.pages.update({
+            "/api/pm/today": {"days": []},
+            "/api/pm/feed?limit=200": {"items": [], "next": None},
+            "/api/pm/places": {"places": [], "until": "2026-10-14"},
+            "/api/pm/path?since=2026-09-17&until=2026-10-14": {"stops": []},
+        })
         self.requests = []
 
     def fetch(self, url):
@@ -48,13 +54,15 @@ class OpinionExportTests(unittest.TestCase):
             "/api/polls/list?region=CAN&limit=200&before=2026-10-01%7Cb",
             "/api/polls/list?region=CAN&limit=200&before=2026-09-01%7Cc",
             "/api/polls/ridings", "/api/polls/ridings/24038", "/api/polls/ridings/35001",
+            "/api/pm/today", "/api/pm/feed?limit=200", "/api/pm/places",
+            "/api/pm/path?since=2026-09-17&until=2026-10-14",
         ]])
 
     def test_A2_riding_files(self):
         self.out.mkdir()
         (self.out / "stale.json").write_text("old")
         self.assertTrue((self.out / "stale.json").exists())
-        self.assertEqual(export(self.base, self.out, self.fetch), 6)
+        self.assertEqual(export(self.base, self.out, self.fetch), 10)
         self.assertEqual(sorted(p.name for p in (self.out / "ridings").iterdir()),
                          ["24038.json", "35001.json"])
         for riding_id in ["24038", "35001"]:

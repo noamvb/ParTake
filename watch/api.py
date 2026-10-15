@@ -14,6 +14,7 @@ import unicodedata
 from urllib.parse import parse_qs, urlsplit
 
 from watch import digest, embed, push
+from watch.pm import api as pm_api
 from watch.feed import feed, _speaker
 from watch.opinion.results import ELECTION, results_from_db
 from watch.opinion.swing import PARTIES, shares
@@ -388,6 +389,26 @@ def make_server(data_dir, host, port, clock=None, new_id=None, ollama=None):
                             self._send(200, alerts_since(db, query.get("since", [None])[0], clock()))
                         elif path == "/api/live":
                             self._send(200, live(db, clock()))
+                        elif path.startswith("/api/pm/"):
+                            query = parse_qs(parts.query, keep_blank_values=True)
+                            if path == "/api/pm/today":
+                                self._send(200, pm_api.today(db, clock()))
+                            elif path == "/api/pm/feed":
+                                self._send(200, pm_api.feed(db, int(query.get("limit", ["50"])[0]),
+                                                           query.get("before", [None])[0],
+                                                           query.get("type", [None])[0]))
+                            elif path in ("/api/pm/places", "/api/pm/path"):
+                                reader = pm_api.places if path.endswith("/places") else pm_api.path
+                                self._send(200, reader(db, query.get("since", [None])[0],
+                                                       query.get("until", [None])[0], clock()))
+                            elif path.startswith("/api/pm/items/"):
+                                result = pm_api.item(db, path[len("/api/pm/items/"):])
+                                if result is None:
+                                    self._error(404, "not found")
+                                else:
+                                    self._send(200, result)
+                            else:
+                                self._error(404, "not found")
                         elif path == "/api/polls/list":
                             query = parse_qs(parts.query, keep_blank_values=True)
                             self._send(200, polls_list(db, query.get("region", ["CAN"])[0],

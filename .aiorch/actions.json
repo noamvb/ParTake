@@ -716,6 +716,13 @@
         ]
       },
       "recovery_description": "A pushed tag is not rolled back automatically. If the release run fails, fix forward with a higher version; delete the tag on GitHub only with the owner's OK."
+    },
+    {
+      "id": "push-pm-tracker",
+      "adapter": "git_push",
+      "description": "Fast-forward push of local pm-tracker to origin/pm-tracker",
+      "remote": "origin",
+      "branch": "pm-tracker"
     }
   ]
 }

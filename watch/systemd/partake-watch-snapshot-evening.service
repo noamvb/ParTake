@@ -1,0 +1,10 @@
+[Unit]
+Description=Publish the evening ParTake public snapshot
+After=network.target partake-watch-api.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/partake
+ExecStart=/bin/sh %h/partake/watch/opinion/publish.sh
+MemoryMax=500M
+Nice=10

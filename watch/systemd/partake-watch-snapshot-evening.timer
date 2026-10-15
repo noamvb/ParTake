@@ -1,0 +1,9 @@
+[Unit]
+Description=Publish tomorrow's PM itinerary at 18:15 Ottawa time
+
+[Timer]
+OnCalendar=*-*-* 18:15:00 America/Toronto
+Persistent=true
+
+[Install]
+WantedBy=timers.target

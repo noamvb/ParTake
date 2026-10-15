@@ -1,6 +1,7 @@
 """Export the running polls API to a public, static JSON snapshot."""
 
 import argparse
+from datetime import date, timedelta
 import json
 from pathlib import Path
 import shutil
@@ -55,6 +56,18 @@ def export(api_base: str, out_dir: Path, fetch=None) -> int:
             riding_id = riding["id"]
             write("ridings/" + riding_id + ".json",
                   get("ridings/" + quote(riding_id, safe="")))
+        def pm_get(path):
+            return json.loads(fetch(api_base + "/api/pm/" + path))
+
+        write("pm/today.json", pm_get("today"))
+        pm_feed = pm_get("feed?limit=200")
+        pm_feed["next"] = None
+        write("pm/feed.json", pm_feed)
+        pm_places = pm_get("places")
+        write("pm/places.json", pm_places)
+        until = date.fromisoformat(pm_places["until"])
+        since = until - timedelta(days=27)
+        write("pm/path.json", pm_get("path?since=%s&until=%s" % (since, until)))
         if out_dir.exists():
             shutil.rmtree(out_dir)
         snapshot.rename(out_dir)

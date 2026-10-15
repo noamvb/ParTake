@@ -75,6 +75,15 @@ CREATE TABLE IF NOT EXISTS captions (
 CREATE TABLE IF NOT EXISTS digests (
  id TEXT PRIMARY KEY, date TEXT NOT NULL, kind TEXT NOT NULL, created_at TEXT NOT NULL,
  replaces TEXT, body TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS pm_items (
+ id TEXT PRIMARY KEY, type TEXT, title TEXT, url TEXT, published_at TEXT,
+ body_html TEXT, text TEXT, source TEXT CHECK(source IN ('rss','backfill')), fetched_at TEXT);
+CREATE TABLE IF NOT EXISTS pm_events (
+ item_id TEXT, date TEXT, seq INTEGER, local_time TEXT, starts_at TEXT,
+ place_id TEXT, text TEXT, venue TEXT, media TEXT, PRIMARY KEY (item_id, seq));
+CREATE INDEX IF NOT EXISTS pm_events_date ON pm_events (date, local_time);
+CREATE TABLE IF NOT EXISTS pm_places (
+ id TEXT PRIMARY KEY, name TEXT, country TEXT, lat REAL, lon REAL, zone TEXT, looked_up_at TEXT);
 CREATE TABLE IF NOT EXISTS opinion_polls (
  id TEXT, region TEXT, firm TEXT, end_date TEXT, sample INTEGER, rolling REAL, link TEXT,
  lpc REAL, cpc REAL, ndp REAL, gpc REAL, bq REAL, oth REAL, fetched_at TEXT,
