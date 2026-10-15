@@ -6,7 +6,7 @@ Wants=partake-watch-embed.service
 [Service]
 Type=oneshot
 WorkingDirectory=%h/partake
-ExecStart=-/usr/bin/python3 -m watch.poll --data %h/.local/share/partake-watch --sources hansard,evidence,votes,bills,parlvu
+ExecStart=-/usr/bin/python3 -m watch.poll --data %h/.local/share/partake-watch --sources hansard,evidence,votes,bills,parlvu,pm
 ExecStart=/usr/bin/python3 -m watch.worker --data %h/.local/share/partake-watch --ollama http://127.0.0.1:11436
 MemoryMax=500M
 Nice=10
