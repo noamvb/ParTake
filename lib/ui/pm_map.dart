@@ -68,6 +68,7 @@ class _PmMapState extends State<PmMap> {
     }
   }
 
+  String _count(int n, String noun) => '$n $noun${n == 1 ? '' : 's'}';
   String _date(DateTime date) => date.toIso8601String().substring(0, 10);
   bool _located(Place place) => place.lat != null && place.lon != null;
   LatLng _point(Place place) => LatLng(place.lat!, place.lon!);
@@ -81,7 +82,9 @@ class _PmMapState extends State<PmMap> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(place.name, style: Theme.of(context).textTheme.titleLarge),
-            Text('${place.visits} visits · ${place.days} days'),
+            Text(
+              '${_count(place.visits, 'visit')} · ${_count(place.days, 'day')}',
+            ),
             Text('First: ${place.first} · Last: ${place.last}'),
           ],
         ),
@@ -90,7 +93,10 @@ class _PmMapState extends State<PmMap> {
   );
   Widget _map(List<LatLng> points, List<Marker> markers, {bool path = false}) =>
       SizedBox(
-        height: 360,
+        // Visits fills the screen below the filters; Week leaves room for the stop list.
+        height: path
+            ? 360
+            : math.max(360.0, MediaQuery.sizeOf(context).height - 330),
         child: Stack(
           children: [
             FlutterMap(
@@ -154,7 +160,7 @@ class _PmMapState extends State<PmMap> {
               width: 2 * math.min(30.0, 6 + 4 * math.sqrt(place.visits)),
               height: 2 * math.min(30.0, 6 + 4 * math.sqrt(place.visits)),
               child: Semantics(
-                label: '${place.name}, ${place.visits} visits',
+                label: '${place.name}, ${_count(place.visits, 'visit')}',
                 button: true,
                 child: InkWell(
                   key: ValueKey('pm-place-${place.id}'),
@@ -225,7 +231,7 @@ class _PmMapState extends State<PmMap> {
               '${_located(stops[i].place) ? '' : 'Not on map: '}${stops[i].place.name}',
             ),
             subtitle: Text(
-              '${stops[i].date} · ${stops[i].firstTime} · ${stops[i].events} events',
+              '${stops[i].date} · ${stops[i].firstTime} · ${_count(stops[i].events, 'event')}',
             ),
           ),
       ],
