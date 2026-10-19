@@ -190,7 +190,8 @@ EventDetail parseEventPage(String html, {required int id}) {
   final tags = infoValue['timeTags'];
   final start = tags is Map ? tags['STARTTIME'] : null;
   final timestamp = start is Map ? start['timestamp'] : null;
-  if (timestamp == null) _bad('STARTTIME is missing', html);
+  // A scheduled event's page exists before it starts, with no STARTTIME.
+  if (timestamp == null) throw const EventNotStartedException();
   final recordingStart = _time(timestamp, html, 'STARTTIME');
   // Live pages carry `ccItems:null`: live captions are CEA-608 inside the
   // video segments, not in the page.

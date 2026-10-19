@@ -78,6 +78,21 @@ void main() {
     expect(lib.continueWatching.map((r) => r.eventId), [2, 1]);
   });
 
+  test('removed records are gone after a restart', () async {
+    SharedPreferences.setMockInitialValues({});
+    final lib = PrefsLibrary(await SharedPreferences.getInstance());
+    final t = DateTime.utc(2026);
+    await lib.saveProgress(rec(1, t));
+    await lib.saveProgress(rec(2, t));
+    await lib.saveProgress(rec(3, t));
+    await lib.removeProgress([1, 3]);
+    expect(lib.continueWatching.map((r) => r.eventId), [2]);
+    final fresh = PrefsLibrary(await SharedPreferences.getInstance());
+    expect(fresh.record(1), isNull);
+    expect(fresh.record(2), isNotNull);
+    expect(fresh.record(3), isNull);
+  });
+
   test('history is capped at 200 newest records', () async {
     SharedPreferences.setMockInitialValues({});
     final lib = PrefsLibrary(await SharedPreferences.getInstance());

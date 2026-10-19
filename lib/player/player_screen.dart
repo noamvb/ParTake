@@ -297,6 +297,16 @@ class _PlayerScreenState extends State<PlayerScreen>
     return '${s ~/ 3600}:${two((s ~/ 60) % 60)}:${two(s % 60)}';
   }
 
+  String _errorText() {
+    final error = controller.error;
+    if (error is! EventNotStartedException) return '$error';
+    final start = widget.request.event?.scheduledStart.toLocal();
+    if (start == null) return 'This hasn\'t started yet.';
+    String two(int n) => n.toString().padLeft(2, '0');
+    return 'This hasn\'t started yet. '
+        'Scheduled for ${two(start.hour)}:${two(start.minute)}.';
+  }
+
   Widget _body() {
     if (session.pipActive) {
       return SizedBox.expand(child: Center(child: session.video()));
@@ -309,7 +319,10 @@ class _PlayerScreenState extends State<PlayerScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('${controller.error}'),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(_errorText(), textAlign: TextAlign.center),
+            ),
             ElevatedButton(
               onPressed: () => unawaited(controller.open(widget.request)),
               child: const Text('Retry'),

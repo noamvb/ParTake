@@ -411,4 +411,58 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     await closeSession(tester, session);
   });
+
+  testWidgets('an event that has not started says so, not a format error', (
+    tester,
+  ) async {
+    final start = DateTime.utc(2026, 10, 19, 18, 0);
+    final upcoming = ListingEvent(
+      id: 45900,
+      foreignKey: null,
+      title: 'HoC Sitting No. 150',
+      description: '',
+      location: '',
+      scheduledStart: start,
+      scheduledEnd: null,
+      actualStart: null,
+      actualEnd: null,
+      status: EventStatus.notStarted,
+      statusCode: 0,
+      statusText: '',
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PlayerScreen(
+          request: OpenRequest(
+            eventId: upcoming.id,
+            title: upcoming.title,
+            eventDate: DateTime.utc(2026, 10, 19),
+            event: upcoming,
+          ),
+          source: _NotStartedSource(),
+          library: FakeLibrary(),
+          engineFactory: FakeEngine.new,
+          videoBuilder: (_) => const ColoredBox(color: Colors.black),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final local = start.toLocal();
+    String two(int n) => n.toString().padLeft(2, '0');
+    expect(
+      find.text(
+        "This hasn't started yet. "
+        'Scheduled for ${two(local.hour)}:${two(local.minute)}.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('ParlVuFormatException'), findsNothing);
+    expect(find.text('Retry'), findsOneWidget);
+  });
+}
+
+class _NotStartedSource extends FakeEventSource {
+  @override
+  Future<EventDetail> detail(int id, {bool refresh = false}) async =>
+      throw const EventNotStartedException();
 }

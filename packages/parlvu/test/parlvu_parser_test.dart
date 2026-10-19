@@ -210,4 +210,14 @@ void main() {
       ),
     );
   });
+  test('a page without STARTTIME is an event that has not started', () {
+    final html = fixture('event_ethi49_45680.html');
+    expect(
+      () => parseEventPage(
+        html.replaceAll('"STARTTIME":', '"NOT_STARTTIME":'),
+        id: 1,
+      ),
+      throwsA(isA<EventNotStartedException>()),
+    );
+  });
 }

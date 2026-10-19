@@ -289,3 +289,12 @@ class ParlVuFormatException implements Exception {
       ? 'ParlVuFormatException: $message'
       : 'ParlVuFormatException: $message (near: $snippet)';
 }
+
+/// The event page has no recording yet: ParlVU publishes the page for a
+/// scheduled event before it starts, without `timeTags.STARTTIME`.
+class EventNotStartedException implements Exception {
+  const EventNotStartedException();
+
+  @override
+  String toString() => 'This event has not started yet.';
+}

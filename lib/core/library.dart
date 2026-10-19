@@ -95,6 +95,10 @@ abstract class Library implements Listenable {
   WatchRecord? record(int eventId);
   Future<void> saveProgress(WatchRecord record);
 
+  /// Forgets the watch records for [eventIds]; those events play from the
+  /// start again and leave Continue watching.
+  Future<void> removeProgress(Iterable<int> eventIds);
+
   AppSettings get settings;
   Future<void> updateSettings(AppSettings settings);
 }

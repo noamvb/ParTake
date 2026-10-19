@@ -34,6 +34,12 @@ class FakeLibrary extends ChangeNotifier implements Library {
   }
 
   @override
+  Future<void> removeProgress(Iterable<int> eventIds) async {
+    eventIds.forEach(_records.remove);
+    notifyListeners();
+  }
+
+  @override
   AppSettings get settings => _settings;
 
   @override

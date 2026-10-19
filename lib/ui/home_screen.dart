@@ -173,10 +173,48 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionHeader('Continue watching'),
+        Row(
+          children: [
+            const Expanded(child: _SectionHeader('Continue watching')),
+            Padding(
+              padding: const EdgeInsets.only(top: 8, right: 8),
+              child: TextButton(
+                onPressed: () => _confirmClearAll(records),
+                child: const Text('Clear all'),
+              ),
+            ),
+          ],
+        ),
         for (final r in records) _continueWatchingTile(r),
       ],
     );
+  }
+
+  Future<void> _confirmClearAll(List<WatchRecord> records) async {
+    final clear = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Continue watching?'),
+        content: Text(
+          records.length == 1
+              ? 'Forget where you left off in 1 event.'
+              : 'Forget where you left off in ${records.length} events.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
+    );
+    if (clear == true) {
+      await widget.library.removeProgress(records.map((r) => r.eventId));
+    }
   }
 
   Widget _continueWatchingTile(WatchRecord r) {
@@ -197,6 +235,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
         ],
+      ),
+      trailing: IconButton(
+        icon: const Icon(Icons.close),
+        tooltip: 'Remove ${r.title}',
+        onPressed: () => widget.library.removeProgress([r.eventId]),
       ),
       onTap: () => widget.onOpen(
         OpenRequest(
