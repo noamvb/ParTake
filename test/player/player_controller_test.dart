@@ -5,6 +5,7 @@ import 'package:parlvu/parlvu.dart';
 import 'package:partake/core/library.dart';
 import 'package:partake/player/caption_index.dart';
 import 'package:partake/player/player_controller.dart';
+import 'package:partake/player/media_engine.dart';
 import 'package:partake/platform/live_captions.dart';
 import 'package:partake/ui/open_request.dart';
 
@@ -376,6 +377,24 @@ void main() {
       expect(lib.record(45750), isNull);
     },
   );
+  test('an engine error over a playing stream can be dismissed', () async {
+    final (c, e, _, _) = await opened();
+    e.emitError('Failed to open segment');
+    await Future<void>.delayed(Duration.zero);
+    expect(c.error, 'Failed to open segment');
+    c.dismissError();
+    expect(c.error, isNull);
+    expect(c.phase, PlayerPhase.ready);
+    await c.close();
+  });
+  test('the Android surface-attach codec message is not an error', () {
+    expect(isBenignEngineError('Could not open codec.'), isTrue);
+    expect(
+      isBenignEngineError('play() request was interrupted by load'),
+      isTrue,
+    );
+    expect(isBenignEngineError('Failed to open segment'), isFalse);
+  });
   test('detail failure enters error without opening engine', () async {
     final e = FakeEngine();
     final c = PlayerController(

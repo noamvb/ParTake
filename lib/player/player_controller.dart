@@ -225,6 +225,12 @@ class PlayerController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Hides a playback error shown over a playing stream.
+  void dismissError() {
+    error = null;
+    notifyListeners();
+  }
+
   void setCaptions(bool on) {
     if (captionsOn == on) return;
     captionsOn = on;
