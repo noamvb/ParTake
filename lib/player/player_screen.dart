@@ -334,7 +334,49 @@ class _PlayerScreenState extends State<PlayerScreen>
     final video = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        session.video(),
+        GestureDetector(
+          onLongPressStart: (_) => unawaited(controller.startHoldFast()),
+          onLongPressEnd: (_) => unawaited(controller.endHoldFast()),
+          onLongPressCancel: () => unawaited(controller.endHoldFast()),
+          child: Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              session.video(),
+              if (controller.holdingFast)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: DecoratedBox(
+                    key: const ValueKey('hold-fast-pill'),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '2x',
+                            style: TextStyle(color: Colors.white, fontSize: 14),
+                          ),
+                          SizedBox(width: 4),
+                          Icon(
+                            Icons.fast_forward,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
         _controls(),
         if (controller.error != null)
           MaterialBanner(

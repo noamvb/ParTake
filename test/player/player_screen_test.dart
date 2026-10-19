@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'dart:io';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -80,6 +81,47 @@ void main() {
       expect(screen.liveCaptionsFactory, isNull);
     },
   );
+  testWidgets('hold fast long press shows pill and release restores rate', (
+    tester,
+  ) async {
+    final e = FakeEngine();
+    await tester.pumpWidget(app(e));
+    await tester.pumpAndSettle();
+    final video = find.byWidgetPredicate(
+      (w) => w is ColoredBox && w.color == Colors.black,
+    );
+    final gesture = await tester.startGesture(tester.getCenter(video));
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 1));
+    expect(find.byKey(const ValueKey('hold-fast-pill')), findsOneWidget);
+    expect(e.rates.last, 2.0);
+    await gesture.up();
+    await tester.pump();
+    expect(find.byKey(const ValueKey('hold-fast-pill')), findsNothing);
+    expect(e.rates.last, 1.0);
+    await tester.pumpWidget(const SizedBox());
+  });
+  testWidgets('hold fast short tap leaves rate and pill unchanged', (
+    tester,
+  ) async {
+    final e = FakeEngine();
+    await tester.pumpWidget(app(e));
+    await tester.pumpAndSettle();
+    final video = find.byWidgetPredicate(
+      (w) => w is ColoredBox && w.color == Colors.black,
+    );
+    final rates = List<double>.of(e.rates);
+    await tester.tap(video);
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 1));
+    expect(find.byKey(const ValueKey('hold-fast-pill')), findsNothing);
+    expect(e.rates, rates);
+    // Positive control: this video actually responds to a held gesture.
+    final gesture = await tester.startGesture(tester.getCenter(video));
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 1));
+    expect(find.byKey(const ValueKey('hold-fast-pill')), findsOneWidget);
+    await gesture.up();
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('responsive layout places panel below and beside video', (
     tester,
   ) async {
