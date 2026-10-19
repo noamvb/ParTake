@@ -190,6 +190,55 @@ void main() {
     },
   );
 
+  testWidgets('Continue watching rows can be removed one at a time or all', (
+    tester,
+  ) async {
+    final library = FakeLibrary();
+    for (final id in [1, 2, 3]) {
+      await library.saveProgress(
+        WatchRecord(
+          eventId: id,
+          title: 'Meeting $id',
+          eventDate: _today,
+          position: const Duration(minutes: 5),
+          duration: const Duration(hours: 1),
+          updatedAt: _clock(),
+        ),
+      );
+    }
+    await tester.pumpWidget(
+      _wrap(
+        HomeScreen(
+          source: FakeEventSource(),
+          library: library,
+          onOpen: (_) {},
+          now: _clock,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Remove Meeting 2'));
+    await tester.pumpAndSettle();
+    expect(find.text('Meeting 2'), findsNothing);
+    expect(library.record(2), isNull);
+    expect(library.continueWatching, hasLength(2));
+
+    await tester.tap(find.text('Clear all'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(library.continueWatching, hasLength(2));
+
+    await tester.tap(find.text('Clear all'));
+    await tester.pumpAndSettle();
+    expect(find.text('Forget where you left off in 2 events.'), findsOneWidget);
+    await tester.tap(find.text('Clear'));
+    await tester.pumpAndSettle();
+    expect(library.continueWatching, isEmpty);
+    expect(find.text('Continue watching'), findsNothing);
+  });
+
   testWidgets('followed events sort first, preserving order within groups', (
     tester,
   ) async {

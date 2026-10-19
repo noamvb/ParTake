@@ -78,6 +78,16 @@ class PrefsLibrary extends ChangeNotifier implements Library {
         _records.remove(item.eventId);
       }
     }
+    await _writeHistory();
+  }
+
+  @override
+  Future<void> removeProgress(Iterable<int> eventIds) async {
+    eventIds.forEach(_records.remove);
+    await _writeHistory();
+  }
+
+  Future<void> _writeHistory() async {
     await _prefs.setString(
       'history',
       jsonEncode(_records.values.map((r) => r.toJson()).toList()),
