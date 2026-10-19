@@ -1049,6 +1049,13 @@
         ]
       },
       "recovery_description": "A pushed tag is not rolled back automatically. If the release run fails, fix forward with a higher version; delete the tag on GitHub only with the owner's OK."
+    },
+    {
+      "id": "push-hold-2x",
+      "adapter": "git_push",
+      "description": "Fast-forward push of local hold-2x to origin/hold-2x",
+      "remote": "origin",
+      "branch": "hold-2x"
     }
   ]
 }
