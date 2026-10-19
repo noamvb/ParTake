@@ -340,7 +340,10 @@ class _PlayerScreenState extends State<PlayerScreen>
           MaterialBanner(
             content: Text('${controller.error}'),
             actions: [
-              TextButton(onPressed: () {}, child: const Text('Dismiss')),
+              TextButton(
+                onPressed: controller.dismissError,
+                child: const Text('Dismiss'),
+              ),
             ],
           ),
       ],

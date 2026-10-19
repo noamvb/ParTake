@@ -131,11 +131,8 @@ class MediaKitEngine implements MediaEngine {
   @override
   Stream<bool> get bufferingStream => player.stream.buffering;
   @override
-  Stream<String> get errorStream => player.stream.error.where(
-    // Reopening a stream on the web replaces the <video> element; the old
-    // element's pending play() is aborted. Not a playback failure.
-    (e) => !e.contains('play() request was interrupted'),
-  );
+  Stream<String> get errorStream =>
+      player.stream.error.where((e) => !isBenignEngineError(e));
   @override
   Future<void> dispose() async {
     await _liveProxy?.close();
@@ -147,6 +144,17 @@ class MediaKitEngine implements MediaEngine {
 /// Where a live stream opens: [requested] (a position in the previous live
 /// stream, when switching language) moved into this stream's timeline, whose
 /// window may start at a different wall clock; else short of the live edge.
+/// Engine messages that are not playback failures.
+@visibleForTesting
+bool isBenignEngineError(String message) =>
+    // Reopening a stream on the web replaces the <video> element; the old
+    // element's pending play() is aborted.
+    message.contains('play() request was interrupted') ||
+    // Android: mpv logs this while media_kit attaches the video surface,
+    // before the first frame (media_kit_video's AndroidVideoController); the
+    // video then plays.
+    message.contains('Could not open codec');
+
 @visibleForTesting
 Duration liveStartPosition({
   required Duration edge,
