@@ -893,6 +893,13 @@
       "description": "Fast-forward push of local pm-backfill-junk to origin/pm-backfill-junk",
       "remote": "origin",
       "branch": "pm-backfill-junk"
+    },
+    {
+      "id": "push-fix-not-started-and-clear-progress",
+      "adapter": "git_push",
+      "description": "Fast-forward push of local fix/not-started-and-clear-progress to origin/fix/not-started-and-clear-progress",
+      "remote": "origin",
+      "branch": "fix/not-started-and-clear-progress"
     }
   ]
 }
