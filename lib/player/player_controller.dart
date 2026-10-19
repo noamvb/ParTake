@@ -70,6 +70,8 @@ class PlayerController extends ChangeNotifier {
   Duration position = Duration.zero;
   Duration duration = Duration.zero;
   bool playing = false;
+  static const holdRate = 2.0;
+  bool holdingFast = false;
   double rate = 1;
   Caption? currentCaption;
   String? liveCaptionText;
@@ -79,6 +81,7 @@ class PlayerController extends ChangeNotifier {
   Set<AudioLanguage> get availableLanguages =>
       detail?.streams.map((s) => s.language).toSet() ?? {};
   bool get isLive => stream?.isLive ?? false;
+  bool get canHoldFast => !isLive || behindLive;
 
   /// Whether [setAudioOnly] switches to the audio-only stream (saving data)
   /// or only covers the video. The web covers: a browser pauses media_kit's
@@ -133,7 +136,7 @@ class PlayerController extends ChangeNotifier {
         start = moment > lead ? moment - lead : Duration.zero;
       }
       await engine.open(stream!.url, start: start);
-      await engine.setRate(rate);
+      await engine.setRate(holdingFast ? holdRate : rate);
       position = engine.position;
       duration = engine.duration;
       playing = engine.playing;
@@ -213,7 +216,7 @@ class PlayerController extends ChangeNotifier {
     stream = next;
     language = next.language;
     await engine.open(next.url, start: start);
-    await engine.setRate(rate);
+    await engine.setRate(holdingFast ? holdRate : rate);
     // Keep the play state across the reopen: on the web, media_kit swaps its
     // <video> element and the new one can come up paused.
     if (wasPlaying && !engine.playing) {
@@ -284,9 +287,24 @@ class PlayerController extends ChangeNotifier {
   Future<void> goLive() => seek(
     duration > liveEdgeMargin ? duration - liveEdgeMargin : Duration.zero,
   );
+  Future<void> startHoldFast() async {
+    if (holdingFast || !canHoldFast) return;
+    holdingFast = true;
+    await engine.setRate(holdRate);
+    notifyListeners();
+  }
+
+  Future<void> endHoldFast() async {
+    if (!holdingFast) return;
+    holdingFast = false;
+    await engine.setRate(rate);
+    notifyListeners();
+  }
+
   Future<void> setRate(double value) async {
     const allowed = [0.75, 1, 1.25, 1.5, 1.75, 2];
     if (!allowed.contains(value)) throw ArgumentError.value(value, 'rate');
+    holdingFast = false;
     rate = value;
     await engine.setRate(value);
     notifyListeners();
@@ -307,6 +325,9 @@ class PlayerController extends ChangeNotifier {
     duration = engine.duration;
     playing = engine.playing;
     _recompute();
+    if (holdingFast && isLive && !behindLive) {
+      unawaited(endHoldFast());
+    }
     if (playing &&
         !isLive &&
         (_lastSave == null || now().difference(_lastSave!) >= saveEvery)) {

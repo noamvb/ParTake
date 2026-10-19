@@ -114,6 +114,78 @@ void main() {
     return (c, eng, lib, src);
   }
 
+  test('hold fast recording restores selected rate', () async {
+    final (c, e, _, _) = await opened();
+    await c.setRate(1.25);
+    await c.startHoldFast();
+    expect(c.holdingFast, isTrue);
+    expect(e.rates.last, 2.0);
+    expect(c.rate, 1.25);
+    final heldCalls = e.rates.length;
+    await c.startHoldFast();
+    expect(e.rates.length, heldCalls);
+    await c.setLanguage(AudioLanguage.french);
+    expect(e.rates.last, 2.0);
+    expect(c.rate, 1.25);
+    await c.endHoldFast();
+    expect(c.holdingFast, isFalse);
+    expect(e.rates.last, 1.25);
+    await c.close();
+  });
+  test('hold fast live edge ignores start', () async {
+    final (c, feed) = await openedLive();
+    final e = c.engine as FakeEngine;
+    e.emitDuration(const Duration(seconds: 600));
+    e.emitPosition(const Duration(seconds: 550));
+    await Future<void>.delayed(Duration.zero);
+    expect(c.behindLive, isFalse);
+    final calls = e.rates.length;
+    await c.startHoldFast();
+    expect(c.holdingFast, isFalse);
+    expect(e.rates.length, calls);
+    await c.close();
+    feed.dispose();
+  });
+  test('hold fast live catch up restores selected rate', () async {
+    final (c, feed) = await openedLive();
+    final e = c.engine as FakeEngine;
+    await c.setRate(1.25);
+    e.emitDuration(const Duration(seconds: 600));
+    e.emitPosition(const Duration(seconds: 500));
+    await Future<void>.delayed(Duration.zero);
+    expect(c.behindLive, isTrue);
+    await c.startHoldFast();
+    expect(c.holdingFast, isTrue);
+    expect(e.rates.last, 2.0);
+    e.emitPosition(const Duration(seconds: 550));
+    await Future<void>.delayed(Duration.zero);
+    expect(c.holdingFast, isFalse);
+    expect(e.rates.last, 1.25);
+    await c.close();
+    feed.dispose();
+  });
+  test('hold fast explicit rate choice ends hold', () async {
+    final (c, e, _, _) = await opened();
+    await c.startHoldFast();
+    final calls = e.rates.length;
+    await c.setRate(1.5);
+    expect(c.holdingFast, isFalse);
+    expect(c.rate, 1.5);
+    expect(e.rates.length, calls + 1);
+    expect(e.rates.last, 1.5);
+    await c.endHoldFast();
+    expect(e.rates.length, calls + 1);
+    await c.close();
+  });
+  test('hold fast end without hold ignores engine', () async {
+    final (c, e, _, _) = await opened();
+    final calls = e.rates.length;
+    await c.endHoldFast();
+    expect(c.holdingFast, isFalse);
+    expect(e.rates.length, calls);
+    await c.close();
+  });
+
   test('opens floor with resume and captions enabled', () async {
     final (c, e, _, _) = await opened(resume: const Duration(seconds: 100));
     expect(c.phase, PlayerPhase.ready);
