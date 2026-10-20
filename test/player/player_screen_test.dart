@@ -82,6 +82,74 @@ void main() {
       expect(screen.liveCaptionsFactory, isNull);
     },
   );
+  testWidgets('hold at live edge shows the live hint pill', (tester) async {
+    final live = parseEventPage(
+      File('packages/parlvu/test/fixtures/event_live_hoc143_45729.html')
+          .readAsStringSync(),
+      id: 45729,
+    );
+    final date = DateTime.utc(2026, 9, 24);
+    final liveRow = ListingEvent(
+      id: 45729,
+      foreignKey: null,
+      title: 'HoC Sitting No. 143',
+      description: '',
+      location: '',
+      scheduledStart: date,
+      scheduledEnd: null,
+      actualStart: null,
+      actualEnd: null,
+      status: EventStatus.live,
+      statusCode: 1,
+      statusText: '',
+    );
+    final e = FakeEngine();
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: PlayerScreen(
+          request: OpenRequest(
+            eventId: 45729,
+            title: liveRow.title,
+            eventDate: date,
+            event: liveRow,
+          ),
+          source: FakeEventSource(
+            details: {45729: live},
+            days: {
+              date: [liveRow],
+            },
+          ),
+          library: FakeLibrary(),
+          engineFactory: () => e,
+          videoBuilder: (_) => const ColoredBox(color: Colors.black),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 50));
+    e.emitDuration(const Duration(seconds: 600));
+    e.emitPosition(const Duration(seconds: 595));
+    await tester.pump();
+    await tester.pump();
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+    final video = find.byWidgetPredicate(
+      (w) => w is ColoredBox && w.color == Colors.black,
+    );
+    final gesture = await tester.startGesture(tester.getCenter(video));
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 100));
+    expect(find.byKey(const ValueKey('hold-live-pill')), findsOneWidget);
+    expect(find.text('At live – nothing to speed up'), findsOneWidget);
+    expect(find.byKey(const ValueKey('hold-fast-pill')), findsNothing);
+    await gesture.up();
+    await tester.pump();
+    expect(find.byKey(const ValueKey('hold-live-pill')), findsNothing);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('hold fast long press shows pill and release restores rate', (
     tester,
   ) async {
@@ -539,6 +607,62 @@ void main() {
       isNull,
     );
     expect(tabletopHinge(const MediaQueryData()), isNull);
+  });
+
+  testWidgets('tabletop layout uses large transport buttons', (tester) async {
+    tester.view.physicalSize = const Size(800, 800);
+    tester.view.devicePixelRatio = 1;
+    tester.view.displayFeatures = const [
+      DisplayFeature(
+        bounds: Rect.fromLTWH(0, 400, 800, 0),
+        type: DisplayFeatureType.fold,
+        state: DisplayFeatureState.postureHalfOpened,
+      ),
+    ];
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+      tester.view.resetDisplayFeatures();
+    });
+    await tester.pumpWidget(app(FakeEngine()));
+    await tester.pumpAndSettle();
+    final pause = find.ancestor(
+      of: find.byTooltip('Pause'),
+      matching: find.byType(IconButton),
+    );
+    expect(tester.widget(pause), isA<IconButton>());
+    expect(tester.getSize(pause).height, greaterThanOrEqualTo(64));
+    expect(
+      tester.getSize(find.byTooltip('Back 30 seconds')).height,
+      greaterThanOrEqualTo(52),
+    );
+    final top = tester.getTopLeft(pause).dy;
+    for (final tooltip in [
+      'Back 30 seconds',
+      'Back 10 seconds',
+      'Pause',
+      'Forward 10 seconds',
+      'Forward 30 seconds',
+    ]) {
+      expect(tester.getTopLeft(find.byTooltip(tooltip)).dy, closeTo(top, 1));
+    }
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('normal layout keeps standard transport buttons', (tester) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+    await tester.pumpWidget(app(FakeEngine()));
+    await tester.pumpAndSettle();
+    expect(
+      tester.getSize(find.byTooltip('Pause')).height,
+      lessThanOrEqualTo(48),
+    );
+    await tester.pumpWidget(const SizedBox());
   });
 
   testWidgets(

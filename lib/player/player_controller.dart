@@ -72,6 +72,7 @@ class PlayerController extends ChangeNotifier {
   bool playing = false;
   static const holdRate = 2.0;
   bool holdingFast = false;
+  bool holdBlockedAtLive = false;
   double rate = 1;
   Caption? currentCaption;
   String? liveCaptionText;
@@ -288,13 +289,22 @@ class PlayerController extends ChangeNotifier {
     duration > liveEdgeMargin ? duration - liveEdgeMargin : Duration.zero,
   );
   Future<void> startHoldFast() async {
-    if (holdingFast || !canHoldFast) return;
+    if (holdingFast) return;
+    if (!canHoldFast) {
+      holdBlockedAtLive = true;
+      notifyListeners();
+      return;
+    }
     holdingFast = true;
     await engine.setRate(holdRate);
     notifyListeners();
   }
 
   Future<void> endHoldFast() async {
+    if (holdBlockedAtLive) {
+      holdBlockedAtLive = false;
+      notifyListeners();
+    }
     if (!holdingFast) return;
     holdingFast = false;
     await engine.setRate(rate);
