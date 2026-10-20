@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -501,10 +502,143 @@ void main() {
     expect(find.textContaining('ParlVuFormatException'), findsNothing);
     expect(find.text('Retry'), findsOneWidget);
   });
+
+  test('tabletopHinge unit cases', () {
+    const horizontal = Rect.fromLTWH(0, 400, 800, 0);
+    MediaQueryData media(Rect bounds, DisplayFeatureState state) =>
+        MediaQueryData(
+          displayFeatures: [
+            DisplayFeature(
+              bounds: bounds,
+              type: DisplayFeatureType.fold,
+              state: state,
+            ),
+          ],
+        );
+    expect(
+      tabletopHinge(media(horizontal, DisplayFeatureState.postureHalfOpened)),
+      horizontal,
+    );
+    expect(
+      tabletopHinge(media(horizontal, DisplayFeatureState.postureFlat)),
+      isNull,
+    );
+    expect(
+      tabletopHinge(
+        media(
+          const Rect.fromLTWH(400, 0, 0, 800),
+          DisplayFeatureState.postureHalfOpened,
+        ),
+      ),
+      isNull,
+    );
+    expect(
+      tabletopHinge(
+        const MediaQueryData(displayFeatures: [_HalfOpenedCutout()]),
+      ),
+      isNull,
+    );
+    expect(tabletopHinge(const MediaQueryData()), isNull);
+  });
+
+  testWidgets(
+    'tabletop posture puts video above the hinge and controls below',
+    (tester) async {
+      tester.view.physicalSize = const Size(800, 800);
+      tester.view.devicePixelRatio = 1;
+      tester.view.displayFeatures = const [
+        DisplayFeature(
+          bounds: Rect.fromLTWH(0, 400, 800, 0),
+          type: DisplayFeatureType.fold,
+          state: DisplayFeatureState.postureHalfOpened,
+        ),
+      ];
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+        tester.view.resetDisplayFeatures();
+      });
+      await tester.pumpWidget(app(FakeEngine()));
+      await tester.pumpAndSettle();
+      expect(find.byType(AppBar), findsNothing);
+      final video = find.byWidgetPredicate(
+        (w) => w is ColoredBox && w.color == Colors.black && w.child == null,
+      );
+      expect(video, findsOneWidget);
+      expect(tester.getBottomLeft(video).dy, lessThanOrEqualTo(400));
+      expect(
+        tester.getTopLeft(find.byTooltip('Pause')).dy,
+        greaterThanOrEqualTo(400),
+      );
+      expect(
+        tester.getTopLeft(find.text('Speakers')).dy,
+        greaterThanOrEqualTo(400),
+      );
+      final title = find.text('FEWO Meeting');
+      expect(title, findsOneWidget);
+      expect(tester.getTopLeft(title).dy, greaterThanOrEqualTo(400));
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets('flat fold keeps the normal layout', (tester) async {
+    tester.view.physicalSize = const Size(800, 800);
+    tester.view.devicePixelRatio = 1;
+    tester.view.displayFeatures = const [
+      DisplayFeature(
+        bounds: Rect.fromLTWH(0, 400, 800, 0),
+        type: DisplayFeatureType.fold,
+        state: DisplayFeatureState.postureFlat,
+      ),
+    ];
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+      tester.view.resetDisplayFeatures();
+    });
+    await tester.pumpWidget(app(FakeEngine()));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppBar), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('book posture keeps the normal layout', (tester) async {
+    tester.view.physicalSize = const Size(800, 800);
+    tester.view.devicePixelRatio = 1;
+    tester.view.displayFeatures = const [
+      DisplayFeature(
+        bounds: Rect.fromLTWH(400, 0, 0, 800),
+        type: DisplayFeatureType.fold,
+        state: DisplayFeatureState.postureHalfOpened,
+      ),
+    ];
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+      tester.view.resetDisplayFeatures();
+    });
+    await tester.pumpWidget(app(FakeEngine()));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppBar), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
 }
 
 class _NotStartedSource extends FakeEventSource {
   @override
   Future<EventDetail> detail(int id, {bool refresh = false}) async =>
       throw const EventNotStartedException();
+}
+
+// Flutter's constructor requires cutouts to have unknown posture. This fixture
+// supplies the half-opened cutout to exercise tabletopHinge's type guard.
+class _HalfOpenedCutout implements DisplayFeature {
+  const _HalfOpenedCutout();
+
+  @override
+  Rect get bounds => const Rect.fromLTWH(0, 400, 800, 0);
+  @override
+  DisplayFeatureType get type => DisplayFeatureType.cutout;
+  @override
+  DisplayFeatureState get state => DisplayFeatureState.postureHalfOpened;
 }
