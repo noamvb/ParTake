@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,6 +15,20 @@ import 'player_controller.dart';
 import 'player_session.dart';
 
 export 'player_session.dart' show PlayerVideoBuilder, defaultLiveCaptionFeed;
+
+/// The hinge of a half-open device held like a laptop, or null.
+Rect? tabletopHinge(MediaQueryData media) {
+  for (final feature in media.displayFeatures) {
+    final bounds = feature.bounds;
+    if (feature.type != DisplayFeatureType.cutout &&
+        feature.state == DisplayFeatureState.postureHalfOpened &&
+        bounds.width > bounds.height &&
+        bounds.top > 0) {
+      return bounds;
+    }
+  }
+  return null;
+}
 
 class PlayerScreen extends StatefulWidget {
   const PlayerScreen({
@@ -190,8 +205,8 @@ class _PlayerScreenState extends State<PlayerScreen>
     AudioLanguage.english => 'English',
     AudioLanguage.french => 'French',
   };
-  Widget _panel() => SizedBox(
-    width: 360,
+  Widget _panel({double width = 360}) => SizedBox(
+    width: width,
     child: Column(
       children: [
         TabBar(
@@ -307,6 +322,43 @@ class _PlayerScreenState extends State<PlayerScreen>
         'Scheduled for ${two(start.hour)}:${two(start.minute)}.';
   }
 
+  Widget _videoArea() => GestureDetector(
+    onLongPressStart: (_) => unawaited(controller.startHoldFast()),
+    onLongPressEnd: (_) => unawaited(controller.endHoldFast()),
+    onLongPressCancel: () => unawaited(controller.endHoldFast()),
+    child: Stack(
+      alignment: Alignment.topCenter,
+      children: [
+        session.video(),
+        if (controller.holdingFast)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: DecoratedBox(
+              key: const ValueKey('hold-fast-pill'),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '2x',
+                      style: TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                    SizedBox(width: 4),
+                    Icon(Icons.fast_forward, color: Colors.white, size: 18),
+                  ],
+                ),
+              ),
+            ),
+          ),
+      ],
+    ),
+  );
+
   Widget _body() {
     if (session.pipActive) {
       return SizedBox.expand(child: Center(child: session.video()));
@@ -334,49 +386,7 @@ class _PlayerScreenState extends State<PlayerScreen>
     final video = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        GestureDetector(
-          onLongPressStart: (_) => unawaited(controller.startHoldFast()),
-          onLongPressEnd: (_) => unawaited(controller.endHoldFast()),
-          onLongPressCancel: () => unawaited(controller.endHoldFast()),
-          child: Stack(
-            alignment: Alignment.topCenter,
-            children: [
-              session.video(),
-              if (controller.holdingFast)
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: DecoratedBox(
-                    key: const ValueKey('hold-fast-pill'),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '2x',
-                            style: TextStyle(color: Colors.white, fontSize: 14),
-                          ),
-                          SizedBox(width: 4),
-                          Icon(
-                            Icons.fast_forward,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ),
+        _videoArea(),
         _controls(),
         if (controller.error != null)
           MaterialBanner(
@@ -408,6 +418,76 @@ class _PlayerScreenState extends State<PlayerScreen>
     );
   }
 
+  Widget _minimizeButton() => IconButton(
+    tooltip: 'Minimize',
+    icon: const Icon(Icons.keyboard_arrow_down),
+    onPressed: () {
+      session.minimize();
+      Navigator.of(context).pop();
+    },
+  );
+
+  Widget _closeButton() => IconButton(
+    tooltip: 'Close player',
+    icon: const Icon(Icons.close),
+    onPressed: () {
+      unawaited(session.close());
+      Navigator.of(context).pop();
+    },
+  );
+
+  Widget _tabletopBody(Rect hinge) => Column(
+    children: [
+      SizedBox(
+        height: hinge.top,
+        child: ColoredBox(
+          color: Colors.black,
+          child: SafeArea(bottom: false, child: Center(child: _videoArea())),
+        ),
+      ),
+      SizedBox(height: hinge.height),
+      Expanded(
+        child: SafeArea(
+          top: false,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  if (widget.session != null) _minimizeButton(),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: widget.session == null ? 16 : 0,
+                      ),
+                      child: Text(
+                        controller.event?.title ?? widget.request.title,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ),
+                  ),
+                  if (widget.session != null) _closeButton(),
+                ],
+              ),
+              _controls(),
+              if (controller.error != null)
+                MaterialBanner(
+                  content: Text('${controller.error}'),
+                  actions: [
+                    TextButton(
+                      onPressed: controller.dismissError,
+                      child: const Text('Dismiss'),
+                    ),
+                  ],
+                ),
+              Expanded(child: _panel(width: double.infinity)),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     // Pop animations retain the route. Unmount its video immediately when
@@ -418,6 +498,12 @@ class _PlayerScreenState extends State<PlayerScreen>
     if (session.pipActive) {
       return SizedBox.expand(child: Center(child: session.video()));
     }
+    final hinge = tabletopHinge(MediaQuery.of(context));
+    final tabletop =
+        hinge != null &&
+        controller.phase != PlayerPhase.loading &&
+        controller.phase != PlayerPhase.error &&
+        !session.pipActive;
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
         if (didPop && widget.session != null) session.minimize();
@@ -440,35 +526,18 @@ class _PlayerScreenState extends State<PlayerScreen>
         child: Focus(
           autofocus: true,
           child: Scaffold(
-            appBar: AppBar(
-              toolbarHeight: 44,
-              leading: widget.session == null
-                  ? null
-                  : IconButton(
-                      tooltip: 'Minimize',
-                      icon: const Icon(Icons.keyboard_arrow_down),
-                      onPressed: () {
-                        session.minimize();
-                        Navigator.of(context).pop();
-                      },
+            appBar: tabletop
+                ? null
+                : AppBar(
+                    toolbarHeight: 44,
+                    leading: widget.session == null ? null : _minimizeButton(),
+                    actions: [if (widget.session != null) _closeButton()],
+                    title: Text(
+                      controller.event?.title ?? widget.request.title,
+                      overflow: TextOverflow.ellipsis,
                     ),
-              actions: [
-                if (widget.session != null)
-                  IconButton(
-                    tooltip: 'Close player',
-                    icon: const Icon(Icons.close),
-                    onPressed: () {
-                      unawaited(session.close());
-                      Navigator.of(context).pop();
-                    },
                   ),
-              ],
-              title: Text(
-                controller.event?.title ?? widget.request.title,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            body: _body(),
+            body: tabletop ? _tabletopBody(hinge) : _body(),
           ),
         ),
       ),
