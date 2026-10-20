@@ -105,101 +105,145 @@ class _PlayerScreenState extends State<PlayerScreen>
         streams.any((s) => !s.audioOnly);
   }
 
-  Widget _controls() => Wrap(
+  Widget _controls({bool large = false}) {
+    if (!large) {
+      return _controlWrap([..._transportButtons(), ..._secondaryControls()]);
+    }
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: _transportButtons(large: true),
+        ),
+        _controlWrap(_secondaryControls()),
+      ],
+    );
+  }
+
+  Widget _controlWrap(List<Widget> children) => Wrap(
     alignment: WrapAlignment.center,
     crossAxisAlignment: WrapCrossAlignment.center,
-    children: [
-      _button(
-        'Back 30 seconds',
-        Icons.replay_30,
-        () => controller.seekRelative(const Duration(seconds: -30)),
-      ),
-      _button(
-        'Back 10 seconds',
-        Icons.replay_10,
-        () => controller.seekRelative(const Duration(seconds: -10)),
-      ),
-      _button(
-        controller.playing ? 'Pause' : 'Play',
-        controller.playing ? Icons.pause : Icons.play_arrow,
-        controller.togglePlay,
-      ),
-      _button(
-        'Forward 10 seconds',
-        Icons.forward_10,
-        () => controller.seekRelative(const Duration(seconds: 10)),
-      ),
-      _button(
-        'Forward 30 seconds',
-        Icons.forward_30,
-        () => controller.seekRelative(const Duration(seconds: 30)),
-      ),
-      PopupMenuButton<AudioLanguage>(
-        tooltip: 'Audio language',
-        onSelected: controller.setLanguage,
-        itemBuilder: (_) => AudioLanguage.values
-            .where(controller.availableLanguages.contains)
-            .map((l) => PopupMenuItem(value: l, child: Text(_langName(l))))
-            .toList(),
-        child: const Padding(
-          padding: EdgeInsets.all(12),
-          child: Icon(Icons.language),
-        ),
-      ),
-      IconButton(
-        tooltip: controller.captionsOn ? 'Captions on' : 'Captions off',
-        onPressed: () => controller.setCaptions(!controller.captionsOn),
-        icon: Icon(
-          controller.captionsOn
-              ? Icons.closed_caption
-              : Icons.closed_caption_off,
-        ),
-      ),
-      if (_canSwitchAudio)
-        _button(
-          controller.audioOnly ? 'Show video' : 'Background audio',
-          controller.audioOnly ? Icons.videocam : Icons.headphones,
-          () => controller.setAudioOnly(!controller.audioOnly),
-        ),
-      if (session.pip?.available == true)
-        _button(
-          'Picture in picture',
-          Icons.picture_in_picture_alt,
-          session.pip!.enter,
-        ),
-      PopupMenuButton<double>(
-        tooltip: 'Speed',
-        onSelected: controller.setRate,
-        itemBuilder: (_) => rates
-            .map((r) => PopupMenuItem(value: r, child: Text('${r}x')))
-            .toList(),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Text('${controller.rate}x'),
-        ),
-      ),
-      if (controller.isLive) ...[
-        const Chip(label: Text('LIVE')),
-        // Always laid out so the centred row does not shift when it appears.
-        Visibility(
-          visible: controller.behindLive,
-          maintainSize: true,
-          maintainAnimation: true,
-          maintainState: true,
-          child: TextButton(
-            onPressed: controller.goLive,
-            child: const Text('Go live'),
-          ),
-        ),
-      ],
-    ],
+    children: children,
   );
-  Widget _button(String tip, IconData icon, Future<void> Function() action) =>
-      IconButton(
+
+  List<Widget> _transportButtons({bool large = false}) => [
+    _button(
+      'Back 30 seconds',
+      Icons.replay_30,
+      () => controller.seekRelative(const Duration(seconds: -30)),
+      iconSize: large ? 36 : null,
+    ),
+    _button(
+      'Back 10 seconds',
+      Icons.replay_10,
+      () => controller.seekRelative(const Duration(seconds: -10)),
+      iconSize: large ? 36 : null,
+    ),
+    _button(
+      controller.playing ? 'Pause' : 'Play',
+      controller.playing ? Icons.pause : Icons.play_arrow,
+      controller.togglePlay,
+      iconSize: large ? 48 : null,
+      filled: large,
+    ),
+    _button(
+      'Forward 10 seconds',
+      Icons.forward_10,
+      () => controller.seekRelative(const Duration(seconds: 10)),
+      iconSize: large ? 36 : null,
+    ),
+    _button(
+      'Forward 30 seconds',
+      Icons.forward_30,
+      () => controller.seekRelative(const Duration(seconds: 30)),
+      iconSize: large ? 36 : null,
+    ),
+  ];
+
+  List<Widget> _secondaryControls() => [
+    PopupMenuButton<AudioLanguage>(
+      tooltip: 'Audio language',
+      onSelected: controller.setLanguage,
+      itemBuilder: (_) => AudioLanguage.values
+          .where(controller.availableLanguages.contains)
+          .map((l) => PopupMenuItem(value: l, child: Text(_langName(l))))
+          .toList(),
+      child: const Padding(
+        padding: EdgeInsets.all(12),
+        child: Icon(Icons.language),
+      ),
+    ),
+    IconButton(
+      tooltip: controller.captionsOn ? 'Captions on' : 'Captions off',
+      onPressed: () => controller.setCaptions(!controller.captionsOn),
+      icon: Icon(
+        controller.captionsOn ? Icons.closed_caption : Icons.closed_caption_off,
+      ),
+    ),
+    if (_canSwitchAudio)
+      _button(
+        controller.audioOnly ? 'Show video' : 'Background audio',
+        controller.audioOnly ? Icons.videocam : Icons.headphones,
+        () => controller.setAudioOnly(!controller.audioOnly),
+      ),
+    if (session.pip?.available == true)
+      _button(
+        'Picture in picture',
+        Icons.picture_in_picture_alt,
+        session.pip!.enter,
+      ),
+    PopupMenuButton<double>(
+      tooltip: 'Speed',
+      onSelected: controller.setRate,
+      itemBuilder: (_) => rates
+          .map((r) => PopupMenuItem(value: r, child: Text('${r}x')))
+          .toList(),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Text('${controller.rate}x'),
+      ),
+    ),
+    if (controller.isLive) ...[
+      const Chip(label: Text('LIVE')),
+      // Always laid out so the centred row does not shift when it appears.
+      Visibility(
+        visible: controller.behindLive,
+        maintainSize: true,
+        maintainAnimation: true,
+        maintainState: true,
+        child: TextButton(
+          onPressed: controller.goLive,
+          child: const Text('Go live'),
+        ),
+      ),
+    ],
+  ];
+
+  Widget _button(
+    String tip,
+    IconData icon,
+    Future<void> Function() action, {
+    double? iconSize,
+    bool filled = false,
+  }) {
+    if (filled) {
+      return IconButton.filled(
         tooltip: tip,
         onPressed: () => unawaited(action()),
+        iconSize: iconSize,
         icon: Icon(icon),
       );
+    }
+    return IconButton(
+      tooltip: tip,
+      onPressed: () => unawaited(action()),
+      iconSize: iconSize,
+      icon: Icon(icon),
+    );
+  }
+
   static String _langName(AudioLanguage l) => switch (l) {
     AudioLanguage.floor => 'Floor',
     AudioLanguage.english => 'English',
@@ -322,6 +366,22 @@ class _PlayerScreenState extends State<PlayerScreen>
         'Scheduled for ${two(start.hour)}:${two(start.minute)}.';
   }
 
+  Widget _holdPill({required Key key, required List<Widget> children}) =>
+      Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: DecoratedBox(
+          key: key,
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.6),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: Row(mainAxisSize: MainAxisSize.min, children: children),
+          ),
+        ),
+      );
+
   Widget _videoArea() => GestureDetector(
     onLongPressStart: (_) => unawaited(controller.startHoldFast()),
     onLongPressEnd: (_) => unawaited(controller.endHoldFast()),
@@ -331,29 +391,25 @@ class _PlayerScreenState extends State<PlayerScreen>
       children: [
         session.video(),
         if (controller.holdingFast)
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: DecoratedBox(
-              key: const ValueKey('hold-fast-pill'),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(20),
+          _holdPill(
+            key: const ValueKey('hold-fast-pill'),
+            children: const [
+              Text('2x', style: TextStyle(color: Colors.white, fontSize: 14)),
+              SizedBox(width: 4),
+              Icon(Icons.fast_forward, color: Colors.white, size: 18),
+            ],
+          ),
+        if (controller.holdBlockedAtLive)
+          _holdPill(
+            key: const ValueKey('hold-live-pill'),
+            children: const [
+              Icon(Icons.live_tv, color: Colors.white, size: 18),
+              SizedBox(width: 4),
+              Text(
+                'At live – nothing to speed up',
+                style: TextStyle(color: Colors.white, fontSize: 14),
               ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '2x',
-                      style: TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                    SizedBox(width: 4),
-                    Icon(Icons.fast_forward, color: Colors.white, size: 18),
-                  ],
-                ),
-              ),
-            ),
+            ],
           ),
       ],
     ),
@@ -469,7 +525,7 @@ class _PlayerScreenState extends State<PlayerScreen>
                   if (widget.session != null) _closeButton(),
                 ],
               ),
-              _controls(),
+              _controls(large: true),
               if (controller.error != null)
                 MaterialBanner(
                   content: Text('${controller.error}'),

@@ -114,6 +114,43 @@ void main() {
     return (c, eng, lib, src);
   }
 
+  test(
+    'hold fast at live edge flags the refusal and release clears it',
+    () async {
+      final (c, feed) = await openedLive();
+      final e = c.engine as FakeEngine;
+      e.emitDuration(const Duration(seconds: 600));
+      e.emitPosition(const Duration(seconds: 550));
+      await Future<void>.delayed(Duration.zero);
+      expect(c.behindLive, isFalse);
+      final calls = e.rates.length;
+      var notifications = 0;
+      c.addListener(() => notifications++);
+      await c.startHoldFast();
+      expect(c.holdingFast, isFalse);
+      expect(c.holdBlockedAtLive, isTrue);
+      expect(e.rates.length, calls);
+      expect(notifications, 1);
+      await c.endHoldFast();
+      expect(c.holdBlockedAtLive, isFalse);
+      expect(e.rates.length, calls);
+      expect(notifications, 2);
+      await c.close();
+      feed.dispose();
+    },
+  );
+  test('hold fast recording never flags the live refusal', () async {
+    final (c, _, _, _) = await opened();
+    expect(c.holdBlockedAtLive, isFalse);
+    await c.startHoldFast();
+    expect(c.holdingFast, isTrue);
+    expect(c.holdBlockedAtLive, isFalse);
+    await c.endHoldFast();
+    expect(c.holdingFast, isFalse);
+    expect(c.holdBlockedAtLive, isFalse);
+    await c.close();
+  });
+
   test('hold fast recording restores selected rate', () async {
     final (c, e, _, _) = await opened();
     await c.setRate(1.25);
