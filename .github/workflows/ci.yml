@@ -29,6 +29,11 @@ jobs:
           flutter test
       - name: home server
         run: python3 -m unittest server/test_partake_server.py -v
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: watch service
+        run: python3 -m unittest discover -s watch/tests -t .
 
   windows:
     runs-on: windows-latest
