@@ -302,9 +302,10 @@ class DeliverTests(PushTestCase):
         self.assertEqual(sorted(sender.calls), ["bad", "good"])
 
     def test_dry_run_cli_prints_and_changes_nothing(self):
+        # The CLI reads the real clock, so the alert must be recent in real time.
         with connect(self.data) as db, db:
             self.register(db)
-            self.alert(db, NOW - timedelta(minutes=1))
+            self.alert(db, datetime.now(timezone.utc) - timedelta(minutes=1))
         out = io.StringIO()
         with redirect_stdout(out):
             self.assertEqual(push.main(["deliver", "--data", str(self.data), "--dry-run"]), 0)
